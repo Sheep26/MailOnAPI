@@ -16,11 +16,11 @@ export class Email {
     }
 
     async send(from, to, reply_to, subject, text) {
-        this.database.sendEmail(to, from, reply_to, null, null, subject, text);
+        
     }
 
     async sendHTML(from, to, reply_to, subject, html) {
-        this.database.sendEmail(to, from, reply_to, null, null, subject, html);
+        
     }
 
     async handle(req) {

@@ -8,7 +8,7 @@ export class EmailResend extends Email {
     }
 
     async send(from, to, reply_to, subject, text) {
-        const { data }  = await this.resend.emails.send({
+        const { data } = await this.resend.emails.send({
             from: from,
             to: to,
             replyTo: reply_to,
@@ -17,11 +17,10 @@ export class EmailResend extends Email {
         });
 
         console.log(`Email ${data.id} has been sent`);
-        super.send(from, to, reply_to, subject, text);
     }
 
     async sendHTML(from, to, reply_to, subject, html) {
-        const { data }  = await this.resend.emails.send({
+        const { data } = await this.resend.emails.send({
             from: from,
             to: to,
             replyTo: reply_to,
@@ -30,7 +29,6 @@ export class EmailResend extends Email {
         });
 
         console.log(`Email ${data.id} has been sent`);
-        super.sendHTML(from, to, reply_to, subject, html);
     }
 
     async reply(user, mail_id, content) {
@@ -52,7 +50,6 @@ export class EmailResend extends Email {
         });
 
         console.log(`Email ${data.id} has been sent`);
-        super.send(user.email, mail.reply_to, user.email, `Re: ${mail.subject}`, content);
     }
 
     async handle(body) {
@@ -64,7 +61,7 @@ export class EmailResend extends Email {
 
         let parsed = parseEmailAddress(data.headers.from);
 
-        this.database.addEmail(data.to[0], parsed.email, parsed.name, data.headers['return-path'], JSON.stringify(data.bcc), JSON.stringify(data.cc), data.id, data.message_id, data.html_format, data.subject, data.html, data.attachments, data.headers.references ?? null);
+        this.database.addEmail(data.to[0], data.to[0], parsed.email, parsed.name, data.headers['return-path'], JSON.stringify(data.bcc), JSON.stringify(data.cc), data.id, data.message_id, data.html_format, data.subject, data.html, data.attachments, data.headers.references ?? null, 0);
         console.log(`Email ${data.id} has been recieved from ${data.headers.from}`);
     }
 

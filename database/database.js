@@ -9,8 +9,9 @@ export class DatabaseManager {
         initDB();
     }
 
-    async addEmail(to, from, name_from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, references) {
-        await db.execute('INSERT INTO emails (mail_to, mail_from, name_from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, email_references, time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+    async addEmail(belongs_to, to, from, name_from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, references, mail_box) {
+        await db.execute('INSERT INTO emails (belongs_to, mail_to, mail_from, name_from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, email_references, time, mail_box) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+            belongs_to,
             to,
             from,
             name_from ?? null,
@@ -24,28 +25,19 @@ export class DatabaseManager {
             content,
             attachments,
             references,
-            Date.now()
+            Date.now(),
+            mail_box
         ]);
     }
 
     async getUsersEmails(email) {
-        const [rows] = await db.query('SELECT * FROM emails WHERE mail_to=?', [email]);
+        const [rows] = await db.query('SELECT * FROM emails WHERE belongs_to=?', [email]);
 
         return rows;
     }
 
     async getEmail(mail_id, email) {
-        const [rows] = await db.query('SELECT * FROM emails WHERE mail_id=? AND mail_to=?', [mail_id, email]);
-
-        if (rows.length > 0)
-            return rows[0];
-
-        return null;
-    }
-
-    async getSentEmail(sent_id, email) {
-        const user = await this.getUserEmail(email);
-        const [rows] = await db.query('SELECT * FROM sent WHERE sent_id=? AND mail_from=?', [sent_id, `${user.username} <${user.email}>`]);
+        const [rows] = await db.query('SELECT * FROM emails WHERE mail_id=? AND belongs_to=?', [mail_id, email]);
 
         if (rows.length > 0)
             return rows[0];
@@ -65,48 +57,31 @@ export class DatabaseManager {
         if (rows[0])
             return false;
 
-        await db.execute('INSERT INTO users (username, passwd, email) VALUES (?, ?, ?)', [username, await hasher.hash(passwd), email]);
+        await db.execute('INSERT INTO users (username, passwd, email, mail_boxes) VALUES (?, ?, ?, ?)', [username, await hasher.hash(passwd), email, ['Inbox', 'Sent']]);
         return true;
     }
 
-    async getUserEmail(email) {
+    async getUser(email) {
         const [rows] = await db.query("SELECT * FROM users WHERE email=?", [email]);
 
         return rows[0];
     }
 
-    async deleteEmailRespectToUser(mail_id, user_email) {
-        await db.execute('DELETE FROM emails WHERE mail_id=? AND mail_to=?', [mail_id, user_email]);
+    async deleteEmail(mail_id, user_email) {
+        await db.execute('DELETE FROM emails WHERE mail_id=? AND belongs_to=?', [mail_id, user_email]);
     }
 
-    async deleteSentEmailRespectToUser(sent_id, user_email) {
-        const user = await this.getUserEmail(user_email);
+    async getMailBoxes(email) {
+        const [rows] = await db.query("SELECT mail_boxes FROM users WHERE email=?", [email]);
 
-        await db.execute('DELETE FROM sent WHERE sent_id=? AND mail_from=?', [sent_id, `${user.username} <${user.email}>`]);
-    }
+        if (!rows[0])
+            return null;
 
-    async sendEmail(mail_to, mail_from, reply_to, bcc, cc, subject, content) {
-        await db.execute('INSERT INTO sent (mail_to, mail_from, reply_to, bcc, cc, subject, content, time) VALUES(?, ?, ?, ?, ?, ?, ?, ?)', [
-            mail_to,
-            mail_from,
-            reply_to,
-            bcc,
-            cc,
-            subject,
-            content,
-            Date.now()
-        ]);
-    }
-
-    async getSent(email) {
-        const user = await this.getUserEmail(email);
-        const [rows] = await db.query('SELECT * FROM sent WHERE mail_from=?', [`${user.username} <${user.email}>`]);
-
-        return rows;
+        return rows[0].mail_boxes;
     }
 
     async login(email, password) {
-        const user = await this.getUserEmail(email);
+        const user = await this.getUser(email);
 
         if (!user || !hasher.compareHashes(password, user.passwd))
             return null;

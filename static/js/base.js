@@ -1,6 +1,31 @@
 const main = document.getElementById('main');
+const mail_boxes = document.getElementById('mail_boxes');
 let openComposes = 0;
 let composeIndex = 0;
+
+async function addMailBoxes() {
+    let index = 0;
+    const mailbox_req = await fetch('/api/get_mailboxes');
+    const mailboxes = await mailbox_req.json();
+
+    for (let mail_box of mailboxes) {
+        if (index) {
+            // Excuse my spelling.
+            let devidor = document.createElement('hr');
+            devidor.style.width = "100%";
+
+            mail_boxes.appendChild(devidor);
+        }
+
+        let element = document.createElement('a');
+        element.innerText = mail_box;
+        element.href = `/?mail_box=${index}`;
+
+        mail_boxes.appendChild(element);
+
+        index++;
+    }
+}
 
 function openCompose() {
     let element = document.createElement('iframe');
@@ -64,3 +89,5 @@ window.addEventListener('message', function(event) {
     if (event.data.type === 'hide-me')
         hideCompose(event.data.compose);
 });
+
+addMailBoxes();

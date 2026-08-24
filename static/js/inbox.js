@@ -1,5 +1,8 @@
+const urlSearchParams = new URLSearchParams(window.location.search);
+const mail_box = urlSearchParams.get('mail_box') ?? 0;
+
 async function loadInbox() {
-    const emails_req = await fetch('/api/get_emails');
+    const emails_req = await fetch(`/api/get_emails`);
     const emails = await emails_req.json();
 
     const inbox = document.getElementById("inbox");
@@ -18,6 +21,9 @@ async function loadInbox() {
     emails.reverse();
 
     for (let email of emails) {
+        if (email.mail_box != mail_box)
+            continue;
+
         let element = document.createElement('div');
         let hr = document.createElement('hr');
         hr.style.width = "100%";
