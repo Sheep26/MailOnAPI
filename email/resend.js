@@ -39,7 +39,7 @@ export class EmailResend extends Email {
         if (!mail)
             return;
 
-        const references = [...mail.email_references ?? [], mail.message_id].join(' ');
+        const references = [...mail.email_references ?? "", mail.message_id].join(' ');
 
         const { data }  = await this.resend.emails.send({
             from: `${user.username} <${user.email}>`,
@@ -54,7 +54,7 @@ export class EmailResend extends Email {
         });
 
         console.log(`Email ${data.id} has been sent`);
-        this.database.addEmail(user.email, mail.reply_to, `${user.username} <${user.email}>`, user.email, JSON.stringify([]), JSON.stringify([]), data.id, null, null, `Re: ${mail.subject}`, content, null, references, 1);
+        this.database.addEmail(user.email, mail.reply_to, `${user.username} <${user.email}>`, user.email, JSON.stringify([]), JSON.stringify([]), data.id, null, null, `Re: ${mail.subject}`, content, null, [...mail.email_references ?? "", mail.message_id], 1);
     }
 
     async handle(body) {
