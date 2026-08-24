@@ -68,10 +68,13 @@ export class EmailResend extends Email {
 
         let references = data.headers.references ?? null;
 
-        if (typeof references == "string")
-            references = [references];
-
-        console.log(references);
+        if (references)
+            try {
+                references = JSON.parse(references);
+            } catch (error) {
+                if (error instanceof SyntaxError)
+                    references = [references];
+            }
 
         this.database.addEmail(data.to[0], data.to[0], data.headers.from, data.headers['return-path'], JSON.stringify(data.bcc), JSON.stringify(data.cc), data.id, data.message_id, data.html_format, data.subject, data.html, data.attachments, references, 0);
         console.log(`Email ${data.id} has been recieved from ${data.headers.from}`);
