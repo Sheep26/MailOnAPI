@@ -8,8 +8,10 @@ let email;
 
 async function loadEmail() {
     const email_req = await fetch(`/api/get_email?mail_id=${mail_id}`);
-    await fetch(`/api/mark_seen`, { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ 'mail_id': mail_id }) });
     email = await email_req.json();
+
+    if (!email.seen)
+        await fetch(`/api/mark_seen`, { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ 'mail_id': mail_id }) });
 
     const main_element = document.getElementById('email');
     const email_subject = document.getElementById('email-subject');
