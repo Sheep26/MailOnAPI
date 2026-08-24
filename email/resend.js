@@ -17,6 +17,7 @@ export class EmailResend extends Email {
         });
 
         console.log(`Email ${data.id} has been sent`);
+        this.database.addEmail(from, to, from, null, reply_to, JSON.stringify([]), JSON.stringify([]), data.id, null, null, subject, text, null, null, 1);
     }
 
     async sendHTML(from, to, reply_to, subject, html) {
@@ -29,6 +30,7 @@ export class EmailResend extends Email {
         });
 
         console.log(`Email ${data.id} has been sent`);
+        this.database.addEmail(from, to, from, null, reply_to, JSON.stringify([]), JSON.stringify([]), data.id, null, null, subject, html, null, null, 1);
     }
 
     async reply(user, mail_id, content) {
@@ -36,6 +38,8 @@ export class EmailResend extends Email {
 
         if (!mail)
             return;
+
+        const references = [...mail.email_references, mail.message_id].join(' ');
 
         const { data }  = await this.resend.emails.send({
             from: `${user.username} <${user.email}>`,
@@ -45,11 +49,12 @@ export class EmailResend extends Email {
             text: content,
             headers: {
                 'In-Reply-To': mail.message_id,
-                'References': [...mail.email_references, mail.message_id].join(' ')
+                'References': references
             }
         });
 
         console.log(`Email ${data.id} has been sent`);
+        this.database.addEmail(user.email, mail.reply_to, user.email, null, user.email, JSON.stringify([]), JSON.stringify([]), data.id, null, null, `Re: ${mail.subject}`, content, null, references, 1);
     }
 
     async handle(body) {
