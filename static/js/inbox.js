@@ -45,7 +45,10 @@ async function loadInbox() {
         const parsed = parseEmailAddress(email.mail_from);
 
         element.innerHTML = `
-        <div class="flex column">
+        <div class="flex column" ${function () {
+            if (email.seen)
+                return 'style="color: grey;"'
+        }()}>
             <span>${parsed.name ?? parsed.email}</span>
             <span>${email.subject}</span>
         </div>

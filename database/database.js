@@ -9,8 +9,8 @@ export class DatabaseManager {
         initDB();
     }
 
-    async addEmail(belongs_to, to, from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, references, mail_box) {
-        await db.execute('INSERT INTO emails (belongs_to, mail_to, mail_from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, email_references, time, mail_box) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+    async addEmail(belongs_to, to, from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, references, mail_box, seen=0) {
+        await db.execute('INSERT INTO emails (belongs_to, mail_to, mail_from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, email_references, time, mail_box, seen) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
             belongs_to,
             to,
             from,
@@ -25,7 +25,8 @@ export class DatabaseManager {
             attachments,
             references,
             Date.now(),
-            mail_box
+            mail_box,
+            seen
         ]);
     }
 
@@ -77,6 +78,10 @@ export class DatabaseManager {
             return null;
 
         return rows[0].mail_boxes;
+    }
+
+    async markSeen(mail_id, email) {
+        await db.execute("UPDATE emails SET seen=1 WHERE mail_id=? AND belongs_to=?", [mail_id, email]);
     }
 
     async login(email, password) {

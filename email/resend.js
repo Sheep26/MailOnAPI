@@ -17,7 +17,7 @@ export class EmailResend extends Email {
         });
 
         console.log(`Email ${data.id} has been sent`);
-        this.database.addEmail(user.email, to, `${user.username} <${user.email}>`, reply_to, JSON.stringify([]), JSON.stringify([]), data.id, null, null, subject, text, null, null, 1);
+        this.database.addEmail(user.email, to, `${user.username} <${user.email}>`, reply_to, JSON.stringify([]), JSON.stringify([]), data.id, null, null, subject, text, null, null, 1, 1);
     }
 
     async sendHTML(user, to, reply_to, subject, html) {
@@ -30,7 +30,7 @@ export class EmailResend extends Email {
         });
 
         console.log(`Email ${data.id} has been sent`);
-        this.database.addEmail(user.email, to, `${user.username} <${user.email}>`, reply_to, JSON.stringify([]), JSON.stringify([]), data.id, null, null, subject, html, null, null, 1);
+        this.database.addEmail(user.email, to, `${user.username} <${user.email}>`, reply_to, JSON.stringify([]), JSON.stringify([]), data.id, null, null, subject, html, null, null, 1, 1);
     }
 
     async reply(user, mail_id, content) {
@@ -54,7 +54,7 @@ export class EmailResend extends Email {
         });
 
         console.log(`Email ${data.id} has been sent`);
-        this.database.addEmail(user.email, mail.reply_to, `${user.username} <${user.email}>`, user.email, JSON.stringify([]), JSON.stringify([]), data.id, null, null, `Re: ${mail.subject}`, content, null, [...mail.email_references ?? "", mail.message_id], 1);
+        this.database.addEmail(user.email, mail.reply_to, `${user.username} <${user.email}>`, user.email, JSON.stringify([]), JSON.stringify([]), data.id, null, null, `Re: ${mail.subject}`, content, null, [...mail.email_references ?? "", mail.message_id], 1, 1);
     }
 
     async handle(body) {
