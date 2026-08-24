@@ -3,6 +3,18 @@ const mail_boxes = document.getElementById('mail_boxes');
 let openComposes = 0;
 let composeIndex = 0;
 
+function parseEmailAddress(value) {
+    const match = value.match(/^\s*(.*?)\s*<([^<>]+)>\s*$/);
+    let values = {name: null, email: value.trim()};
+
+    if (match) {
+        values.name = match[1].trim().replaceAll("\"", "");
+        values.email = match[2].trim();
+    }
+
+    return values;
+};
+
 async function addMailBoxes() {
     let index = 0;
     const mailbox_req = await fetch('/api/get_mailboxes');

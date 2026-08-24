@@ -15,11 +15,11 @@ export class Email {
         this.database = database;
     }
 
-    async send(from, to, reply_to, subject, text) {
+    async send(user, to, reply_to, subject, text) {
         
     }
 
-    async sendHTML(from, to, reply_to, subject, html) {
+    async sendHTML(user, to, reply_to, subject, html) {
         
     }
 

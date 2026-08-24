@@ -14,10 +14,11 @@ async function loadEmail() {
     const email_name = document.getElementById('email-name');
     const email_email = document.getElementById('email-email');
 
+    const parsed = parseEmailAddress(email.mail_from);
+
     email_subject.innerText = email.subject;
-    email_name.innerText = email.name_from ?? email.mail_from;
-    email_email.innerText = email.name_from ? `<${email.mail_from}>` : "";
-    console.log(email.attachments);
+    email_name.innerText = parsed.name ?? parsed.email;
+    email_email.innerText = parsed.name ? `<${parsed.email}>` : "";
 
     main_element.innerHTML = `
     <span>${email.content}</span>

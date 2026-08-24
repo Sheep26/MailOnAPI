@@ -9,12 +9,11 @@ export class DatabaseManager {
         initDB();
     }
 
-    async addEmail(belongs_to, to, from, name_from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, references, mail_box) {
-        await db.execute('INSERT INTO emails (belongs_to, mail_to, mail_from, name_from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, email_references, time, mail_box) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+    async addEmail(belongs_to, to, from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, references, mail_box) {
+        await db.execute('INSERT INTO emails (belongs_to, mail_to, mail_from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, email_references, time, mail_box) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
             belongs_to,
             to,
             from,
-            name_from ?? null,
             reply_to,
             bcc,
             cc,

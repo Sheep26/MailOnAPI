@@ -7,9 +7,9 @@ export class EmailResend extends Email {
         this.resend = new Resend(auth);
     }
 
-    async send(from, to, reply_to, subject, text) {
+    async send(user, to, reply_to, subject, text) {
         const { data } = await this.resend.emails.send({
-            from: from,
+            from: `${user.username} <${session.user_id}>`,
             to: to,
             replyTo: reply_to,
             subject: subject,
@@ -17,12 +17,12 @@ export class EmailResend extends Email {
         });
 
         console.log(`Email ${data.id} has been sent`);
-        this.database.addEmail(from, to, from, null, reply_to, JSON.stringify([]), JSON.stringify([]), data.id, null, null, subject, text, null, null, 1);
+        this.database.addEmail(user.email, to, user.email, null, reply_to, JSON.stringify([]), JSON.stringify([]), data.id, null, null, subject, text, null, null, 1);
     }
 
-    async sendHTML(from, to, reply_to, subject, html) {
+    async sendHTML(user, to, reply_to, subject, html) {
         const { data } = await this.resend.emails.send({
-            from: from,
+            from: `${user.username} <${session.user_id}>`,
             to: to,
             replyTo: reply_to,
             subject: subject,
@@ -66,7 +66,7 @@ export class EmailResend extends Email {
 
         let parsed = parseEmailAddress(data.headers.from);
 
-        this.database.addEmail(data.to[0], data.to[0], parsed.email, parsed.name, data.headers['return-path'], JSON.stringify(data.bcc), JSON.stringify(data.cc), data.id, data.message_id, data.html_format, data.subject, data.html, data.attachments, data.headers.references ?? null, 0);
+        this.database.addEmail(data.to[0], data.to[0], data.headers.from, data.headers['return-path'], JSON.stringify(data.bcc), JSON.stringify(data.cc), data.id, data.message_id, data.html_format, data.subject, data.html, data.attachments, data.headers.references ?? null, 0);
         console.log(`Email ${data.id} has been recieved from ${data.headers.from}`);
     }
 

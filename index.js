@@ -37,7 +37,7 @@ app.post("/api/send", async (req, res) => {
 
     const user = await database.getUser(session.user_id);
 
-    await email.send(`${user.username} <${session.user_id}>`, req.body.to, session.user_id, req.body.subject, req.body.content);
+    await email.send(user, req.body.to, session.user_id, req.body.subject, req.body.content);
     res.redirect('/');
 });
 

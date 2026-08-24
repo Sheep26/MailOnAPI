@@ -42,9 +42,11 @@ async function loadInbox() {
 
         element.onclick = function() {window.location = `/view_email?mail_id=${email.mail_id}&mail_box=${mail_box}`};
 
+        const parsed = parseEmailAddress(email.mail_from);
+
         element.innerHTML = `
         <div class="flex column">
-            <span>${email.name_from ?? email.mail_from}</span>
+            <span>${parsed.name ?? parsed.email}</span>
             <span>${email.subject}</span>
         </div>
 
