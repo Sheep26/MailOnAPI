@@ -51,7 +51,7 @@ async function deleteEmail() {
         })});
 
     if (delete_req.status == 200)
-        window.location = "/";
+        window.location = `/?mail_box=${mail_box}`;
 }
 
 loadEmail();
