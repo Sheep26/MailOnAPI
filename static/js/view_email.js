@@ -1,9 +1,14 @@
 const urlParams = new URLSearchParams(window.location.search);
+const mail_box = urlParams.get('mail_box') ?? 0;
+
+document.getElementById('back').onclick = function () { window.location = `/?mail_box=${mail_box}` };
+
 let email;
 
 async function loadEmail() {
     const email_req = await fetch(`/api/get_email?mail_id=${urlParams.get('mail_id')}`);
     email = await email_req.json();
+
     const main_element = document.getElementById('email');
     const email_subject = document.getElementById('email-subject');
     const email_name = document.getElementById('email-name');

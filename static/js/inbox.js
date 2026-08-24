@@ -40,7 +40,7 @@ async function loadInbox() {
         element.classList.add("email-hoverable");
         element.classList.add("unselectable");
 
-        element.onclick = function() {window.location = `/view_email?mail_id=${email.mail_id}`};
+        element.onclick = function() {window.location = `/view_email?mail_id=${email.mail_id}&mail_box=${mail_box}`};
 
         element.innerHTML = `
         <div class="flex column">
