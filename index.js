@@ -124,7 +124,17 @@ app.post('/api/add_mailbox', async (req, res) => {
     if (!session)
         return res.sendStatus(401);
 
-    await database.addMailBox(session.user_id, req.body.mail_box);
+    await database.addMailBox(session.user_id, req.body.mailbox);
+    res.sendStatus(200);
+});
+
+app.post('/api/remove_mailbox', async (req, res) => {
+    const session = await sessionManager.getSession(req.cookies.session);
+
+    if (!session)
+        return res.sendStatus(401);
+
+    await database.deleteMailBox(session.user_id, req.body.mailbox);
     res.sendStatus(200);
 });
 

@@ -1,11 +1,18 @@
 const urlSearchParams = new URLSearchParams(window.location.search);
-const mail_box = urlSearchParams.get('mail_box') ?? 0;
+let mail_box = urlSearchParams.get('mail_box') ?? 0;
+
+const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
 async function loadInbox() {
     const emails_req = await fetch(`/api/get_emails`);
     const emails = await emails_req.json();
 
     const inbox = document.getElementById("inbox");
+
+    const mailbox_req = await fetch('/api/get_mailboxes');
+    const mailboxes = await mailbox_req.json();
+
+    mail_box = clamp(mail_box, 0, mailboxes.length - 1);
 
     if (!emails.length) {
         inbox.innerHTML = `<span class="unselectable bold">Nothing yet</span>`;

@@ -16,26 +16,28 @@ function parseEmailAddress(value) {
 };
 
 async function addMailBoxes() {
-    let index = 0;
     const mailbox_req = await fetch('/api/get_mailboxes');
     const mailboxes = await mailbox_req.json();
 
-    for (let mail_box of mailboxes) {
-        if (index) {
-            // Excuse my spelling.
-            let devidor = document.createElement('hr');
-            devidor.style.width = "100%";
+    mailboxes.reverse();
 
-            mail_boxes.appendChild(devidor);
-        }
+    for (let mail_box in mailboxes) {
+        // Excuse my spelling.
+        let devidor = document.createElement('hr');
+        devidor.style.width = "100%";
+
+        mail_boxes.prepend(devidor);
 
         let element = document.createElement('a');
-        element.innerText = mail_box;
-        element.href = `/?mail_box=${index}`;
+        element.classList.add('flex');
+        element.classList.add('row');
+        element.classList.add('vcentered');
+        element.classList.add('space-between');
 
-        mail_boxes.appendChild(element);
+        element.innerHTML = `<span>${mailboxes[mail_box]}</span> <img src="/static/assets/delete_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" width="20px" onclick="deleteMailbox(${mailboxes.length - 1 - mail_box}, event)"></img>` ;
+        element.href = `/?mail_box=${mailboxes.length - 1 - mail_box}`;
 
-        index++;
+        mail_boxes.prepend(element);
     }
 }
 
@@ -89,6 +91,20 @@ function hideCompose(compose) {
     openComposes--;
 
     moveComposes();
+}
+
+async function newMailBox() {
+    const mailbox = document.getElementById('new_mailbox').value;
+
+    await fetch(`/api/add_mailbox`, { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ 'mailbox': mailbox }) });
+    window.location.reload();
+}
+
+async function deleteMailbox(mailbox, event) {
+    event.preventDefault();
+
+    await fetch(`/api/remove_mailbox`, { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ 'mailbox': mailbox }) });
+    window.location.reload();
 }
 
 window.addEventListener('message', function(event) {

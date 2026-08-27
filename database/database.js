@@ -81,7 +81,8 @@ export class DatabaseManager {
     }
 
     async addMailBox(email, mail_box) {
-        const [rows] = await db.query('SELECT mail_boxes FROM users WHERE email=?');
+        const user = await this.getUser(email);
+        const [rows] = await db.query('SELECT mail_boxes FROM users WHERE email=?', [email]);
 
         if (!rows[0])
             return;
@@ -101,7 +102,9 @@ export class DatabaseManager {
     }
 
     async deleteMailBox(email, mail_box) {
-        await db.execute("UPDATE users SET mail_boxes=JSON_REMOVE(mail_boxes, '$[?]')  WHERE email=?", [mail_box, email]);
+        const path = `$[${mail_box}]`;
+
+        await db.execute("UPDATE users SET mail_boxes=JSON_REMOVE(mail_boxes, ?) WHERE email=?", [path, email]); // Ohh no sql injection.
     }
 
     async markSeen(mail_id, email) {
