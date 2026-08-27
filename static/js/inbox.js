@@ -3,6 +3,22 @@ let mail_box = urlSearchParams.get('mail_box') ?? 0;
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
+async function deleteEmail(mail_id, event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const delete_req = await fetch(`/api/delete_email`, { method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            mail_id: mail_id
+        })});
+
+    if (delete_req.status == 200)
+        window.location.reload();
+}
+
 async function loadInbox() {
     const emails_req = await fetch(`/api/get_emails`);
     const emails = await emails_req.json();
@@ -47,20 +63,23 @@ async function loadInbox() {
         element.classList.add("email-hoverable");
         element.classList.add("unselectable");
 
+        if (email.seen)
+            element.classList.add('readmsg');
+
         element.onclick = function() {window.location = `/view_email?mail_id=${email.mail_id}&mail_box=${mail_box}`};
 
         const parsed = parseEmailAddress(email.mail_from);
 
         element.innerHTML = `
-        <div class="flex column" ${function () {
-            if (email.seen)
-                return 'style="color: grey;"'
-        }()}>
+        <div class="flex column">
             <span>${parsed.name ?? parsed.email}</span>
             <span>${email.subject}</span>
         </div>
 
-        <span>${time_thingy}</span>
+        <div class="flex row vcentered gap-1">
+            <img src="/static/assets/delete_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" onclick="deleteEmail('${email.mail_id}', event)"></img>
+            <span>${time_thingy}</span>
+        </div>
         `;
 
         if (index > 0)

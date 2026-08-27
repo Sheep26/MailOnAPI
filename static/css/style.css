@@ -48,6 +48,10 @@ main {
     align-items: center;
 }
 
+.hcentered {
+    justify-content: center;
+}
+
 .flex {
     display: flex;
 }
@@ -119,6 +123,10 @@ main {
 
 .space-between {
     justify-content: space-between;
+}
+
+.readmsg {
+    color: rgb(201, 201, 201);
 }
 
 .sidebar {
