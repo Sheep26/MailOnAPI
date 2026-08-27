@@ -101,7 +101,7 @@ export class DatabaseManager {
     }
 
     async deleteMailBox(email, mail_box) {
-        await db.execute("UPDATE users SET mail_boxes=JSON_REMOVE(mail_boxes, JSON_UNQUOTE(JSON_SEARCH(json_column, 'one', ?, NULL, '$[*].id'))) WHERE JSON_SEARCH(json_column, 'one', ?, NULL, '$[*].id') IS NOT NULL AND email=?", [mail_box, mail_box, email]);
+        await db.execute("UPDATE users SET mail_boxes=JSON_REMOVE(mail_boxes, '$[?]')  WHERE email=?", [mail_box, email]);
     }
 
     async markSeen(mail_id, email) {
