@@ -16,8 +16,17 @@ export class EmailResend extends Email {
             text: text
         });
 
+        const mailboxes = await this.database.getMailBoxes(user.email);
         console.log(`Email ${data.id} has been sent`);
-        this.database.addEmail(user.email, to, `${user.username} <${user.email}>`, reply_to, JSON.stringify([]), JSON.stringify([]), data.id, null, null, subject, text, null, null, 1, 1);
+
+        let sent_box = -1;
+
+        for (let mailbox in mailboxes)
+            if (mailboxes[mailbox].toLowerCase() == 'sent')
+                sent_box = mailbox;
+
+        if (sent_box != -1)
+            this.database.addEmail(user.email, to, `${user.username} <${user.email}>`, reply_to, JSON.stringify([]), JSON.stringify([]), data.id, null, null, subject, text, null, null, 1, sent_box);
     }
 
     async sendHTML(user, to, reply_to, subject, html) {
@@ -30,7 +39,16 @@ export class EmailResend extends Email {
         });
 
         console.log(`Email ${data.id} has been sent`);
-        this.database.addEmail(user.email, to, `${user.username} <${user.email}>`, reply_to, JSON.stringify([]), JSON.stringify([]), data.id, null, null, subject, html, null, null, 1, 1);
+
+        const mailboxes = await this.database.getMailBoxes(user.email);
+        let sent_box = -1;
+
+        for (let mailbox in mailboxes)
+            if (mailboxes[mailbox].toLowerCase() == 'sent')
+                sent_box = mailbox;
+
+        if (sent_box != -1)
+            this.database.addEmail(user.email, to, `${user.username} <${user.email}>`, reply_to, JSON.stringify([]), JSON.stringify([]), data.id, null, null, subject, html, null, null, 1, sent_box);
     }
 
     async reply(user, mail_id, content) {
@@ -54,7 +72,16 @@ export class EmailResend extends Email {
         });
 
         console.log(`Email ${data.id} has been sent`);
-        this.database.addEmail(user.email, mail.reply_to, `${user.username} <${user.email}>`, user.email, JSON.stringify([]), JSON.stringify([]), data.id, null, null, `Re: ${mail.subject}`, content, null, [...mail.email_references ?? "", mail.message_id], 1, 1);
+
+        const mailboxes = await this.database.getMailBoxes(user.email);
+        let sent_box = -1;
+
+        for (let mailbox in mailboxes)
+            if (mailboxes[mailbox].toLowerCase() == 'sent')
+                sent_box = mailbox;
+
+        if (sent_box != -1)
+            this.database.addEmail(user.email, mail.reply_to, `${user.username} <${user.email}>`, user.email, JSON.stringify([]), JSON.stringify([]), data.id, null, null, `Re: ${mail.subject}`, content, null, [...mail.email_references ?? "", mail.message_id], 1, sent_box);
     }
 
     async handle(body) {
@@ -76,7 +103,16 @@ export class EmailResend extends Email {
                     references = [references];
             }
 
-        this.database.addEmail(data.to[0], data.to[0], data.headers.from, data.headers['return-path'], JSON.stringify(data.bcc), JSON.stringify(data.cc), data.id, data.message_id, data.html_format, data.subject, data.html, data.attachments, references, 0);
+        const mailboxes = await this.database.getMailBoxes(user.email);
+        let inbox = -1;
+
+        for (let mailbox in mailboxes)
+            if (mailboxes[mailbox].toLowerCase() == 'inbox')
+                inbox = mailbox;
+
+        if (inbox != -1)
+            this.database.addEmail(data.to[0], data.to[0], data.headers.from, data.headers['return-path'], JSON.stringify(data.bcc), JSON.stringify(data.cc), data.id, data.message_id, data.html_format, data.subject, data.html, data.attachments, references, inbox);
+
         console.log(`Email ${data.id} has been recieved from ${data.headers.from}`);
     }
 
