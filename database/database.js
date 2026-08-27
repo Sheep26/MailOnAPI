@@ -94,6 +94,9 @@ export class DatabaseManager {
     }
 
     async deleteMailBox(email, mail_box) {
+        if (mail_box.toLowerCase() == "inbox" || mail_box.toLowerCase() == "sent")
+            return;
+
         await db.execute("UPDATE users SET mail_boxes=JSON_REMOVE(mail_boxes, REPLACE(JSON_SEARCH(mail_boxes, 'one', ?))) WHERE JSON_SEARCH(mail_boxes, 'one', ?) IS NOT NULL AND email=?", [mail_box, mail_box, email]);
     }
 
