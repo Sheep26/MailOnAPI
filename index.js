@@ -118,6 +118,16 @@ app.post('/api/mark_seen', async (req, res) => {
     res.sendStatus(200);
 });
 
+app.post('/api/add_mailbox', async (req, res) => {
+    const session = await sessionManager.getSession(req.cookies.session);
+
+    if (!session)
+        return res.sendStatus(401);
+
+    await database.addMailBox(session.user_id, req.body.mail_box);
+    res.sendStatus(200);
+});
+
 app.get('/attachment/:email_id/:attachment_id', async (req, res) => {
     const session = await sessionManager.getSession(req.cookies.session);
     const { email_id, attachment_id } = req.params;

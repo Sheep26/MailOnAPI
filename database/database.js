@@ -80,6 +80,23 @@ export class DatabaseManager {
         return rows[0].mail_boxes;
     }
 
+    async addMailBox(email, mail_box) {
+        const [rows] = await db.query('SELECT mail_boxes FROM users WHERE email=?');
+
+        if (!rows[0])
+            return;
+
+        for (let mailbox of user.mail_boxes)
+            if (mailbox == mail_box)
+                return;
+
+        await db.execute("UPDATE users SET mail_boxes=JSON_ARRAY_APPEND(mail_boxes, '$', ?) WHERE email=?", [mail_box, email])
+    }
+
+    async deleteMailBox(email, mail_box) {
+        await db.execute("UPDATE users SET mail_boxes=JSON_REMOVE(mail_boxes, REPLACE(JSON_SEARCH(mail_boxes, 'one', ?))) WHERE JSON_SEARCH(mail_boxes, 'one', ?) IS NOT NULL AND email=?", [mail_box, mail_box, email]);
+    }
+
     async markSeen(mail_id, email) {
         await db.execute("UPDATE emails SET seen=1 WHERE mail_id=? AND belongs_to=?", [mail_id, email]);
     }
