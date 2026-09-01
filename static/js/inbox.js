@@ -1,5 +1,4 @@
 const urlSearchParams = new URLSearchParams(window.location.search);
-let mail_box = urlSearchParams.get('mail_box') ?? 0;
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
@@ -28,8 +27,7 @@ async function loadInbox() {
     const mailbox_req = await fetch('/api/get_mailboxes');
     const mailboxes = await mailbox_req.json();
 
-    mail_box = clamp(mail_box, 0, mailboxes.length - 1);
-
+    const mail_box = clamp(urlSearchParams.get('mail_box') ?? 0, 0, mailboxes.length - 1);
     const mail_box_emails = emails.filter((email) => email.mail_box == mail_box);
 
     if (!mail_box_emails.length) {
