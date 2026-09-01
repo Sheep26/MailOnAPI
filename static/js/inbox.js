@@ -30,8 +30,11 @@ async function loadInbox() {
 
     mail_box = clamp(mail_box, 0, mailboxes.length - 1);
 
-    if (!emails.length) {
+    const mail_box_emails = emails.filter((email) => email.mail_box == mail_box);
+
+    if (!mail_box_emails.length) {
         inbox.innerHTML = `<span class="unselectable bold">Nothing yet</span>`;
+
         return;
     }
 
@@ -41,12 +44,9 @@ async function loadInbox() {
     const ms_in_hour = 60 * ms_in_minute;
     const ms_in_day = 24 * ms_in_hour;
 
-    emails.reverse();
+    mail_box_emails.reverse();
 
-    for (let email of emails) {
-        if (email.mail_box != mail_box)
-            continue;
-
+    for (let email of mail_box_emails) {
         let element = document.createElement('div');
         let hr = document.createElement('hr');
         hr.style.width = "100%";
