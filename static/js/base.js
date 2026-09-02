@@ -1,5 +1,6 @@
 const main = document.getElementById('main');
 const mail_boxes = document.getElementById('mail_boxes');
+let mailboxes = null;
 let openComposes = 0;
 let composeIndex = 0;
 
@@ -17,7 +18,7 @@ function parseEmailAddress(value) {
 
 async function addMailBoxes() {
     const mailbox_req = await fetch('/api/get_mailboxes');
-    const mailboxes = await mailbox_req.json();
+    mailboxes = await mailbox_req.json();
 
     mailboxes.reverse();
 
