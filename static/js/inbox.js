@@ -1,7 +1,5 @@
 const urlSearchParams = new URLSearchParams(window.location.search);
 
-const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
-
 function moveElementTo(a, b) {
     const targetRect = b.getBoundingClientRect();
 
@@ -60,9 +58,6 @@ async function moveEmail(mail_id, event) {
     </div>
     */
 
-    const mail_boxes_req = await fetch('/api/get_mailboxes');
-    const user_mail_boxes = await mail_boxes_req.json();
-
     let element = document.createElement('div');
 
     element.classList.add('flex');
@@ -83,11 +78,11 @@ async function moveEmail(mail_id, event) {
         ${function () {
             let out = ``;
 
-            for (let mail_box in user_mail_boxes) {
+            for (let mail_box of mailboxes) {
                 out += `
                 <div class="flex row centered">
-                    <label for="${mail_box}">${user_mail_boxes[mail_box]}</label><br>
-                    <input type="radio" name="mail_box" value="${mail_box}">
+                    <label for="${mail_box.uid}">${mail_box.name}</label><br>
+                    <input type="radio" name="mail_box" value="${mail_box.uid}">
                 </div>
                 `;
             }
@@ -112,15 +107,22 @@ async function loadInbox() {
 
     const inbox = document.getElementById("inbox");
 
-    const mailbox_req = await fetch('/api/get_mailboxes');
-    const mailboxes = await mailbox_req.json();
+    const mail_box = urlSearchParams.get('mail_box') ? await async function() {
+        const box_req = await fetch(`/api/get_mailbox?uid=${urlSearchParams.get('mail_box')}`);
+        const box = box_req.json();
 
-    const mail_box = clamp(urlSearchParams.get('mail_box') ?? 0, 0, mailboxes.length - 1);
-    const mail_box_emails = emails.filter((email) => email.mail_box == mail_box);
+        return box;
+    }() : await async function() {
+        const box_req = await fetch(`/api/get_mailbox?box=Inbox`);
+        const box = box_req.json();
 
-    document.getElementById('mailbox-text').innerText = mailboxes[mail_box];
+        return box;
+    }();
 
-    document.getElementById(`${mailboxes[mail_box]}-side-element`).classList.add('open-box');
+    const mail_box_emails = emails.filter((email) => email.mail_box == mail_box.uid);
+
+    document.getElementById('mailbox-text').innerText = mail_box.name;
+    document.getElementById(`${mail_box.uid}-side-element`).classList.add('open-box');
 
     if (!mail_box_emails.length) {
         inbox.innerHTML = `<span class="unselectable bold">Nothing yet</span>`;

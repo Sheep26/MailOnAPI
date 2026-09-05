@@ -1,6 +1,7 @@
 import { db, initDB } from './connection.js';
 import { BcryptManager, BcryptCache } from './encryption.js';
 import { Session } from '../sessions/sessionManager.js';
+import crypto from 'crypto';
 
 const hasher = new BcryptManager();
 
@@ -57,7 +58,10 @@ export class DatabaseManager {
         if (rows[0])
             return false;
 
-        await db.execute('INSERT INTO users (username, passwd, email, mail_boxes) VALUES (?, ?, ?, ?)', [username, await hasher.hash(passwd), email, ['Inbox', 'Sent']]);
+        await db.execute('INSERT INTO users (username, passwd, email) VALUES (?, ?, ?)', [username, await hasher.hash(passwd), email]);
+        await this.addMailBox(email, 'Inbox');
+        await this.addMailBox(email, 'Sent');
+
         return true;
     }
 
@@ -71,40 +75,37 @@ export class DatabaseManager {
         await db.execute('DELETE FROM emails WHERE mail_id=? AND belongs_to=?', [mail_id, user_email]);
     }
 
+    async getMailBox(email, name) {
+        const [rows] = await db.query('SELECT * FROM mailboxes WHERE belongs_to=? AND name=?', [email, name]);
+
+        return rows[0];
+    }
+
+    async getMailBoxUID(email, uid) {
+        const [rows] = await db.query('SELECT * FROM mailboxes WHERE belongs_to=? AND uid=?', [email, uid]);
+
+        return rows[0];
+    }
+
     async getMailBoxes(email) {
-        const [rows] = await db.query("SELECT mail_boxes FROM users WHERE email=?", [email]);
+        const [rows] = await db.query("SELECT * FROM mailboxes WHERE belongs_to=?", [email]);
 
-        if (!rows[0])
-            return null;
-
-        return rows[0].mail_boxes;
+        return rows;
     }
 
-    async addMailBox(email, mail_box) {
-        const user = await this.getUser(email);
-        const [rows] = await db.query('SELECT mail_boxes FROM users WHERE email=?', [email]);
+    async addMailBox(email, name) {
+        const [rows] = await db.query('SELECT * FROM mailboxes WHERE belongs_to=? AND name=?', [email, name]);
 
-        if (!rows[0])
+        if (rows[0])
             return;
 
-        for (let mailbox of user.mail_boxes)
-            if (mailbox == mail_box)
-                return;
+        const allBoxes = this.getMailBoxes(email);
 
-        await db.execute("UPDATE users SET mail_boxes=JSON_ARRAY_APPEND(mail_boxes, '$', ?) WHERE email=?", [mail_box, email])
+        await db.execute("INSERT INTO mailboxes (belongs_to, name, uid) VALUES (?, ?, ?)", [email, name, crypto.randomBytes(4).readUint32BE()])
     }
 
-    async deleteMailBoxName(email, mail_box) {
-        if (mail_box.toLowerCase() == "inbox" || mail_box.toLowerCase() == "sent")
-            return;
-
-        await db.execute("UPDATE users SET mail_boxes=JSON_REMOVE(mail_boxes, REPLACE(JSON_SEARCH(mail_boxes, 'one', ?))) WHERE JSON_SEARCH(mail_boxes, 'one', ?) IS NOT NULL AND email=?", [mail_box, mail_box, email]);
-    }
-
-    async deleteMailBox(email, mail_box) {
-        const path = `$[${mail_box}]`;
-
-        await db.execute("UPDATE users SET mail_boxes=JSON_REMOVE(mail_boxes, ?) WHERE email=?", [path, email]); // Ohh no sql injection.
+    async deleteMailBox(email, name) {
+        await db.execute('DELETE FROM mailboxes WHERE belongs_to=? AND name=?', [email, name]);
     }
 
     async moveMail(email, mail_id, mail_box) {
