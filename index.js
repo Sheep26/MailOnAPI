@@ -160,6 +160,25 @@ app.post('/api/move_mail', async (req, res) => {
     res.sendStatus(200);
 });
 
+app.get('/api/get_user', async (req, res) => {
+    const session = await sessionManager.getSession(req.cookies.session);
+
+    if(!session)
+        return res.sendStatus(401);
+
+    res.send(await database.getUser(session.user_id));
+});
+
+app.get('/api/logout', async (req, res) => {
+    const session = await sessionManager.getSession(req.cookies.session);
+
+    if(!session)
+        return res.sendStatus(401);
+
+    sessionManager.removeSession(session);
+    res.redirect('/');
+});
+
 app.get('/attachment/:email_id/:attachment_id', async (req, res) => {
     const session = await sessionManager.getSession(req.cookies.session);
     const { email_id, attachment_id } = req.params;

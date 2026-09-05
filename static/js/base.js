@@ -5,6 +5,8 @@ let mailboxes = null;
 let openComposes = 0;
 let composeIndex = 0;
 
+globalThis.listeners ??= [];
+
 function parseEmailAddress(value) {
     const match = value.match(/^\s*(.*?)\s*<([^<>]+)>\s*$/);
     let values = {name: null, email: value.trim()};
@@ -24,6 +26,14 @@ async function callListeners() {
     } catch (e) {
         console.log(e);
     }
+}
+
+async function setupName() {
+    const user_req = await fetch('/api/get_user');
+    const user = await user_req.json();
+
+    document.getElementById('user-email').innerText = user.email;
+    document.getElementById('user-name').innerText = user.username;
 }
 
 async function addMailBoxes() {
@@ -55,8 +65,6 @@ async function addMailBoxes() {
 
         mail_boxes.prepend(element);
     }
-
-    await callListeners();
 }
 
 function openCompose() {
@@ -125,6 +133,10 @@ async function deleteMailbox(mailbox, event) {
     window.location.reload();
 }
 
+function logout() {
+    window.location = '/api/logout';
+}
+
 window.addEventListener('message', function(event) {
     if (event.origin != window.location.origin)
         return;
@@ -136,4 +148,6 @@ window.addEventListener('message', function(event) {
         hideCompose(event.data.compose);
 });
 
-addMailBoxes();
+globalThis.listeners.unshift(addMailBoxes);
+globalThis.listeners.unshift(setupName);
+callListeners();

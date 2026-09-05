@@ -3,7 +3,7 @@ const mail_id = urlParams.get('mail_id');
 let mail_box;
 let email;
 
-let listeners = [];
+globalThis.listeners = [];
 
 async function initMailBox() {
     mail_box = urlParams.get('mail_box') ?? await async function() {
@@ -69,5 +69,5 @@ async function deleteEmail() {
         window.location = `/?mail_box=${mail_box}`;
 }
 
-listeners.push(initMailBox);
-listeners.push(loadEmail);
+globalThis.listeners.push(initMailBox);
+globalThis.listeners.push(loadEmail);

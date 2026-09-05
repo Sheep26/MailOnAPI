@@ -10,15 +10,29 @@
     <body>
         <main class="font" id="main">
             <div class="flex row gap-2 grow">
-                <div class="card sidebar flex column gap-2 background-gradient">
-                    <div class="flex flex-end">
-                        <button class="compose" onclick="openCompose()">Compose</button>
+                <div class="card sidebar flex column space-between background-gradient">
+                    <div class="flex column gap-2">
+                        <div class="flex flex-end">
+                            <button class="compose" onclick="openCompose()">Compose</button>
+                        </div>
+
+                        <div class="flex column " id="mail_boxes">
+                            <div class="flex row gap-1 space-between vcentered">
+                                <input placeholder="New Mailbox" id="new_mailbox">
+                                <img src="/static/assets/add_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" onclick="newMailBox()" width="30px">
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="flex column " id="mail_boxes">
-                        <div class="flex row gap-1 space-between vcentered">
-                            <input placeholder="New Mailbox" id="new_mailbox">
-                            <img src="/static/assets/add_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" onclick="newMailBox()" width="30px">
+                    <div class="flex row space-between vcentered card" style="padding: 8px;">
+                        <div class="flex column gap-1">
+                            <span id="user-name" style="overflow: hidden; font-size: 0.95rem; max-width: 140px;">...</span>
+                            <span id="user-email" style="overflow: hidden; font-size: 1rem; max-width: 140px;">...</span>
+                        </div>
+
+                        <div class="flex row gap-1">
+                            <img src="/static/assets/settings_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" width="24">
+                            <img src="/static/assets/logout_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" onclick="logout()" width="24">
                         </div>
                     </div>
                 </div>

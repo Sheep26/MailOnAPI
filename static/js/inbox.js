@@ -1,6 +1,6 @@
 const urlSearchParams = new URLSearchParams(window.location.search);
 
-let listeners = [];
+globalThis.listeners = [];
 
 function moveElementTo(a, b) {
     const targetRect = b.getBoundingClientRect();
@@ -190,4 +190,4 @@ document.body.addEventListener('click', function(event) {
         document.querySelectorAll('.move-mail-element').forEach(element => element.remove());
 });
 
-listeners.push(loadInbox);
+globalThis.listeners.push(loadInbox);
