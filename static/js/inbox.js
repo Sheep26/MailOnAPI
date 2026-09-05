@@ -2,6 +2,16 @@ const urlSearchParams = new URLSearchParams(window.location.search);
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
+function moveElementTo(a, b) {
+    const targetRect = b.getBoundingClientRect();
+
+    const top = targetRect.top + window.scrollY;
+    const left = targetRect.left + window.scrollX;
+
+    a.style.top = top + 'px';
+    a.style.left = left - a.offsetWidth + 'px';
+}
+
 async function deleteEmail(mail_id, event) {
     event.preventDefault();
     event.stopPropagation();
@@ -15,14 +25,85 @@ async function deleteEmail(mail_id, event) {
         })});
 
     if (delete_req.status == 200)
-        window.location.reload();
+        document.getElementById(mail_id).remove();
+}
+
+async function submitMoveEmail(event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const data = new FormData(event.target);
+    const entries = Object.fromEntries(data.entries());
+
+    const move_req = await fetch(`/api/move_mail`, { method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            mail_id: entries.mail_id,
+            mail_box: entries.mail_box
+        })});
+
+    if (move_req.status == 200)
+        document.getElementById(entries.mail_id).remove();
+    else
+        document.getElementById(`${entries.mail_id}-move-element`).remove();
 }
 
 async function moveEmail(mail_id, event) {
     event.preventDefault();
     event.stopPropagation();
 
+    /*
+    <div class="flex card grow inbox scrollable column no-padding gap-2">
+        <h1>Hello world</h1>
+    </div>
+    */
 
+    const mail_boxes_req = await fetch('/api/get_mailboxes');
+    const user_mail_boxes = await mail_boxes_req.json();
+
+    let element = document.createElement('div');
+
+    element.classList.add('flex');
+    element.classList.add('card');
+    element.classList.add('scrollable');
+    element.classList.add('column');
+    element.classList.add('gap-1');
+    element.classList.add('move-mail-element');
+
+    element.style.position = "absolute";
+
+    element.id = `${mail_id}-move-element`;
+
+    element.innerHTML = `
+    <span>Move ${mail_id}</span>
+    <form class="flex column gap-1" onsubmit="submitMoveEmail(event)">
+        <input type="text" style="display: none;" name="mail_id" value="${mail_id}">
+        ${function () {
+            let out = ``;
+
+            for (let mail_box in user_mail_boxes) {
+                out += `
+                <div class="flex row centered">
+                    <label for="${mail_box}">${user_mail_boxes[mail_box]}</label><br>
+                    <input type="radio" name="mail_box" value="${mail_box}">
+                </div>
+                `;
+            }
+
+            return out;
+        }()}
+        <input type="submit">
+    </form>
+    `;
+
+    element.addEventListener('click', (event) => {
+        event.stopPropagation();
+    });
+
+    document.getElementById(mail_id).appendChild(element);
+    moveElementTo(element, document.getElementById(`${mail_id}-move`));
 }
 
 async function loadInbox() {
@@ -54,6 +135,8 @@ async function loadInbox() {
     for (let email of mail_box_emails) {
         let element = document.createElement('div');
 
+        element.id = email.mail_id;
+
         const time_diff = Date.now() - email.time;
 
         const minutes_ago = Math.floor((time_diff % ms_in_hour) / ms_in_minute);
@@ -82,7 +165,7 @@ async function loadInbox() {
         </div>
 
         <div class="flex row vcentered gap-1">
-            <img src="/static/assets/drive_file_move_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" onclick="moveEmail('${email.mail_id}', event)"></img>
+            <img src="/static/assets/drive_file_move_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" id="${email.mail_id}-move" onclick="moveEmail('${email.mail_id}', event)"></img>
             <img src="/static/assets/delete_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" onclick="deleteEmail('${email.mail_id}', event)"></img>
 
             <span>${time_thingy}</span>
@@ -93,5 +176,10 @@ async function loadInbox() {
         index++;
     }
 }
+
+document.body.addEventListener('click', function(event) {
+    if (!event.target.classList.contains('move-mail-element'))
+        document.querySelectorAll('.move-mail-element').forEach(element => element.remove());
+});
 
 loadInbox();

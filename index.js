@@ -138,6 +138,16 @@ app.post('/api/remove_mailbox', async (req, res) => {
     res.sendStatus(200);
 });
 
+app.post('/api/move_mail', async (req, res) => {
+    const session = await sessionManager.getSession(req.cookies.session);
+
+    if(!session)
+        return res.sendStatus(401);
+
+    await database.moveMail(session.user_id, req.body.mail_id, req.body.mail_box);
+    res.sendStatus(200);
+});
+
 app.get('/attachment/:email_id/:attachment_id', async (req, res) => {
     const session = await sessionManager.getSession(req.cookies.session);
     const { email_id, attachment_id } = req.params;

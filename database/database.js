@@ -107,6 +107,10 @@ export class DatabaseManager {
         await db.execute("UPDATE users SET mail_boxes=JSON_REMOVE(mail_boxes, ?) WHERE email=?", [path, email]); // Ohh no sql injection.
     }
 
+    async moveMail(email, mail_id, mail_box) {
+        await db.execute("UPDATE emails set mail_box=? WHERE belongs_to=? AND mail_id=?", [mail_box, email, mail_id]);
+    }
+
     async markSeen(mail_id, email) {
         await db.execute("UPDATE emails SET seen=1 WHERE mail_id=? AND belongs_to=?", [mail_id, email]);
     }
