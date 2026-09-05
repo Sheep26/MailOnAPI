@@ -21,7 +21,7 @@ export class EmailResend extends Email {
         const mailbox = await this.database.getMailBox(user.email, 'Sent');
 
         if (mailbox)
-            this.database.addEmail(user.email, to, `${user.username} <${user.email}>`, reply_to, JSON.stringify([]), JSON.stringify([]), data.id, null, null, subject, text, null, null, 1, mailbox.uid);
+            this.database.addEmail(user.email, to, `${user.username} <${user.email}>`, reply_to, JSON.stringify([]), JSON.stringify([]), data.id, null, null, subject, text, null, null, mailbox.uid, 1);
     }
 
     async sendHTML(user, to, reply_to, subject, html) {
@@ -38,7 +38,7 @@ export class EmailResend extends Email {
         const mailbox = await this.database.getMailBox(user.email, 'Sent');
 
         if (mailbox)
-            this.database.addEmail(user.email, to, `${user.username} <${user.email}>`, reply_to, JSON.stringify([]), JSON.stringify([]), data.id, null, null, subject, html, null, null, 1, mailbox.uid);
+            this.database.addEmail(user.email, to, `${user.username} <${user.email}>`, reply_to, JSON.stringify([]), JSON.stringify([]), data.id, null, null, subject, html, null, null, mailbox.uid, 1);
     }
 
     async reply(user, mail_id, content) {
@@ -66,7 +66,7 @@ export class EmailResend extends Email {
         const mailbox = await this.database.getMailBox(user.email, 'Sent');
 
         if (mailbox)
-            this.database.addEmail(user.email, mail.reply_to, `${user.username} <${user.email}>`, user.email, JSON.stringify([]), JSON.stringify([]), data.id, null, null, `Re: ${mail.subject}`, content, null, [...mail.email_references ?? "", mail.message_id], 1, mailbox.uid);
+            this.database.addEmail(user.email, mail.reply_to, `${user.username} <${user.email}>`, user.email, JSON.stringify([]), JSON.stringify([]), data.id, null, null, `Re: ${mail.subject}`, content, null, [...mail.email_references ?? "", mail.message_id], mailbox.uid, 1);
     }
 
     async handle(body) {
