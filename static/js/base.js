@@ -21,7 +21,7 @@ function parseEmailAddress(value) {
 
 async function callListeners() {
     try {
-        for (let listener of listeners)
+        for (let listener of globalThis.listeners)
             await listener();
     } catch (e) {
         console.log(e);
