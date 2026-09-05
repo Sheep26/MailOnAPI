@@ -17,6 +17,15 @@ function parseEmailAddress(value) {
     return values;
 };
 
+async function callListeners() {
+    try {
+        for (let listener of listeners)
+            await listener();
+    } catch (e) {
+        console.log(e);
+    }
+}
+
 async function addMailBoxes() {
     const mailbox_req = await fetch('/api/get_mailboxes');
     mailboxes = await mailbox_req.json();
@@ -46,6 +55,8 @@ async function addMailBoxes() {
 
         mail_boxes.prepend(element);
     }
+
+    await callListeners();
 }
 
 function openCompose() {

@@ -3,6 +3,8 @@ const mail_id = urlParams.get('mail_id');
 let mail_box;
 let email;
 
+let listeners = [];
+
 async function initMailBox() {
     mail_box = urlParams.get('mail_box') ?? await async function() {
         const box_req = await fetch(`/api/get_mailbox?box=Inbox`);
@@ -12,6 +14,9 @@ async function initMailBox() {
     }();
 
     document.getElementById('back').onclick = function () { window.location = `/?mail_box=${mail_box}` };
+    console.log(`${mail_box}-side-element`)
+    console.log(document.getElementById(`${mail_box}-side-element`));
+    document.getElementById(`${mail_box}-side-element`).classList.add('open-box');
 }
 
 async function loadEmail() {
@@ -64,5 +69,5 @@ async function deleteEmail() {
         window.location = `/?mail_box=${mail_box}`;
 }
 
-initMailBox();
-loadEmail();
+listeners.push(initMailBox);
+listeners.push(loadEmail);
