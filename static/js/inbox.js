@@ -160,7 +160,7 @@ async function loadInbox() {
         if (email.seen)
             element.classList.add('readmsg');
 
-        element.onclick = function() {window.location = `/view_email?mail_id=${email.mail_id}&mail_box=${mail_box}`};
+        element.onclick = function() {window.location = `/view_email?mail_id=${email.mail_id}&mail_box=${mail_box.uid}`};
 
         const parsed = parseEmailAddress(email.mail_from);
 

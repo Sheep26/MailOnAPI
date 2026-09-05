@@ -28,8 +28,6 @@ async function addMailBoxes() {
         let devidor = document.createElement('hr');
         devidor.style.width = "100%";
 
-        devidor.id = `${mail_box.uid}-side-dev`;
-
         mail_boxes.prepend(devidor);
 
         let element = document.createElement('a');

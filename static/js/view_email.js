@@ -1,10 +1,18 @@
 const urlParams = new URLSearchParams(window.location.search);
-const mail_box = urlParams.get('mail_box') ?? 0;
 const mail_id = urlParams.get('mail_id');
-
-document.getElementById('back').onclick = function () { window.location = `/?mail_box=${mail_box}` };
-
+let mail_box;
 let email;
+
+async function initMailBox() {
+    mail_box = urlParams.get('mail_box') ?? await async function() {
+        const box_req = await fetch(`/api/get_mailbox?box=Inbox`);
+        const box = box_req.json();
+
+        return box.uid;
+    }();
+
+    document.getElementById('back').onclick = function () { window.location = `/?mail_box=${mail_box}` };
+}
 
 async function loadEmail() {
     const email_req = await fetch(`/api/get_email?mail_id=${mail_id}`);
@@ -56,4 +64,5 @@ async function deleteEmail() {
         window.location = `/?mail_box=${mail_box}`;
 }
 
+initMailBox();
 loadEmail();
