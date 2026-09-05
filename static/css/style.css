@@ -297,6 +297,11 @@ iframe {
     border-width: 2px;
 }
 
+.open-box {
+    color: white !important;
+    font-weight: bold;
+}
+
 .email-nav {
     background-color: rgb(25, 25, 25);
     border-radius: 12px;

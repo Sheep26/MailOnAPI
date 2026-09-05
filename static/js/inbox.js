@@ -120,6 +120,8 @@ async function loadInbox() {
 
     document.getElementById('mailbox-text').innerText = mailboxes[mail_box];
 
+    document.getElementById(`${mailboxes[mail_box]}-side-element`).classList.add('open-box');
+
     if (!mail_box_emails.length) {
         inbox.innerHTML = `<span class="unselectable bold">Nothing yet</span>`;
 

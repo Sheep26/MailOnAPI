@@ -27,13 +27,20 @@ async function addMailBoxes() {
         let devidor = document.createElement('hr');
         devidor.style.width = "100%";
 
+        devidor.id = `${mailboxes[mail_box]}-side-dev`;
+
         mail_boxes.prepend(devidor);
 
         let element = document.createElement('a');
+
         element.classList.add('flex');
         element.classList.add('row');
         element.classList.add('vcentered');
         element.classList.add('space-between');
+
+        element.style.color = "lightgray";
+
+        element.id = `${mailboxes[mail_box]}-side-element`;
 
         element.innerHTML = `<span>${mailboxes[mail_box]}</span> <img src="/static/assets/delete_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" width="20px" onclick="deleteMailbox(${mailboxes.length - 1 - mail_box}, event)"></img>` ;
         element.href = `/?mail_box=${mailboxes.length - 1 - mail_box}`;
