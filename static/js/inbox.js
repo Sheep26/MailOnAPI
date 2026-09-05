@@ -118,6 +118,8 @@ async function loadInbox() {
     const mail_box = clamp(urlSearchParams.get('mail_box') ?? 0, 0, mailboxes.length - 1);
     const mail_box_emails = emails.filter((email) => email.mail_box == mail_box);
 
+    document.getElementById('mailbox-text').innerText = mailboxes[mail_box];
+
     if (!mail_box_emails.length) {
         inbox.innerHTML = `<span class="unselectable bold">Nothing yet</span>`;
 
