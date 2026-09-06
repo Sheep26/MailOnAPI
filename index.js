@@ -7,6 +7,7 @@ import { DatabaseManager } from './database/database.js';
 import { SessionManager } from './sessions/sessionManager.js';
 import { existsSync } from 'fs';
 import renderUtils from './renderUtils.js';
+import { startImap } from './imap/imapServer.js';
 
 const app = express();
 const PORT = config.port | 8080;
@@ -227,6 +228,8 @@ app.use(async (req, res, next) => {
 
     res.render('base', { title: page, content: page, renderUtils: renderUtils });
 });
+
+startImap(database);
 
 app.listen(PORT, '0.0.0.0', function (err) {
     if (err) {
