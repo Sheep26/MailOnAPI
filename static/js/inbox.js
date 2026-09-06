@@ -141,6 +141,9 @@ async function loadInbox() {
     mail_box_emails.reverse();
 
     for (let email of mail_box_emails) {
+        if (email.deleted)
+            continue;
+
         let element = document.createElement('div');
 
         element.id = email.mail_id;

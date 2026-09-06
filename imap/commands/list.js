@@ -4,7 +4,7 @@ import STATES from '../imapStates.js';
 export class ListCommand extends Command {
     command = async (tag, args) => {
         if (this.connection.state == STATES.NOT_AUTHENTICATED)
-            return this.connection.send(`${tag} Please Authenticate First`);
+            return this.connection.send(`${tag} NO Please Authenticate First`);
 
         const mailboxes = await this.database.getMailBoxes(this.connection.user.email);
 
@@ -12,5 +12,5 @@ export class ListCommand extends Command {
             this.connection.send(`* LIST (\\HasNoChildren) "/" "${mailbox.name}"`);
 
         this.connection.send(`${tag} OK LIST completed`);
-    }
+    };
 }

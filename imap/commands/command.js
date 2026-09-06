@@ -3,4 +3,6 @@ export class Command {
         this.database = database;
         this.connection = connection;
     }
+
+    command = () => {};
 }

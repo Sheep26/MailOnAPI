@@ -79,7 +79,7 @@ export class FetchCommand extends Command {
         }
 
         this.connection.send(`${tag} OK FETCH completed`);
-    }
+    };
 
     selectEmails(mailboxEmails, sequence, uid) {
         if (!sequence)
@@ -164,14 +164,14 @@ export class FetchCommand extends Command {
         if (email.seen)
             flags.push("\\Seen");
 
+        if (email.deleted)
+            flags.push("\\Deleted");
+
         /* if (email.answered)
             flags.push("\\Answered");
 
         if (email.flagged)
             flags.push("\\Flagged");
-
-        if (email.deleted)
-            flags.push("\\Deleted");
 
         if (email.draft)
             flags.push("\\Draft"); */

@@ -4,7 +4,7 @@ import STATES from '../imapStates.js';
 export class SelectCommand extends Command {
     command = async (tag, args) => {
         if (this.connection.state == STATES.NOT_AUTHENTICATED)
-            return this.connection.send(`${tag} BAD Please Authenticate First`);
+            return this.connection.send(`${tag} NO Please Authenticate First`);
 
         if (!args[0])
             return this.connection.send(`${tag} BAD SELECT requires mailbox`);
@@ -31,5 +31,5 @@ export class SelectCommand extends Command {
         this.connection.send(`* OK [UIDNEXT ${mailbox.uid_next}] Predicted next UID`);
 
         this.connection.send(`${tag} OK [READ-WRITE] SELECT completed`);
-    }
+    };
 }

@@ -5,6 +5,7 @@ import { NOOPCommand } from "./noop.js";
 import { ListCommand } from "./list.js";
 import { SelectCommand } from "./select.js";
 import { FetchCommand } from "./fetch.js";
+import { CloseCommand } from "./close.js";
 
 export default function declarations(database, connection) {
     return {
@@ -14,6 +15,7 @@ export default function declarations(database, connection) {
         "NOOP": new NOOPCommand(database, connection).command,
         "LIST": new ListCommand(database, connection).command,
         "SELECT": new SelectCommand(database, connection).command,
-        "FETCH": new FetchCommand(database, connection).command
+        "FETCH": new FetchCommand(database, connection).command,
+        "CLOSE": new CloseCommand(database, connection).command
     };
 }

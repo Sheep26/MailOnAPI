@@ -8,5 +8,5 @@ export class LogoutCommand extends Command {
         this.connection.state = STATES.NOT_AUTHENTICATED;
 
         this.connection.socket.end();
-    }
+    };
 }

@@ -54,6 +54,15 @@ export class DatabaseManager {
         return null;
     }
 
+    async getEmailUID(belongs_to, UID, mailbox_UID) {
+        const [rows] = await db.query('SELECT * FROM emails WHERE uid=? AND mail_box=? AND belongs_to=?', [UID, mailbox_UID, belongs_to]);
+
+        if (rows.length > 0)
+            return rows[0];
+
+        return null;
+    }
+
     async getUsers() {
         const [rows] = await db.query("SELECT * FROM users");
 
@@ -77,6 +86,14 @@ export class DatabaseManager {
         const [rows] = await db.query("SELECT * FROM users WHERE email=?", [email]);
 
         return rows[0];
+    }
+
+    async markDeleted(mail_id, user_email) {
+        await db.execute('UPDATE emails SET deleted=1 WHERE mail_id=? AND belongs_to=?', [mail_id, user_email]);
+    }
+
+    async deleteMarkedDeleted(email) {
+        const [rows] = await db.query('DELETE FROM emails WHERE belongs_to=? AND deleted=1', [email]);
     }
 
     async deleteEmail(mail_id, user_email) {
