@@ -11,7 +11,12 @@ export class DatabaseManager {
     }
 
     async addEmail(belongs_to, to, from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, references, mail_box, seen=0) {
-        await db.execute('INSERT INTO emails (belongs_to, mail_to, mail_from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, email_references, time, mail_box, seen) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+        const mailbox = await this.getMailBoxUID(belongs_to, mail_box);
+
+        if (!mailbox)
+            return;
+
+        await db.execute('INSERT INTO emails (belongs_to, mail_to, mail_from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, email_references, time, mail_box, seen, uid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
             belongs_to,
             to,
             from,
@@ -27,8 +32,11 @@ export class DatabaseManager {
             references,
             Date.now(),
             mail_box,
-            seen
+            seen,
+            mailbox.uid_next
         ]);
+
+        this.incrementUIDNext(mailbox.belongs_to, mailbox.name);
     }
 
     async getUsersEmails(email) {
@@ -75,6 +83,14 @@ export class DatabaseManager {
         await db.execute('DELETE FROM emails WHERE mail_id=? AND belongs_to=?', [mail_id, user_email]);
     }
 
+    async incrementUIDNext(email, name) {
+        await db.execute('UPDATE mailboxes SET uid_next=uid_next + 1 WHERE belongs_to=? AND name=?', [email, name]);
+    }
+
+    async incrementUIDNextUID(email, uid) {
+        await db.execute('UPDATE mailboxes SET uid_next=uid_next + 1 WHERE belongs_to=? AND uid=?', [email, uid]);
+    }
+
     async getMailBox(email, name) {
         const [rows] = await db.query('SELECT * FROM mailboxes WHERE belongs_to=? AND name=?', [email, name]);
 
@@ -109,7 +125,13 @@ export class DatabaseManager {
     }
 
     async moveMail(email, mail_id, mail_box) {
-        await db.execute("UPDATE emails set mail_box=? WHERE belongs_to=? AND mail_id=?", [mail_box, email, mail_id]);
+        const mailbox = await this.getMailBoxUID(email, mail_box);
+
+        if (!mailbox)
+            return;
+
+        await db.execute("UPDATE emails SET mail_box=?, uid=? WHERE belongs_to=? AND mail_id=?", [mail_box, mailbox.uid_next, email, mail_id]);
+        this.incrementUIDNext(email, mailbox.name);
     }
 
     async markSeen(mail_id, email) {
