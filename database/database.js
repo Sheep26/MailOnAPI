@@ -100,6 +100,10 @@ export class DatabaseManager {
         await db.execute('DELETE FROM emails WHERE mail_id=? AND belongs_to=?', [mail_id, user_email]);
     }
 
+    async markNotRecent(email, mail_id) {
+        await db.execute('UPDATE emails SET recent=0 WHERE belongs_to=? AND mail_id=?', [email, mail_id])
+    }
+
     async incrementUIDNext(email, name) {
         await db.execute('UPDATE mailboxes SET uid_next=uid_next + 1 WHERE belongs_to=? AND name=?', [email, name]);
     }
@@ -126,7 +130,7 @@ export class DatabaseManager {
         return rows;
     }
 
-    async addMailBox(email, name) {
+    async addMailBox(email, name, flags="\\Seen \\Deleted") {
         const [rows] = await db.query('SELECT * FROM mailboxes WHERE belongs_to=? AND name=?', [email, name]);
 
         if (rows[0])
@@ -134,7 +138,7 @@ export class DatabaseManager {
 
         const allBoxes = this.getMailBoxes(email);
 
-        await db.execute("INSERT INTO mailboxes (belongs_to, name, uid) VALUES (?, ?, ?)", [email, name, crypto.randomBytes(4).readUint32BE()])
+        await db.execute("INSERT INTO mailboxes (belongs_to, name, uid, flags) VALUES (?, ?, ?, ?)", [email, name, crypto.randomBytes(4).readUint32BE(), flags])
     }
 
     async deleteMailBox(email, name) {

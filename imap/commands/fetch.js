@@ -23,7 +23,6 @@ export class FetchCommand extends Command {
         const selectedEmails = this.selectEmails(mailboxEmails, sequence, uid);
 
         console.log("FETCH:", {uid, sequence, dataItem});
-
         console.log("Selected emails:", selectedEmails.map(email => ({uid: email.uid, sequence: mailboxEmails.indexOf(email) + 1})));
 
         for (const email of selectedEmails) {
