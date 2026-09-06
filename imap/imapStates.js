@@ -1,0 +1,4 @@
+export default Object.freeze({
+    NOT_AUTHENTICATED: 'NOT_AUTHENTICATED',
+    AUTHENTICATED: 'AUTHENTICATED'
+});

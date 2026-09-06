@@ -1,13 +1,14 @@
 import declarations from "./commands/declarations.js";
 import config from "../config.json" with { type: "json" };
 import crypto from 'node:crypto';
+import STATES from './imapStates.js';
 
 export class ImapConnection {
     constructor(socket, database) {
         this.socket = socket;
         this.buffer = "";
 
-        this.state = "NOT_AUTHENTICATED";
+        this.state = STATES.NOT_AUTHENTICATED;
         this.user = null;
 
         this.database = database;
