@@ -6,12 +6,14 @@ import STATES from './imapStates.js';
 export class ImapConnection {
     constructor(socket, database) {
         this.socket = socket;
-        this.buffer = "";
-
-        this.state = STATES.NOT_AUTHENTICATED;
-        this.user = null;
-
         this.database = database;
+
+        this.buffer = "";
+        this.state = STATES.NOT_AUTHENTICATED;
+
+        this.user = null;
+        this.mailbox = null;
+
         this.commands = declarations(this.database, this);
         this.newLine = "\n";
     }
@@ -70,12 +72,27 @@ export class ImapConnection {
         if (!parts)
             return;
 
-        const tag = parts[0];
-        const command = parts[1]?.toUpperCase();
-        const args = parts.slice(2);
+        let tag = parts[0];
+        let command = parts[1]?.toUpperCase();
+        let args = parts.slice(2);
+
+        let options = {
+            uid: false
+        };
+
+        if (command === "UID") {
+            options.uid = true;
+
+            command = args.shift()?.toUpperCase();
+        }
 
         try {
-            (this.commands[command] ?? ((tag, args) => {this.send(`${tag} BAD Unknown command`)}))(tag, args);
+            const handler = this.commands[command];
+
+            if (!handler)
+                return this.send(`${tag} BAD Unknown command`);
+
+            await handler(tag, args, options);
         } catch (error) {
             console.error("IMAP command error:", error);
 
