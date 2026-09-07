@@ -35,7 +35,7 @@ export class FetchCommand extends Command {
                 responseParts.push(`UID ${email.uid}`);
 
             if (upperDataItem.includes("FLAGS"))
-                responseParts.push(`FLAGS (${email.flags})`);
+                responseParts.push(`FLAGS (${email.flags.join(" ")})`);
 
             if (upperDataItem.includes("RFC822.SIZE")) {
                 const raw = this.createRawEmail(email);

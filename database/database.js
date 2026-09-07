@@ -32,7 +32,7 @@ export class DatabaseManager {
             references,
             Date.now(),
             mail_box,
-            `${seen ? "\\Seen" : ""}`,
+            `[${seen ? '\"\\Seen\"' : ''}]`,
             mailbox.uid_next
         ]);
 
@@ -89,7 +89,7 @@ export class DatabaseManager {
     }
 
     async markDeleted(mail_id, user_email) {
-        await db.execute('UPDATE emails SET flags=CONCAT(flags, " \\Deleted") WHERE mail_id=? AND belongs_to=?', [mail_id, user_email]);
+        await db.execute(`UPDATE emails SET flags=JSON_ARRAY_APPEND(flags, '$', '\\Deleted') WHERE mail_id=? AND belongs_to=?`, [mail_id, user_email]);
     }
 
     async deleteMarkedDeleted(email) {
@@ -156,7 +156,7 @@ export class DatabaseManager {
     }
 
     async markSeen(mail_id, email) {
-        await db.execute("UPDATE emails SET flags=CONCAT(flags, ' \\Seen') WHERE mail_id=? AND belongs_to=?", [mail_id, email]);
+        await db.execute("UPDATE emails SET flags=JSON_ARRAY_APPEND(flags, '$', '\\Seen') WHERE mail_id=? AND belongs_to=?", [mail_id, email]);
     }
 
     async login(email, password) {
