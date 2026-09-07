@@ -16,7 +16,7 @@ export class DatabaseManager {
         if (!mailbox)
             return;
 
-        await db.execute('INSERT INTO emails (belongs_to, mail_to, mail_from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, email_references, time, mail_box, seen, uid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+        await db.execute('INSERT INTO emails (belongs_to, mail_to, mail_from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, email_references, time, mail_box, flags, uid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
             belongs_to,
             to,
             from,
@@ -32,7 +32,7 @@ export class DatabaseManager {
             references,
             Date.now(),
             mail_box,
-            seen,
+            `${seen ? "\\Seen" : ""}`,
             mailbox.uid_next
         ]);
 
@@ -89,11 +89,11 @@ export class DatabaseManager {
     }
 
     async markDeleted(mail_id, user_email) {
-        await db.execute('UPDATE emails SET deleted=1 WHERE mail_id=? AND belongs_to=?', [mail_id, user_email]);
+        await db.execute('UPDATE emails SET flags=CONCAT(flags, " \\Deleted") WHERE mail_id=? AND belongs_to=?', [mail_id, user_email]);
     }
 
     async deleteMarkedDeleted(email) {
-        const [rows] = await db.query('DELETE FROM emails WHERE belongs_to=? AND deleted=1', [email]);
+        const [rows] = await db.query(`DELETE FROM emails WHERE belongs_to=? AND flags LIKE '%\\Deleted%'`, [email]);
     }
 
     async deleteEmail(mail_id, user_email) {
@@ -156,7 +156,7 @@ export class DatabaseManager {
     }
 
     async markSeen(mail_id, email) {
-        await db.execute("UPDATE emails SET seen=1 WHERE mail_id=? AND belongs_to=?", [mail_id, email]);
+        await db.execute("UPDATE emails SET flags=CONCAT(flags, ' \\Seen') WHERE mail_id=? AND belongs_to=?", [mail_id, email]);
     }
 
     async login(email, password) {

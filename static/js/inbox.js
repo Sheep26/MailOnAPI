@@ -141,7 +141,7 @@ async function loadInbox() {
     mail_box_emails.reverse();
 
     for (let email of mail_box_emails) {
-        if (email.deleted)
+        if (email.flags.includes("\\Deleted"))
             continue;
 
         let element = document.createElement('div');
@@ -162,7 +162,7 @@ async function loadInbox() {
         element.classList.add("email-hoverable");
         element.classList.add("unselectable");
 
-        if (email.seen)
+        if (email.flags.includes("\\Seen"))
             element.classList.add('readmsg');
 
         element.onclick = function() {window.location = `/view_email?mail_id=${email.mail_id}&mail_box=${mail_box.uid}`};

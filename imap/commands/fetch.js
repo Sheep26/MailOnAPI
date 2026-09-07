@@ -34,11 +34,8 @@ export class FetchCommand extends Command {
             if (uid || upperDataItem.includes("UID"))
                 responseParts.push(`UID ${email.uid}`);
 
-            if (upperDataItem.includes("FLAGS")) {
-                const flags = this.getFlags(email);
-
-                responseParts.push(`FLAGS (${flags.join(" ")})`);
-            }
+            if (upperDataItem.includes("FLAGS"))
+                responseParts.push(`FLAGS (${email.flags})`);
 
             if (upperDataItem.includes("RFC822.SIZE")) {
                 const raw = this.createRawEmail(email);
@@ -155,27 +152,6 @@ export class FetchCommand extends Command {
             return null;
 
         return number;
-    }
-
-    getFlags(email) {
-        const flags = [];
-
-        if (email.seen)
-            flags.push("\\Seen");
-
-        if (email.deleted)
-            flags.push("\\Deleted");
-
-        /* if (email.answered)
-            flags.push("\\Answered");
-
-        if (email.flagged)
-            flags.push("\\Flagged");
-
-        if (email.draft)
-            flags.push("\\Draft"); */
-
-        return flags;
     }
 
     createRequestedHeaders(email, requestedHeaders) {
