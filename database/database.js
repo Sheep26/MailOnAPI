@@ -131,13 +131,15 @@ export class DatabaseManager {
         return rows;
     }
 
+    async renameMailBox(email, mailbox, name) {
+        await db.execute('UPDATE mailboxes SET name=? WHERE name=? AND belongs_to=?', [name, mailbox, email]);
+    }
+
     async addMailBox(email, name, flags="\\Seen \\Deleted") {
         const [rows] = await db.query('SELECT * FROM mailboxes WHERE belongs_to=? AND name=?', [email, name]);
 
         if (rows[0])
             return;
-
-        const allBoxes = this.getMailBoxes(email);
 
         await db.execute("INSERT INTO mailboxes (belongs_to, name, uid, flags) VALUES (?, ?, ?, ?)", [email, name, crypto.randomBytes(4).readUint32BE(), flags])
     }
