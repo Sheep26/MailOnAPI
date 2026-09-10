@@ -80,7 +80,7 @@ async function moveEmail(mail_id, event) {
         ${function () {
             let out = ``;
 
-            for (let mail_box of mailboxes) {
+            for (let mail_box of mailboxes.toReversed()) {
                 out += `
                 <div class="flex row centered">
                     <label for="${mail_box.uid}">${mail_box.name}</label><br>

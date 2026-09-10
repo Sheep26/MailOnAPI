@@ -22,9 +22,6 @@ export class FetchCommand extends Command {
 
         const selectedEmails = this.selectEmails(mailboxEmails, sequence, uid);
 
-        console.log("FETCH:", {uid, sequence, dataItem});
-        console.log("Selected emails:", selectedEmails.map(email => ({uid: email.uid, sequence: mailboxEmails.indexOf(email) + 1})));
-
         for (const email of selectedEmails) {
             const sequenceNumber = mailboxEmails.indexOf(email) + 1;
 
@@ -48,22 +45,16 @@ export class FetchCommand extends Command {
 
             if (headerFieldsMatch) {
                 const requestedHeaders = headerFieldsMatch[1].split(/\s+/).filter(Boolean);
-
                 const headers = this.createRequestedHeaders(email, requestedHeaders);
 
                 const size = Buffer.byteLength(headers, "utf8");
-
                 responseParts.push(`BODY[HEADER.FIELDS (${requestedHeaders.join(" ")})] {${size}}\r\n${headers}`);
-            }
-
-            else if (upperDataItem.includes("BODY.PEEK[]") || upperDataItem.includes("BODY[]")) {
+            } else if (upperDataItem.includes("BODY.PEEK[]") || upperDataItem.includes("BODY[]")) {
                 const raw = this.createRawEmail(email);
                 const size = Buffer.byteLength(raw, "utf8");
 
                 responseParts.push(`BODY[] {${size}}\r\n${raw}`);
-            }
-
-            else if (upperDataItem.includes("RFC822")) {
+            } else if (upperDataItem.includes("RFC822")) {
                 const raw = this.createRawEmail(email);
                 const size = Buffer.byteLength(raw, "utf8");
 
@@ -93,7 +84,6 @@ export class FetchCommand extends Command {
                 const [startValue, endValue] = range.split(":");
 
                 const start = this.resolveSequenceValue(startValue, mailboxEmails, uid);
-
                 const end = this.resolveSequenceValue(endValue, mailboxEmails, uid);
 
                 if (start === null || end === null)
