@@ -160,6 +160,10 @@ export class DatabaseManager {
         await db.execute("UPDATE emails SET flags=JSON_ARRAY_APPEND(flags, '$', ?) WHERE mail_id=? AND belongs_to=?", ['\\Seen', mail_id, email]);
     }
 
+    async updateUsername(email, new_username) {
+        await db.execute("UPDATE users SET username=? WHERE email=?", [new_username, email]);
+    }
+
     async login(email, password) {
         const user = await this.getUser(email);
 

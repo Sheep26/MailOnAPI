@@ -91,7 +91,7 @@ async function moveEmail(mail_id, event) {
 
             return out;
         }()}
-        <input type="submit">
+        <input type="submit" class="submit">
     </form>
     `;
 
@@ -187,10 +187,5 @@ async function loadInbox() {
         index++;
     }
 }
-
-document.body.addEventListener('click', function(event) {
-    if (!event.target.classList.contains('move-mail-element'))
-        document.querySelectorAll('.move-mail-element').forEach(element => element.remove());
-});
 
 globalThis.listeners.push(loadInbox);

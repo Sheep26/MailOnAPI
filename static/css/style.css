@@ -319,12 +319,15 @@ iframe {
     padding-left: 20px;
 }
 
+.submit {
+    padding: 16px 96px;
+    border-style: none;
+}
+
 input[type=submit] {
     color: white;
     background-color: rgb(0, 120, 240);
     border-radius: 12px;
-    padding: 16px 96px;
-    border-style: none;
 }
 
 input[type=submit]:active {
@@ -346,4 +349,9 @@ input[type=submit].loading {
 .scrollable {
     overflow-y: auto;
     overflow-x: hidden;
+}
+
+.settings-btn {
+    padding: 4px;
+    border-style: none;
 }

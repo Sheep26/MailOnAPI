@@ -121,6 +121,16 @@ app.get('/api/get_mailbox', async (req, res) => {
     return res.send(await database.getMailBoxUID(session.user_id, req.query.uid));
 });
 
+app.post('/api/update_username', async (req, res) => {
+    const session = await sessionManager.getSession(req.cookies.session);
+
+    if (!session)
+        return res.sendStatus(401);
+
+    await database.updateUsername(session.user_id, req.body.username);
+    res.redirect('/');
+});
+
 app.post('/api/mark_seen', async (req, res) => {
     const session = await sessionManager.getSession(req.cookies.session);
 

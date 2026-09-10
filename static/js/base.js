@@ -5,7 +5,19 @@ let mailboxes = null;
 let openComposes = 0;
 let composeIndex = 0;
 
+globalThis.user ??= null;
+
 globalThis.listeners ??= [];
+
+function moveSettingsElementTo(a, b) {
+    const targetRect = b.getBoundingClientRect();
+
+    const top = targetRect.top + window.scrollY;
+    const left = targetRect.left + window.scrollX;
+
+    a.style.top = top - a.offsetHeight - 8 + 'px';
+    a.style.left = Math.max(left - a.offsetWidth, 0) + 'px';
+}
 
 function parseEmailAddress(value) {
     const match = value.match(/^\s*(.*?)\s*<([^<>]+)>\s*$/);
@@ -30,7 +42,7 @@ async function callListeners() {
 
 async function setupName() {
     const user_req = await fetch('/api/get_user');
-    const user = await user_req.json();
+    globalThis.user = await user_req.json();
 
     document.getElementById('user-email').innerText = user.email;
     document.getElementById('user-name').innerText = user.username;
@@ -137,6 +149,47 @@ function logout() {
     window.location = '/api/logout';
 }
 
+function openSettings(event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    /*
+    <div class="flex card grow inbox scrollable column no-padding gap-2">
+        <h1>Hello world</h1>
+    </div>
+    */
+
+    let element = document.createElement('div');
+
+    element.classList.add('flex');
+    element.classList.add('card');
+    element.classList.add('scrollable');
+    element.classList.add('column');
+    element.classList.add('gap-1');
+    element.classList.add('move-mail-element');
+    element.classList.add('centered');
+
+    element.style.position = "absolute";
+
+    element.id = `settings-element`;
+
+    element.innerHTML = `
+    <span class="bold">Settings</span>
+    <form class="flex row gap-1 vcentered" action="/api/update_username" method="POST">
+        <label for="username">Username: </label>
+        <input placeholder="Username" name="username" id="username" value="${globalThis.user.username}">
+        <input type="submit" class="settings-btn" value="Update Username">
+    </form>
+    `;
+
+    element.addEventListener('click', (event) => {
+        event.stopPropagation();
+    });
+
+    document.getElementById('main').appendChild(element);
+    moveSettingsElementTo(element, document.getElementById(`settings-button`));
+}
+
 window.addEventListener('message', function(event) {
     if (event.origin != window.location.origin)
         return;
@@ -146,6 +199,11 @@ window.addEventListener('message', function(event) {
 
     if (event.data.type === 'hide-me')
         hideCompose(event.data.compose);
+});
+
+document.body.addEventListener('click', function(event) {
+    if (!event.target.classList.contains('move-mail-element'))
+        document.querySelectorAll('.move-mail-element').forEach(element => element.remove());
 });
 
 globalThis.listeners.unshift(addMailBoxes);
