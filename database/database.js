@@ -90,11 +90,11 @@ export class DatabaseManager {
     }
 
     async markDeleted(mail_id, user_email) {
-        await db.execute(`UPDATE emails SET flags=JSON_ARRAY_APPEND(flags, '$', '\\\\Deleted') WHERE mail_id=? AND belongs_to=?`, [mail_id, user_email]);
+        await db.execute(`UPDATE emails SET flags=JSON_ARRAY_APPEND(flags, '$', ?) WHERE mail_id=? AND belongs_to=?`, ['\\Deleted', mail_id, user_email]);
     }
 
     async deleteMarkedDeleted(email) {
-        const [rows] = await db.query(`DELETE FROM emails WHERE belongs_to=? AND flags LIKE '%\\\\Deleted%'`, [email]);
+        const [rows] = await db.query(`DELETE FROM emails WHERE belongs_to=? AND flags LIKE '%?%'`, ['\\Deleted', email]);
     }
 
     async deleteEmail(mail_id, user_email) {
@@ -157,7 +157,7 @@ export class DatabaseManager {
     }
 
     async markSeen(mail_id, email) {
-        await db.execute("UPDATE emails SET flags=JSON_ARRAY_APPEND(flags, '$', '\\\\Seen') WHERE mail_id=? AND belongs_to=?", [mail_id, email]);
+        await db.execute("UPDATE emails SET flags=JSON_ARRAY_APPEND(flags, '$', ?) WHERE mail_id=? AND belongs_to=?", ['\\Seen', mail_id, email]);
     }
 
     async login(email, password) {
