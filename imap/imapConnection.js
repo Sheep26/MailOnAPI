@@ -15,7 +15,7 @@ export class ImapConnection {
         this.mailbox = null;
 
         this.commands = declarations(this.database, this);
-        this.newLine = "\n";
+        this.newLine = "\r\n";
     }
 
     start() {
@@ -38,7 +38,7 @@ export class ImapConnection {
         while ((newLine = this.buffer.indexOf(this.newLine)) != -1) {
             const line = this.buffer.slice(0, newLine);
 
-            this.buffer = this.buffer.slice(newLine + 1);
+            this.buffer = this.buffer.slice(newLine + this.newLine.length);
 
             if (line.length === 0)
                 continue;
@@ -48,20 +48,50 @@ export class ImapConnection {
     }
 
     parseCommand(line) {
-        // Basic parser for now.
-        // This does NOT implement full IMAP quoting/literals yet.
+        const parts = [];
+        let current = "";
+        let quoted = false;
+        let escaped = false;
 
-        const parts = line.match(/(?:[^\s"]+|"[^"]*")+/g);
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
 
-        if (!parts || parts.length < 2)
+            if (escaped) {
+                current += char;
+                escaped = false;
+                continue;
+            }
+
+            if (char === "\\" && quoted) {
+                escaped = true;
+                current += char;
+                continue;
+            }
+
+            if (char === '"') {
+                quoted = !quoted;
+                continue;
+            }
+
+            if (!quoted && /\s/.test(char)) {
+                if (current.length > 0) {
+                    parts.push(current);
+                    current = "";
+                }
+
+                continue;
+            }
+
+            current += char;
+        }
+
+        if (current.length > 0)
+            parts.push(current);
+
+        if (parts.length < 2)
             return null;
 
-        return parts.map(part => {
-            if (part.startsWith('"') && part.endsWith('"'))
-                return part.slice(1, -1);
-
-            return part;
-        });
+        return parts;
     }
 
     async handleCommand(line) {
@@ -102,7 +132,11 @@ export class ImapConnection {
 
     send(message) {
         console.log("S:", message);
-
         this.socket.write(message + "\r\n");
+    }
+
+    sendRaw(message) {
+        console.log("S:", message);
+        this.socket.write(message);
     }
 }
