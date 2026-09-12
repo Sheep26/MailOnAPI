@@ -347,9 +347,8 @@ export class FetchCommand extends Command {
 
     flattenArgs(args) {
         const result = [];
-
         const flatten = (value, depth = 0) => {
-            for (const item of value) {
+            for (const item of value)
                 if (Array.isArray(item)) {
                     if (depth > 0)
                         result.push("(");
@@ -358,14 +357,11 @@ export class FetchCommand extends Command {
 
                     if (depth > 0)
                         result.push(")");
-                } else {
+                } else
                     result.push(item);
-                }
-            }
         };
 
         flatten(args);
-
         return result;
     }
 }
