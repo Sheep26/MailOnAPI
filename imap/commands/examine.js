@@ -1,7 +1,7 @@
 import { Command } from "./command.js";
 import STATES from '../imapStates.js';
 
-export class SelectCommand extends Command {
+export class ExamineCommand extends Command {
     command = async (tag, args) => {
         if (this.connection.state == STATES.NOT_AUTHENTICATED)
             return this.connection.send(`${tag} NO Please Authenticate First`);
@@ -34,7 +34,7 @@ export class SelectCommand extends Command {
         this.connection.send(`* OK [UIDNEXT ${mailbox.uid_next}] Predicted next UID`);
 
         this.connection.send(`* FLAGS (${mailbox.flags})`);
-        this.connection.send(`${tag} OK [READ-WRITE] SELECT completed`);
+        this.connection.send(`${tag} OK [READ-ONLY] EXAMINE completed`);
 
         recent.forEach(async email => {
             await this.database.markNotRecent(this.connection.user.email, email.mail_id);

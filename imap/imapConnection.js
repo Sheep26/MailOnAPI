@@ -7,20 +7,20 @@ export class ImapConnection {
     constructor(socket, database) {
         this.socket = socket;
         this.database = database;
-
         this.buffer = "";
-        this.state = STATES.NOT_AUTHENTICATED;
 
+        this.state = STATES.NOT_AUTHENTICATED;
         this.user = null;
         this.mailbox = null;
 
         this.commands = getCommands(this.database, this);
         this.newLine = "\r\n";
 
-        this.auth_tag = null;
         this.active = true;
-
         this.idle = false;
+        this.readonly = false;
+
+        this.auth_tag = null;
         this.idle_tag = null;
     }
 
@@ -174,6 +174,8 @@ export class ImapConnection {
         let tag = parts[0];
         let command = parts[1]?.toUpperCase();
         let args = parts.slice(2);
+
+        console.log(command)
 
         let options = {
             uid: false

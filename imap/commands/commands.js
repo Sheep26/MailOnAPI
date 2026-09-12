@@ -17,6 +17,7 @@ import { StatusCommand } from "./status.js";
 import { AuthenticateCommand } from "./authenticate.js";
 import { UnselectCommand } from "./unselect.js";
 import { IdleCommand } from "./idle.js";
+import { ExamineCommand } from "./examine.js";
 
 export default function getCommands(database, connection) {
     return {
@@ -38,6 +39,7 @@ export default function getCommands(database, connection) {
         "STATUS": new StatusCommand(database, connection).command,
         "AUTHENTICATE": new AuthenticateCommand(database, connection).command,
         "UNSELECT": new UnselectCommand(database, connection).command,
-        "IDLE": new IdleCommand(database, connection).command
+        "IDLE": new IdleCommand(database, connection).command,
+        "EXAMINE": new ExamineCommand(database, connection).command
     };
 }
