@@ -13,6 +13,7 @@ import { DeleteCommand } from "./delete.js";
 import { RenameCommand } from "./rename.js";
 import { UnsubscribeCommand } from "./unsubscribe.js";
 import { StoreCommand } from "./store.js";
+import { StatusCommand } from "./status.js";
 
 export default function declarations(database, connection) {
     return {
@@ -30,6 +31,7 @@ export default function declarations(database, connection) {
         "DELETE": new DeleteCommand(database, connection).command,
         "RENAME": new RenameCommand(database, connection).command,
         "UNSUBSCRIBE": new UnsubscribeCommand(database, connection).command,
-        "STORE": new StoreCommand(database, connection).command
+        "STORE": new StoreCommand(database, connection).command,
+        "STATUS": new StatusCommand(database, connection).command
     };
 }

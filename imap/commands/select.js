@@ -17,7 +17,7 @@ export class SelectCommand extends Command {
         const emails = await this.database.getUsersEmails(this.connection.user.email);
         const filtered_emails = emails.filter(email => email.mail_box == mailbox.uid);
 
-        const unread = filtered_emails.filter(email => !email.seen);
+        const unread = filtered_emails.filter(email => !email.flags.includes("\\Seen"));
         const recent = filtered_emails.filter(email => email.recent);
 
         this.connection.mailbox = mailbox;
