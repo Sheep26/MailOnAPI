@@ -1,4 +1,4 @@
-import getCommands from "./commands.js";
+import getCommands from "./commands/commands.js";
 import config from "../config.json" with { type: "json" };
 import crypto from 'node:crypto';
 import STATES from './imapStates.js';
