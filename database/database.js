@@ -160,6 +160,20 @@ export class DatabaseManager {
         this.incrementUIDNext(email, mailbox.name);
     }
 
+    async getEmailIndex(email, mail_id, mailbox) {
+        const [rows] = await db.query("SELECT row_num FROM (SELECT *, ROW_NUMBER() OVER (ORDER BY email_id) AS row_num FROM emails WHERE belongs_to=? AND mail_box=?) AS temp_table WHERE mail_id=?", [email, mailbox, mail_id]);
+
+        return rows[0].row_num;
+    }
+
+    async addFlag(mail_id, email, flag) {
+        await db.execute("UPDATE emails SET flags=JSON_ARRAY_APPEND(flags, '$', ?) WHERE mail_id=? AND belongs_to=?", [flag, mail_id, email]);
+    }
+
+    async removeFlag(mail_id, email, flag) {
+        await db.execute("UPDATE emails SET flags=JSON_REMOVE(flags, JSON_UNQUOTE(JSON_SEARCH(flags, 'one', ?))) WHERE JSON_SEARCH(flags, 'one', ?) IS NOT NULL AND mail_id=? AND belongs_to=?", [flag, flag, mail_id, email]);
+    }
+
     async markSeen(mail_id, email) {
         await db.execute("UPDATE emails SET flags=JSON_ARRAY_APPEND(flags, '$', ?) WHERE mail_id=? AND belongs_to=?", ['\\Seen', mail_id, email]);
     }
