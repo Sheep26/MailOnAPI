@@ -1,5 +1,6 @@
 import { Command } from "./command.js";
 import STATES from '../imapStates.js';
+import { connections } from "../imapServer.js";
 
 export class LogoutCommand extends Command {
     command = async (tag, args) => {
@@ -9,5 +10,8 @@ export class LogoutCommand extends Command {
 
         await setTimeout(5000);
         this.connection.socket.end();
+        this.active = false;
+
+        connections = connections.filter(connection => connection != this.connection);
     };
 }

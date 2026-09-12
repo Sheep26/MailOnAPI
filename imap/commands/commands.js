@@ -16,6 +16,7 @@ import { StoreCommand } from "./store.js";
 import { StatusCommand } from "./status.js";
 import { AuthenticateCommand } from "./authenticate.js";
 import { UnselectCommand } from "./unselect.js";
+import { IdleCommand } from "./idle.js";
 
 export default function getCommands(database, connection) {
     return {
@@ -36,6 +37,7 @@ export default function getCommands(database, connection) {
         "STORE": new StoreCommand(database, connection).command,
         "STATUS": new StatusCommand(database, connection).command,
         "AUTHENTICATE": new AuthenticateCommand(database, connection).command,
-        "UNSELECT": new UnselectCommand(database, connection).command
+        "UNSELECT": new UnselectCommand(database, connection).command,
+        "IDLE": new IdleCommand(database, connection).command
     };
 }

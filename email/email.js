@@ -1,3 +1,5 @@
+import { imapHandleRecieved } from "../imap/imapServer.js";
+
 export function parseEmailAddress(value) {
     const match = value.match(/^\s*(.*?)\s*<([^<>]+)>\s*$/);
     let values = {name: null, email: value.trim()};
@@ -33,5 +35,13 @@ export class Email {
 
     async getAttatchment(email_id, attachment_id) {
         
+    }
+
+    async updateImap(email, mailbox) {
+        console.log(email);
+        const emails = await this.database.getUsersEmails(email);
+        const emails_filtered = emails.filter(email => email.mail_box == mailbox);
+
+        imapHandleRecieved(email, emails_filtered.length, mailbox);
     }
 }

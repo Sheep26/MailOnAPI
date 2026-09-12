@@ -18,6 +18,10 @@ export class ImapConnection {
         this.newLine = "\r\n";
 
         this.auth_tag = null;
+        this.active = true;
+
+        this.idle = false;
+        this.idle_tag = null;
     }
 
     start() {
@@ -149,7 +153,17 @@ export class ImapConnection {
             this.user = await this.database.getUser(email);
             this.state = STATES.AUTHENTICATED;
 
-            return this.send(`${this.auth_tag} OK AUTHENTICATE success`);
+            this.send(`${this.auth_tag} OK AUTHENTICATE success`);
+            this.auth_tag = null; // Free the couple bytes of memory.
+            return;
+        }
+
+        if (line === "DONE" && this.idle) {
+            this.idle = false;
+            this.send(`${this.idle_tag} OK IDLE terminated`);
+
+            this.idle_tag = null; // Free the couple bytes of memory.
+            return;
         }
 
         const parts = this.parseCommand(line);
