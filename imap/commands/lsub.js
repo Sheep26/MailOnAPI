@@ -1,7 +1,7 @@
 import { Command } from "./command.js";
 import STATES from '../imapStates.js';
 
-export class ListCommand extends Command {
+export class LSUBCommand extends Command {
     command = async (tag, args) => {
         if (this.connection.state == STATES.NOT_AUTHENTICATED)
             return this.connection.send(`${tag} NO Please Authenticate First`);
@@ -9,8 +9,8 @@ export class ListCommand extends Command {
         const mailboxes = await this.database.getMailBoxes(this.connection.user.email);
 
         for (const mailbox of mailboxes)
-            this.connection.send(`* LIST (\\HasNoChildren${mailbox.special_use_flags ? ` ${mailbox.special_use_flags}` : ""}) "/" "${mailbox.name}"`);
+            this.connection.send(`* LSUB (\\HasNoChildren${mailbox.special_use_flags ? ` ${mailbox.special_use_flags}` : ""}) "/" "${mailbox.name}"`);
 
-        this.connection.send(`${tag} OK LIST completed`);
+        this.connection.send(`${tag} OK LSUB completed`);
     };
 }

@@ -48,10 +48,19 @@ export class ImapConnection {
     }
 
     parseCommand(line) {
-        const parts = [];
+        const root = [];
+        const stack = [root];
+
         let current = "";
         let quoted = false;
         let escaped = false;
+
+        const pushCurrent = () => {
+            if (current.length > 0) {
+                stack[stack.length - 1].push(current);
+                current = "";
+            }
+        };
 
         for (let i = 0; i < line.length; i++) {
             const char = line[i];
@@ -59,39 +68,63 @@ export class ImapConnection {
             if (escaped) {
                 current += char;
                 escaped = false;
+
                 continue;
             }
 
             if (char === "\\" && quoted) {
                 escaped = true;
                 current += char;
+
                 continue;
             }
 
             if (char === '"') {
                 quoted = !quoted;
+
                 continue;
             }
 
-            if (!quoted && /\s/.test(char)) {
-                if (current.length > 0) {
-                    parts.push(current);
-                    current = "";
+            if (!quoted) {
+                if (char === "(") {
+                    pushCurrent();
+
+                    const group = [];
+                    stack[stack.length - 1].push(group);
+                    stack.push(group);
+
+                    continue;
                 }
 
-                continue;
+                if (char === ")") {
+                    pushCurrent();
+
+                    if (stack.length === 1)
+                        return null;
+
+                    stack.pop();
+                    continue;
+                }
+
+                if (/\s/.test(char)) {
+                    pushCurrent();
+
+                    continue;
+                }
             }
 
             current += char;
         }
 
-        if (current.length > 0)
-            parts.push(current);
+        pushCurrent();
 
-        if (parts.length < 2)
+        if (stack.length !== 1 || quoted || escaped)
             return null;
 
-        return parts;
+        if (root.length < 2)
+            return null;
+
+        return root;
     }
 
     async handleCommand(line) {

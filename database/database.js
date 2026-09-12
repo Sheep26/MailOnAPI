@@ -36,7 +36,9 @@ export class DatabaseManager {
             mailbox.uid_next
         ]);
 
-        await this.markSeen(mail_id, belongs_to);
+        if (seen)
+            await this.markSeen(mail_id, belongs_to);
+
         await this.incrementUIDNext(mailbox.belongs_to, mailbox.name);
     }
 
@@ -78,7 +80,7 @@ export class DatabaseManager {
 
         await db.execute('INSERT INTO users (username, passwd, email) VALUES (?, ?, ?)', [username, await hasher.hash(passwd), email]);
         await this.addMailBox(email, 'Inbox');
-        await this.addMailBox(email, 'Sent');
+        await this.addMailBox(email, 'Sent', "\\Seen \\Deleted", "\\Sent");
 
         return true;
     }
@@ -135,13 +137,13 @@ export class DatabaseManager {
         await db.execute('UPDATE mailboxes SET name=? WHERE name=? AND belongs_to=?', [name, mailbox, email]);
     }
 
-    async addMailBox(email, name, flags="\\Seen \\Deleted") {
+    async addMailBox(email, name, flags="\\Seen \\Deleted", special_use_flags="") {
         const [rows] = await db.query('SELECT * FROM mailboxes WHERE belongs_to=? AND name=?', [email, name]);
 
         if (rows[0])
             return;
 
-        await db.execute("INSERT INTO mailboxes (belongs_to, name, uid, flags) VALUES (?, ?, ?, ?)", [email, name, crypto.randomBytes(4).readUint32BE(), flags])
+        await db.execute("INSERT INTO mailboxes (belongs_to, name, uid, flags, special_use_flags) VALUES (?, ?, ?, ?, ?)", [email, name, crypto.randomBytes(4).readUint32BE(), flags, special_use_flags])
     }
 
     async deleteMailBox(email, name) {
@@ -164,6 +166,14 @@ export class DatabaseManager {
 
     async updateUsername(email, new_username) {
         await db.execute("UPDATE users SET username=? WHERE email=?", [new_username, email]);
+    }
+
+    async markSubscribed(email, mailbox) {
+        await db.execute("UPDATE mailboxes SET subscribed=1 WHERE belongs_to=? AND name=?", [email, mailbox]);
+    }
+
+    async markUnsubscribed(email, mailbox) {
+        await db.execute("UPDATE mailboxes SET subscribed=0 WHERE belongs_to=? AND name=?", [email, mailbox]);
     }
 
     async login(email, password) {

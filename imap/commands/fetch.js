@@ -15,7 +15,7 @@ export class FetchCommand extends Command {
             return this.connection.send(`${tag} BAD FETCH requires sequence and data`);
 
         const sequence = args[0];
-        const dataItem = args.slice(1).join(" ");
+        const dataItem = this.flattenArgs(args.slice(1)).join(" ");
         const emails = await this.database.getUsersEmails(this.connection.user.email);
 
         const mailboxEmails = emails.filter(email => email.mail_box === this.connection.mailbox.uid).sort((a, b) => a.uid - b.uid);
@@ -43,7 +43,7 @@ export class FetchCommand extends Command {
                 responseParts.push(`RFC822.SIZE ${size}`);
             }
 
-            const headerFieldsMatch = dataItem.match(/BODY(?:\.PEEK)?\[HEADER\.FIELDS\s*\(([^)]*)\)\]/i);
+            const headerFieldsMatch = dataItem.match(/BODY(?:\.PEEK)?\[HEADER\.FIELDS\s*\(\s*([^)]*?)\s*\)\s*\]/i); // /BODY(?:\.PEEK)?\[HEADER\.FIELDS\s*\(([^)]*)\)\]/i
 
             if (headerFieldsMatch) {
                 const requestedHeaders = headerFieldsMatch[1].split(/\s+/).filter(Boolean);
@@ -343,5 +343,29 @@ export class FetchCommand extends Command {
         message += email.content ?? "";
 
         return message;
+    }
+
+    flattenArgs(args) {
+        const result = [];
+
+        const flatten = (value, depth = 0) => {
+            for (const item of value) {
+                if (Array.isArray(item)) {
+                    if (depth > 0)
+                        result.push("(");
+
+                    flatten(item, depth + 1);
+
+                    if (depth > 0)
+                        result.push(")");
+                } else {
+                    result.push(item);
+                }
+            }
+        };
+
+        flatten(args);
+
+        return result;
     }
 }
