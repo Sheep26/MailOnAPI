@@ -1,4 +1,4 @@
-import declarations from "./commands/declarations.js";
+import getCommands from "./commands.js";
 import config from "../config.json" with { type: "json" };
 import crypto from 'node:crypto';
 import STATES from './imapStates.js';
@@ -14,7 +14,7 @@ export class ImapConnection {
         this.user = null;
         this.mailbox = null;
 
-        this.commands = declarations(this.database, this);
+        this.commands = getCommands(this.database, this);
         this.newLine = "\r\n";
 
         this.auth_tag = null;
