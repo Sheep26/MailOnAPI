@@ -16,6 +16,8 @@ export class ImapConnection {
 
         this.commands = declarations(this.database, this);
         this.newLine = "\r\n";
+
+        this.auth_tag = null;
     }
 
     start() {
@@ -129,6 +131,26 @@ export class ImapConnection {
 
     async handleCommand(line) {
         console.log("C:", line);
+
+        if (this.state == STATES.AUTHENTICATING_PLAIN) {
+            const authenication_parts = new TextDecoder().decode(Uint8Array.fromBase64(line)).split('\0');
+            
+            const email = authenication_parts[1];
+            const password = authenication_parts[2];
+
+            const session = await this.database.login(email, password);
+
+            if (!session) {
+                this.state = STATES.NOT_AUTHENTICATED;
+
+                return this.send(`${this.auth_tag} NO Authentication failed`);
+            }
+
+            this.user = await this.database.getUser(email);
+            this.state = STATES.AUTHENTICATED;
+
+            return this.send(`${this.auth_tag} OK AUTHENTICATE success`);
+        }
 
         const parts = this.parseCommand(line);
 

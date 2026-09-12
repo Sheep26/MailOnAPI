@@ -20,6 +20,6 @@ export class LoginCommand extends Command {
         this.connection.user = await this.database.getUser(email);
         this.connection.state = STATES.AUTHENTICATED;
 
-        this.connection.send(`${tag} OK LOGIN completed`);
+        this.connection.send(`${tag} OK LOGIN success`);
     };
 }
