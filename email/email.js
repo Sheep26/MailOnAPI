@@ -38,7 +38,6 @@ export class Email {
     }
 
     async updateImap(email, mailbox) {
-        console.log(email);
         const emails = await this.database.getUsersEmails(email);
         const emails_filtered = emails.filter(email => email.mail_box == mailbox);
 

@@ -4,11 +4,11 @@ import { ImapConnection } from "./imapConnection.js";
 export let connections = [];
 
 export function imapHandleRecieved(belongs_to, exists, updated_mailbox) {
-    const filtered_connections = connections.filter(connection => connection.user.email == belongs_to && connection.active && connection.idle);
-
+    const filtered_connections = connections.filter(connection => connection.user.email == belongs_to && connection.active && connection.idle && connection.mailbox == updated_mailbox);
+    console.log(connections);
+    console.log(filtered_connections);
     for (let connection of filtered_connections)
-        if (connection.mailbox == updated_mailbox)
-            connection.send(`* ${exists} EXISTS`);
+        connection.send(`* ${exists} EXISTS`);
 }
 
 export function startImap(database) {
