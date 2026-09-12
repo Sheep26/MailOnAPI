@@ -9,18 +9,27 @@ export class CreateCommand extends Command {
         if (args.length < 1)
             return this.connection.send(`${tag} BAD CREATE Expects at least 1 arg`);
 
-        let special_use_flags = [];
-
-        if (args.length > 1)
-            for (let arg of args)
-                if (Array.isArray(arg))
-                    if (arg[0] == 'USE')
-                        for (let flag of arg[1])
-                            special_use_flags.push(flag);
-        
-        console.log(special_use_flags);
-
-        await this.database.addMailBox(this.connection.user.email, args[0], "\\Seen \\Deleted", special_use_flags.join(" "));
+        await this.database.addMailBox(this.connection.user.email, args[0], "\\Seen \\Deleted", this.makeSpecialUseFlags(args).join(" "));
         this.connection.send(`${tag} OK CREATE completed`);
     };
+
+    makeSpecialUseFlags(args) {
+        if (args.length < 2)
+            return [];
+
+        let special_use_flags = [];
+
+        for (let arg of args) {
+            if (!Array.isArray(arg))
+                continue;
+        
+            if (arg[0] != 'USE')
+                continue;
+
+            for (let flag of arg[1])
+                special_use_flags.push(flag);
+        }
+
+        return special_use_flags;
+    }
 }
