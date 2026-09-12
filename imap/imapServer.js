@@ -5,7 +5,7 @@ export let connections = [];
 
 export function imapHandleRecieved(belongs_to, exists, updated_mailbox) {
     console.log(belongs_to)
-    const filtered_connections = connections.filter((connection) => {return (connection.user.email == belongs_to && connection.active && connection.idle && connection.mailbox == updated_mailbox)});
+    const filtered_connections = connections.filter(connection => console.log(connection.user.email == belongs_to, connection.active, connection.idle, connection.mailbox == updated_mailbox) || true);
 
     for (let connection of filtered_connections)
         connection.send(`* ${exists} EXISTS`);
