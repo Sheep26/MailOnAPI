@@ -89,11 +89,13 @@ export class EmailResend extends Email {
 
         const mailbox = await this.database.getMailBox(user.email, 'Inbox');
 
-        if (mailbox)
+        if (mailbox) {
             this.database.addEmail(data.to[0], data.to[0], data.headers.from, data.headers['return-path'], JSON.stringify(data.bcc), JSON.stringify(data.cc), data.id, data.message_id, data.html_format, data.subject, data.html, data.attachments, references, mailbox.uid);
 
+            super.updateImap(user.email, mailbox.uid);
+        }
+
         console.log(`Email ${data.id} has been recieved from ${data.headers.from}`);
-        super.updateImap(user.email, mailbox.uid);
     }
 
     async getAttatchment(email_id, attachment_id) {
