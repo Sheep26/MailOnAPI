@@ -10,13 +10,14 @@ services:
       - mailonapi-db
     ports:
       - "6780:8080"
+      - "1143:1143"
 
   mailonapi-db:
     image: mysql:latest
     container_name: mailonapi-db
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: putyourshere
+      MYSQL_ROOT_PASSWORD: Pu#rari4
     ports:
       - "3308:3306"
     volumes:
