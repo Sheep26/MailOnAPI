@@ -14,8 +14,6 @@ async function initMailBox() {
     }();
 
     document.getElementById('back').onclick = function () { window.location = `/?mail_box=${mail_box}` };
-    console.log(`${mail_box}-side-element`)
-    console.log(document.getElementById(`${mail_box}-side-element`));
     document.getElementById(`${mail_box}-side-element`).classList.add('open-box');
 }
 
