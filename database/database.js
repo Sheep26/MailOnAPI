@@ -10,7 +10,7 @@ export class DatabaseManager {
         initDB();
     }
 
-    async addEmail(belongs_to, to, from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, references, mail_box, seen=0) {
+    async addEmail(belongs_to, to, from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, references, mail_box, flags=[]) {
         const mailbox = await this.getMailBoxUID(belongs_to, mail_box);
 
         if (!mailbox)
@@ -25,19 +25,16 @@ export class DatabaseManager {
             cc,
             mail_id,
             message_id,
-            html_format,
+            html_format ?? 'text/plain',
             subject,
             content,
             attachments,
             references,
             Date.now(),
             mail_box,
-            `[]`,
+            flags,
             mailbox.uid_next
         ]);
-
-        if (seen)
-            await this.markSeen(mail_id, belongs_to);
 
         await this.incrementUIDNext(mailbox.belongs_to, mailbox.name);
     }

@@ -266,7 +266,7 @@ export class FetchCommand extends Command {
             }
 
             else if (header === "content-type") {
-                headers += `Content-Type: ${email.html_format ? "text/html" : "text/plain"}; charset=utf-8\r\n`;
+                headers += `Content-Type: ${email.html_format}; charset=utf-8\r\n`;
             }
 
             else if (header === "content-transfer-encoding") {

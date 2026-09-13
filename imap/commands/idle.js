@@ -7,7 +7,23 @@ export class IdleCommand extends Command {
             return this.connection.send(`${tag} NO Select a mailbox first`);
 
         this.connection.idle = true;
-        this.connection.idle_tag = tag;
-        return this.connection.send(`+ idling`);
+        this.tag = tag;
+        this.connection.send(`+ idling`);
+
+        this.idleListenerBound = this.idleListener.bind(this);
+        this.connection.addListener(this.idleListenerBound);
     };
+
+    async idleListener(line, next) {
+        if (!this.connection.idle)
+            return next();
+
+        if (line.toUpperCase() === "DONE" && this.connection.idle) {
+            this.connection.idle = false;
+            this.connection.send(`${this.tag} OK IDLE terminated`);
+
+            this.tag = null; // Free the couple bytes of memory.
+            this.connection.removeListener(this.idleListenerBound);
+        }
+    }
 }

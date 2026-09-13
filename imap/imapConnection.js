@@ -20,8 +20,7 @@ export class ImapConnection {
         this.idle = false;
         this.readonly = false;
 
-        this.auth_tag = null;
-        this.idle_tag = null;
+        this.listeners = [this.baseListener.bind(this), this.handleCommand.bind(this)];
     }
 
     start() {
@@ -49,7 +48,7 @@ export class ImapConnection {
             if (line.length === 0)
                 continue;
 
-            this.handleCommand(line);
+            this.callListeners(line);
         }
     }
 
@@ -133,39 +132,40 @@ export class ImapConnection {
         return root;
     }
 
-    async handleCommand(line) {
+    addListener(listener) {
+        this.listeners.splice(-1, 0, listener);
+    }
+
+    removeListener(listener) {
+        this.listeners = this.listeners.filter(listene => listene != listener);
+    }
+
+    async callListeners(line) {
+	    let listener_index = -1;
+        let last_length = this.listeners.length;
+
+        const next = async () => {
+            listener_index++;
+
+            if (this.listeners.length != last_length)
+                listener_index += this.listeners.length - last_length; // Keep position.
+
+            if (listener_index >= this.listeners.length)
+                return;
+
+            await this.listeners[listener_index](line, next);
+        };
+
+        await next();
+    }
+
+    async baseListener(line, next) {
         console.log("C:", line);
 
-        if (this.state == STATES.AUTHENTICATING_PLAIN) {
-            const authenication_parts = new TextDecoder().decode(Uint8Array.fromBase64(line)).split('\0');
-            
-            const email = authenication_parts[1];
-            const password = authenication_parts[2];
+        next();
+    }
 
-            const session = await this.database.login(email, password);
-
-            if (!session) {
-                this.state = STATES.NOT_AUTHENTICATED;
-
-                return this.send(`${this.auth_tag} NO Authentication failed`);
-            }
-
-            this.user = await this.database.getUser(email);
-            this.state = STATES.AUTHENTICATED;
-
-            this.send(`${this.auth_tag} OK AUTHENTICATE success`);
-            this.auth_tag = null; // Free the couple bytes of memory.
-            return;
-        }
-
-        if (line === "DONE" && this.idle) {
-            this.idle = false;
-            this.send(`${this.idle_tag} OK IDLE terminated`);
-
-            this.idle_tag = null; // Free the couple bytes of memory.
-            return;
-        }
-
+    async handleCommand(line, next) {
         const parts = this.parseCommand(line);
 
         if (!parts)
@@ -174,8 +174,6 @@ export class ImapConnection {
         let tag = parts[0];
         let command = parts[1]?.toUpperCase();
         let args = parts.slice(2);
-
-        console.log(command)
 
         let options = {
             uid: false

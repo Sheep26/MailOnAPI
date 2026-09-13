@@ -36,7 +36,7 @@ async function loadEmail() {
     email_email.innerText = parsed.name ? `<${parsed.email}>` : "";
 
     main_element.innerHTML = `
-    <span>${email.content}</span>
+    <span>${email.content.replace('\n', '<br>')}</span>
     <div class='flex column gap-1'>
         ${email.attachments ? function () {
             let out = "<hr style='width: 100%;'><span>Attachments</span>";
