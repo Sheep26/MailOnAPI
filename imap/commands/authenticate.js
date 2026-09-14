@@ -29,7 +29,7 @@ export class AuthenticateCommand extends Command {
     async authenticationListner(line, next) {
         if (this.connection.state == STATES.AUTHENTICATING_PLAIN) {
             try {
-                const authenication_parts = new TextDecoder().decode(Uint8Array.fromBase64(line)).split('\0');
+                const authenication_parts = new TextDecoder().decode(Uint8Array.fromBase64(line.replace(/\r?\n$/, ''))).split('\0');
                 
                 const email = authenication_parts[1];
                 const password = authenication_parts[2];

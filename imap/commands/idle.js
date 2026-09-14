@@ -18,7 +18,7 @@ export class IdleCommand extends Command {
         if (!this.connection.idle)
             return next();
 
-        if (line.toUpperCase() === "DONE" && this.connection.idle) {
+        if (line.toUpperCase() === `DONE${this.connection.newLine}` && this.connection.idle) {
             this.connection.idle = false;
             this.connection.send(`${this.tag} OK IDLE terminated`);
 

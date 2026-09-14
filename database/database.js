@@ -93,7 +93,13 @@ export class DatabaseManager {
     }
 
     async deleteMarkedDeleted(email) {
-        const [rows] = await db.query(`DELETE FROM emails WHERE belongs_to=? AND flags LIKE '%?%'`, ['\\Deleted', email]);
+        await db.execute(`DELETE FROM emails WHERE belongs_to=? AND JSON_CONTAINS(flags, ?)`, [email, JSON.stringify('\\Deleted')]);
+    }
+
+    async getMarkedDeleted(email) {
+        const [rows] = await db.query(`SELECT * FROM emails WHERE belongs_to=? AND JSON_CONTAINS(flags, ?)`, [email, JSON.stringify('\\Deleted')]);
+
+        return rows;
     }
 
     async deleteEmail(mail_id, user_email) {
