@@ -1,4 +1,4 @@
-FROM node:lts-alpine
+FROM node:26.8.1-alpine
 WORKDIR /app
 COPY . .
 EXPOSE 8080
