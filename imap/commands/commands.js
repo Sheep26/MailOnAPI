@@ -20,6 +20,7 @@ import { IdleCommand } from "./idle.js";
 import { ExamineCommand } from "./examine.js";
 import { AppendCommand } from "./append.js";
 import { CheckCommand } from "./check.js";
+import { CopyCommand } from "./copy.js";
 
 export default function getCommands(database, connection) {
     return {
@@ -44,6 +45,7 @@ export default function getCommands(database, connection) {
         "IDLE": new IdleCommand(database, connection).command,
         "EXAMINE": new ExamineCommand(database, connection).command,
         "APPEND": new AppendCommand(database, connection).command,
-        "CHECK": new CheckCommand(database, connection).command
+        "CHECK": new CheckCommand(database, connection).command,
+        "COPY": new CopyCommand(database, connection).command
     };
 }
