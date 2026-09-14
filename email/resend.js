@@ -90,8 +90,7 @@ export class EmailResend extends Email {
 
         if (mailbox) {
             await this.database.addEmail(data.to[0], data.to[0], data.headers.from, data.headers['return-path'], JSON.stringify(data.bcc), JSON.stringify(data.cc), data.id, data.message_id, data.html_format, data.subject, data.html, data.attachments, references, mailbox.uid);
-
-            super.updateImap(user.email, mailbox.uid);
+            await super.updateImap(user.email, mailbox.uid);
         }
 
         console.log(`Email ${data.id} has been recieved from ${data.headers.from}`);
