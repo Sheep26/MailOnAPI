@@ -1,4 +1,5 @@
 import { Command } from "./command.js";
+import { setTimeout } from 'timers/promises';
 import STATES from '../imapStates.js';
 
 export class LogoutCommand extends Command {
