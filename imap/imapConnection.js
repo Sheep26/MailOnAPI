@@ -14,7 +14,7 @@ export class ImapConnection {
         this.mailbox = null;
 
         this.commands = getCommands(this.database, this);
-        this.newLine = "\r\n";
+        this.newLine = "";
 
         this.active = true;
         this.idle = false;
@@ -38,16 +38,26 @@ export class ImapConnection {
     }
 
     processBuffer() {
-        let newLine;
+        while (true) {
+            const crlf = this.buffer.indexOf("\r\n");
+            const lf = this.buffer.indexOf("\n");
 
-        while ((newLine = this.buffer.indexOf(this.newLine)) != -1) {
-            const line = this.buffer.slice(0, newLine);
+            if (crlf === -1 && lf === -1)
+                break;
+
+            let newLine;
+
+            if (crlf !== -1 && (lf === -1 || crlf <= lf)) {
+                newLine = crlf;
+                this.newLine = "\r\n";
+            } else {
+                newLine = lf;
+                this.newLine = "\n";
+            }
+
+            const line = this.buffer.slice(0, newLine + this.newLine.length);
 
             this.buffer = this.buffer.slice(newLine + this.newLine.length);
-
-            if (line.length === 0)
-                continue;
-
             this.callListeners(line);
         }
     }

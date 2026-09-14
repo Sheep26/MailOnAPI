@@ -19,6 +19,7 @@ import { UnselectCommand } from "./unselect.js";
 import { IdleCommand } from "./idle.js";
 import { ExamineCommand } from "./examine.js";
 import { AppendCommand } from "./append.js";
+import { CheckCommand } from "./check.js";
 
 export default function getCommands(database, connection) {
     return {
@@ -42,6 +43,7 @@ export default function getCommands(database, connection) {
         "UNSELECT": new UnselectCommand(database, connection).command,
         "IDLE": new IdleCommand(database, connection).command,
         "EXAMINE": new ExamineCommand(database, connection).command,
-        "APPEND": new AppendCommand(database, connection).command
+        "APPEND": new AppendCommand(database, connection).command,
+        "CHECK": new CheckCommand(database, connection).command
     };
 }

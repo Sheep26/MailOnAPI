@@ -33,26 +33,26 @@ export class AppendCommand extends Command {
 
     async appendListener(line, next) {
         this.buffer.push(line);
-        this.recieved += line.length;
+        this.recieved += Buffer.byteLength(line, "utf8");
 
-        if (this.recieved > this.literal) {
+        if (this.recieved >= this.literal) {
             this.connection.removeListener(this.appendListenerBound);
-            let data = {to: null, from: null, reply_to: null, bcc: null, cc: null, message_id: null, subject: null, content_type: null, mail_id: crypto.randomBytes(4).readUInt32BE(), content: ""};
+            let data = {to: null, from: null, reply_to: null, bcc: null, cc: null, message_id: null, subject: null, content_type: null, mail_id: crypto.randomBytes(8).readUInt32BE(), content: ""};
 
             for (let line of this.buffer) {
-                if (line.startsWith("To: "))
-                    data.to = line.slice(4);
-                else if (line.startsWith("From: "))
-                    data.from = line.slice(6);
-                else if (line.startsWith("Subject: "))
-                    data.subject = line.slice(9);
-                else if (line.startsWith("Message-Id: "))
-                    data.message_id = line.slice(12);
-                else if (line.startsWith("Content-Type: ")) {
-                    const content_type = line.slice(14);
+                if (line.toLowerCase().startsWith("to: "))
+                    data.to = line.slice(4).replace(/[\r\n]+/g, '');
+                else if (line.toLowerCase().startsWith("from: "))
+                    data.from = line.slice(6).replace(/[\r\n]+/g, '');
+                else if (line.toLowerCase().startsWith("subject: "))
+                    data.subject = line.slice(9).replace(/[\r\n]+/g, '');
+                else if (line.toLowerCase().startsWith("message-id: "))
+                    data.message_id = line.slice(12).replace(/[\r\n]+/g, '');
+                else if (line.toLowerCase().startsWith("content-type: ")) {
+                    const content_type = line.slice(14).replace(/[\r\n]+/g, '');
                     data.content_type = content_type.split("; ")[0];
                 } else
-                    data.content += `${line}\n`;
+                    data.content += `${line}`;
             }
 
             this.database.addEmail(this.connection.user.email, data.to, data.from, data.reply_to ?? data.from, data.bcc ?? [], data.cc ?? [], data.mail_id, data.message_id, data.content_type, data.subject, data.content, null, null, this.mailbox.uid, this.flags);
