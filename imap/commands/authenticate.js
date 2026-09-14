@@ -49,6 +49,8 @@ export class AuthenticateCommand extends Command {
                 this.connection.send(`${this.tag} OK AUTHENTICATE success`);
                 this.tag = null; // Free the couple bytes of memory.
             } catch (e) {
+                console.error("Authentication error:", e);
+	            console.error("line:", JSON.stringify(line));
                 this.connection.send(`${this.tag} BAD Invalid Request`);
             }
         } else {
