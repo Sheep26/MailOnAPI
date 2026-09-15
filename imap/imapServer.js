@@ -1,4 +1,3 @@
-import net from "net";
 import tls from "tls";
 import config from "../config.json" with { type: "json" };
 import fs from "fs";
