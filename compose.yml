@@ -12,6 +12,8 @@ services:
       - "6780:8080"
       - "143:143"
       - "993:993"
+    volumes:
+      - YOUR_PATH_TO_TLS_KEYS:/keys/
 
   mailonapi-db:
     image: mysql:latest
