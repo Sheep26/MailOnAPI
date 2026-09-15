@@ -17,7 +17,7 @@ export class CopyCommand extends Command {
         const selectedMails = this.selectEmails(mailboxEmails, sequence, uid);
 
         for (let email of selectedMails)
-            await this.database.addEmail(email.belongs_to, email.mail_to, email.mail_from, email.reply_to, email.bcc, email.cc, email.mail_id, email.message_id, email.html_format, email.subject, email.content, email.attachments, email.email_references, target_mailbox.uid, email.flags);
+            await this.database.addEmail(email.belongs_to, email.mail_to, email.mail_from, email.reply_to, email.bcc, email.cc, crypto.randomBytes(8).readUInt32BE(), email.message_id, email.html_format, email.subject, email.content, email.attachments, email.email_references, target_mailbox.uid, email.flags);
 
         return this.connection.send(`${tag} OK COPY completed`);
     };
