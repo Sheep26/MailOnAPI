@@ -1,5 +1,6 @@
 import { Command } from "./command.js";
 import STATES from '../imapStates.js';
+import crypto from 'node:crypto';
 
 export class CopyCommand extends Command {
     command = async (tag, args, options) => {
