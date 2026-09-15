@@ -10,7 +10,7 @@ export class LSUBCommand extends Command {
         const filtered_mailboxes = mailboxes.filter(mailbox => mailbox.subscribed);
 
         for (const mailbox of filtered_mailboxes)
-            this.connection.send(`* LSUB (\\HasNoChildren${mailbox.special_use_flags ? ` ${mailbox.special_use_flags}` : ""}) "/" "${mailbox.name}"`);
+            this.connection.send(`* LSUB (\\Noinferiors${mailbox.special_use_flags ? ` ${mailbox.special_use_flags}` : ""}) "/" "${mailbox.name}"`);
 
         this.connection.send(`${tag} OK LSUB completed`);
     };

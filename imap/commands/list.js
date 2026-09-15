@@ -9,7 +9,7 @@ export class ListCommand extends Command {
         const mailboxes = await this.database.getMailBoxes(this.connection.user.email);
 
         for (const mailbox of mailboxes)
-            this.connection.send(`* LIST (\\HasNoChildren${mailbox.special_use_flags ? ` ${mailbox.special_use_flags}` : ""}) "/" "${mailbox.name}"`);
+            this.connection.send(`* LIST (\\Noinferiors${mailbox.special_use_flags ? ` ${mailbox.special_use_flags}` : ""}) "/" "${mailbox.name}"`);
 
         this.connection.send(`${tag} OK LIST completed`);
     };
