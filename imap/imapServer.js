@@ -5,11 +5,6 @@ import { ImapConnection } from "./imapConnection.js";
 
 let connections = [];
 
-const tls_config = {
-    key: fs.readFileSync(config.tls.private_key),
-    cert: fs.readFileSync(config.tls.cert)
-}
-
 export function imapHandleRecieved(belongs_to, exists, updated_mailbox) {
     const filtered_connections = connections.filter(connection => connection.user.email == belongs_to && connection.active && connection.idle && connection.mailbox.uid == updated_mailbox);
 
@@ -18,7 +13,7 @@ export function imapHandleRecieved(belongs_to, exists, updated_mailbox) {
 }
 
 export function startImap(database) {
-    const server = tls.createServer(tls_config, (socket) => {
+    const server = tls.createServer({key: fs.readFileSync(config.tls.private_key), cert: fs.readFileSync(config.tls.cert)}, (socket) => {
         const connection = new ImapConnection(socket, database);
         connections.push(connection);
 
