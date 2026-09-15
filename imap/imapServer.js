@@ -1,7 +1,15 @@
 import net from "net";
+import tls from "tls";
+import config from "../config.json" with { type: "json" };
+import fs from "fs";
 import { ImapConnection } from "./imapConnection.js";
 
 let connections = [];
+
+const tls_config = {
+    key: fs.readFileSync(config.tls.private_key),
+    cert: fs.readFileSync(config.tls.cert)
+}
 
 export function imapHandleRecieved(belongs_to, exists, updated_mailbox) {
     const filtered_connections = connections.filter(connection => connection.user.email == belongs_to && connection.active && connection.idle && connection.mailbox.uid == updated_mailbox);
@@ -11,7 +19,7 @@ export function imapHandleRecieved(belongs_to, exists, updated_mailbox) {
 }
 
 export function startImap(database) {
-    const server = net.createServer((socket) => {
+    const server = tls.createServer(tls_config, (socket) => {
         const connection = new ImapConnection(socket, database);
         connections.push(connection);
 
@@ -22,7 +30,7 @@ export function startImap(database) {
 		});
     });
 
-    server.listen(1143, () => { // Please implement TLS at some point.
-        console.log("IMAP server listening on port 1143");
+    server.listen(config.imaps_port, () => {
+        console.log(`IMAP server listening on port ${config.imap_port}`);
     });
 }

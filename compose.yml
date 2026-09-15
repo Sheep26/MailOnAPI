@@ -10,7 +10,8 @@ services:
       - mailonapi-db
     ports:
       - "6780:8080"
-      - "1143:1143"
+      - "143:143"
+      - "993:993"
 
   mailonapi-db:
     image: mysql:latest
