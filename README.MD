@@ -5,10 +5,6 @@ MailOnAPI or Mail On a PI is a self hosted email server and client. It acts as a
 
 [Try It!](https://mail.drewfitzgerald.co.nz)
 
-### Demo Login
-Username: demo@wchouses.co.nz  
-Password: demo1234  
-
 ### Features
 Mail Recieving  
 Mail Sending  

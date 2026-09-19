@@ -13,13 +13,15 @@
                 <div class="flex card column centered gap-1">
                     <span class="bold">Login</span>
 
-                    <form class="flex column gap-1 centered" action="/api/login" method="POST" onsubmit="checkLogin(event)">
-                        <%- renderUtils.textField('email', 'Email') %>
+                    <form class="flex column gap-1 centered" action="/api/create_account" method="POST" onsubmit="checkLogin(event)">
+                        <%- renderUtils.textField('email', 'Email (not your current one and ends with @wchouses.co.nz)') %>
+                        <%- renderUtils.textField('name', 'Username') %>
                         <%- renderUtils.textField('password', 'Password', 'password') %>
+                        <%- renderUtils.textField('password2', 'Password', 'password') %>
 
                         <input type="submit" class="submit" id="login" value="Login">
-                        <span style="display: none;" id="inc-login">Incorrect Login</span>
-                        <a class="white bold no-decorations" href="/create_account">No account, create one.</a>
+                        <span style="display: none;" id="inc-login">Passwords are not the same</span>
+                        <span style="display: none;" id="inc-domain">Domain is not wchouses.co.nz</span>
                     </form>
                 </div>
             </div>
@@ -33,26 +35,21 @@
 
                 const email = document.getElementById("email").value;
                 const password = document.getElementById("password").value;
+                const password2 = document.getElementById("password2").value;
 
-                const data = {
-                    email: email,
-                    password: password
+                if (!email.endsWith('@wchouses.co.nz')) {
+                    document.getElementById("inc-domain").style.display = "block";
+
+                    return;
                 }
 
-                const request = await fetch(`/api/valid_login`, {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                });
-
-                if (request.status === 200)
-                    event.target.submit();
-                else {
+                if (password != password2) {
                     document.getElementById("inc-login").style.display = "block";
-                    document.getElementById("login-button").classList.remove("loading");
+
+                    return;
                 }
+
+                event.target.submit();
             }
         </script>
     </body>

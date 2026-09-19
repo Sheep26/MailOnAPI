@@ -219,6 +219,15 @@ app.get('/attachment/:email_id/:attachment_id', async (req, res) => {
     }
 });
 
+app.post('/api/create_account', async (req, res) => {
+    const email = req.body.email;
+    const name = req.body.name;
+    const password = req.body.password;
+
+    await database.addUser(name, password, email);
+    res.redirect('/');
+});
+
 app.use(async (req, res, next) => {
     /*
     * This function catches all uncaught routes and sends either a 404 for if the content is missing or sends the requested webpage.
@@ -227,10 +236,16 @@ app.use(async (req, res, next) => {
     * If it exists, it will return it if not it goes to 404 not found.
     */
 
-    const page = req.path.replace('/', '') || 'home';
+    let page = req.path.replace('/', '') || 'home';
+
+    if (page == "create_account")
+        return res.render('create_account', { title: 'Create Account', renderUtils: renderUtils });
 
     if (page != 'login' && (!req.cookies.session || !sessionManager.getSession(req.cookies.session)))
         return res.render('login', { title: 'Login', renderUtils: renderUtils });
+
+    if (page == 'login' && sessionManager.getSession(req.cookies.session))
+        page = 'home';
 
     // Check if requested content exists.
     if (!existsSync(`templates/${page}.ejs`))
