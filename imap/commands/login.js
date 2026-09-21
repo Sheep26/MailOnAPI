@@ -3,6 +3,9 @@ import STATES from '../imapStates.js';
 
 export class LoginCommand extends Command {
     command = async (tag, args) => {
+        if (!this.connection.secure)
+            return this.connection.send(`${tag} NO connection not secure`);
+
         if (this.connection.state != STATES.NOT_AUTHENTICATED)
             return this.connection.send(`${tag} NO Already authenticated`);
 

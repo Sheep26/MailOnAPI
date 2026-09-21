@@ -22,6 +22,7 @@ import { AppendCommand } from "./append.js";
 import { CheckCommand } from "./check.js";
 import { CopyCommand } from "./copy.js";
 import { ExpungeCommand } from "./expunge.js";
+import { StartTLSCommand } from "./starttls.js";
 
 export default function getCommands(database, connection) {
     return {
@@ -48,6 +49,7 @@ export default function getCommands(database, connection) {
         "APPEND": new AppendCommand(database, connection).command,
         "CHECK": new CheckCommand(database, connection).command,
         "COPY": new CopyCommand(database, connection).command,
-        "EXPUNGE": new ExpungeCommand(database, connection).command
+        "EXPUNGE": new ExpungeCommand(database, connection).command,
+        "STARTTLS": new StartTLSCommand(database, connection).command
     };
 }

@@ -14,7 +14,7 @@
                     <span class="bold">Login</span>
 
                     <form class="flex column gap-1 centered" action="/api/create_account" method="POST" onsubmit="checkLogin(event)">
-                        <%- renderUtils.textField('email', 'Email (not your current one and ends with @wchouses.co.nz)') %>
+                        <%- renderUtils.textField('email', 'Email') %>
                         <%- renderUtils.textField('name', 'Username') %>
                         <%- renderUtils.textField('password', 'Password', 'password') %>
                         <%- renderUtils.textField('password2', 'Password', 'password') %>

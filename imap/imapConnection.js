@@ -2,9 +2,11 @@ import getCommands from "./commands/commands.js";
 import config from "../config.json" with { type: "json" };
 import crypto from 'node:crypto';
 import STATES from './imapStates.js';
+import tls from "tls";
+import fs from "fs";
 
 export class ImapConnection {
-    constructor(socket, database) {
+    constructor(socket, database, capabilities, secure) {
         this.socket = socket;
         this.database = database;
         this.buffer = "";
@@ -15,16 +17,34 @@ export class ImapConnection {
 
         this.commands = getCommands(this.database, this);
         this.newLine = "";
+        this.capabilities = [...capabilities];
 
         this.active = true;
         this.idle = false;
         this.readonly = false;
+        this.secure = secure;
+
+        if (!secure) {
+            this.addCapabiltity('LOGINDISABLED');
+            this.addCapabiltity('STARTTLS');
+
+            this.removeCapability('AUTH=PLAIN');
+        }
 
         this.listeners = [this.baseListener.bind(this), this.handleCommand.bind(this)];
     }
 
-    start() {
-        this.send(`* OK ${config.imapGreetings[crypto.randomInt(0, config.imapGreetings.length)]}`);
+    addCapabiltity(capability) {
+        this.capabilities.push(capability);
+    }
+
+    removeCapability(capability) {
+        this.capabilities = this.capabilities.filter(c => c != capability);
+    }
+
+    start(greeting=true) {
+        if (greeting)
+            this.send(`* OK ${config.imapGreetings[crypto.randomInt(0, config.imapGreetings.length)]}`);
 
         this.socket.on("data", (data) => {
             this.buffer += data.toString();
@@ -34,6 +54,48 @@ export class ImapConnection {
 
         this.socket.on("error", (error) => {
             console.error("IMAP socket error:", error);
+        });
+    }
+
+    startTLS() {
+        const oldSocket = this.socket;
+        const tlsSocket = new tls.TLSSocket(oldSocket, {
+            isServer: true,
+            secureContext: tls.createSecureContext({
+                key: fs.readFileSync(config.tls.private_key),
+                cert: fs.readFileSync(config.tls.cert),
+                minVersion: 'TLSv1.2',
+                maxVersion: 'TLSv1.3'
+            })
+        });
+
+        this.socket = tlsSocket;
+
+        oldSocket.removeAllListeners("data");
+        oldSocket.removeAllListeners("error");
+
+        tlsSocket.on("data", (data) => {
+            this.buffer += data.toString();
+
+            this.processBuffer();
+        });
+
+        tlsSocket.on("error", (error) => {
+            console.error("STARTTLS error:", error);
+        });
+
+        tlsSocket.once("secure", () => {
+            console.log("STARTTLS handshake completed", tlsSocket.getProtocol());
+
+            this.secure = true;
+
+            this.removeCapability("STARTTLS");
+            this.removeCapability("LOGINDISABLED");
+
+            this.addCapabiltity("AUTH=PLAIN");
+
+            this.buffer = "";
+            this.newLine = "";
         });
     }
 
@@ -209,13 +271,13 @@ export class ImapConnection {
         }
     }
 
-    send(message) {
+    send(message, callback=null) {
         console.log("S:", message);
-        this.socket.write(message + "\r\n");
+        this.socket.write(message + "\r\n", callback);
     }
 
-    sendRaw(message) {
+    sendRaw(message, callback=null) {
         console.log("S:", message);
-        this.socket.write(message);
+        this.socket.write(message, callback);
     }
 }
