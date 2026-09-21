@@ -2,8 +2,6 @@ import getCommands from "./commands/commands.js";
 import config from "../config.json" with { type: "json" };
 import crypto from 'node:crypto';
 import STATES from './imapStates.js';
-import tls from "tls";
-import fs from "fs";
 
 export class ImapConnection {
     constructor(socket, database, capabilities, secure) {
@@ -54,48 +52,6 @@ export class ImapConnection {
 
         this.socket.on("error", (error) => {
             console.error("IMAP socket error:", error);
-        });
-    }
-
-    startTLS() {
-        const oldSocket = this.socket;
-        const tlsSocket = new tls.TLSSocket(oldSocket, {
-            isServer: true,
-            secureContext: tls.createSecureContext({
-                key: fs.readFileSync(config.tls.private_key),
-                cert: fs.readFileSync(config.tls.cert),
-                minVersion: 'TLSv1.2',
-                maxVersion: 'TLSv1.3'
-            })
-        });
-
-        this.socket = tlsSocket;
-
-        oldSocket.removeAllListeners("data");
-        oldSocket.removeAllListeners("error");
-
-        tlsSocket.on("data", (data) => {
-            this.buffer += data.toString();
-
-            this.processBuffer();
-        });
-
-        tlsSocket.on("error", (error) => {
-            console.error("STARTTLS error:", error);
-        });
-
-        tlsSocket.once("secure", () => {
-            console.log("STARTTLS handshake completed", tlsSocket.getProtocol());
-
-            this.secure = true;
-
-            this.removeCapability("STARTTLS");
-            this.removeCapability("LOGINDISABLED");
-
-            this.addCapabiltity("AUTH=PLAIN");
-
-            this.buffer = "";
-            this.newLine = "";
         });
     }
 

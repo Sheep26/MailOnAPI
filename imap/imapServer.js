@@ -5,8 +5,11 @@ import fs from "fs";
 import { ImapConnection } from "./imapConnection.js";
 
 let connections = [];
-
 const capabilities = ["IMAP4rev1", "UNSELECT", "AUTH=PLAIN", "IDLE"];
+
+export function removeConnection(connection) {
+    connections = connections.filter(connectio => connectio != connection);
+}
 
 export function imapHandleRecieved(belongs_to, exists, updated_mailbox) {
     const filtered_connections = connections.filter(connection => connection.user.email == belongs_to && connection.active && connection.idle && connection.mailbox.uid == updated_mailbox);
