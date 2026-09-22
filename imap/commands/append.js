@@ -1,5 +1,4 @@
 import { Command } from "./command.js";
-import { parseEmailAddress } from "../../email/email.js";
 import STATES from '../imapStates.js';
 import crypto from 'node:crypto';
 
@@ -37,37 +36,61 @@ export class AppendCommand extends Command {
         this.buffer.push(line);
         this.recieved += Buffer.byteLength(line, "utf8");
 
-        if (this.recieved >= this.literal) {
-            this.connection.removeListener(this.appendListenerBound);
-            let data = {to: null, from: null, 'reply-to': null, bcc: null, cc: null, 'message-id': null, subject: null, 'content-type': null, mail_id: crypto.randomBytes(8).readUInt32BE(), content: ""};
+        if (this.recieved < this.literal)
+            return;
 
-            for (let line of this.buffer) {
-                if (line == this.connection.newLine && !this.content_started) {
-                    this.content_started = true;
+        this.connection.removeListener(this.appendListenerBound);
+
+        let data = {to: null,
+            from: null,
+            'reply-to': null,
+            bcc: null,
+            cc: null,
+            'message-id': null,
+            subject: null,
+            'content-type': null,
+            mail_id: crypto.randomBytes(8).readUInt32BE(),
+            content: ""
+        };
+
+        let content_started = false;
+
+        for (let line of this.buffer) {
+            if (!content_started) {
+                const isEmptyLine = line === this.connection.newLine || line === "";
+
+                if (isEmptyLine) {
+                    content_started = true;
 
                     continue;
                 }
-
-                if (this.content_started) {
-                    data.content += `${line}`;
-
-                    continue;
-                }
-
-                const split = line.split(": ");
-
-                const header = split[0].toLowerCase();
-                const header_content = split[1];
-
-                if (accepted_headers.includes(header))
-                    data[header] = header_content;
             }
 
-            console.log(data.content)
+            if (content_started) {
+                data.content += `${line}`;
 
-            this.database.addEmail(this.connection.user.email, data.to, data.from, data.from, data.bcc ?? [], data.cc ?? [], data.mail_id, data['message-id'], data['content-type'], data.subject, data.content, null, null, this.mailbox.uid, this.flags);
-            this.connection.send(`${this.tag} OK APPEND completed`);
+                continue;
+            }
+
+            const separator = line.indexOf(":");
+
+            if (separator === -1)
+                continue;
+
+            const header = line.slice(0, separator).trim().toLowerCase();
+            const header_content = line.slice(separator + 1).trim();
+
+            console.log("APPEND: ", data);
+
+            if (accepted_headers.includes(header))
+                data[header] = header_content;
         }
+
+        const content_type_split = data['content-type'].split(";");
+        const content_type = content_type_split[0];
+
+        this.database.addEmail(this.connection.user.email, data.to, data.from, data['reply-to'] ?? data.from, data.bcc ?? [], data.cc ?? [], data.mail_id, data['message-id'], content_type, data.subject, data.content, null, null, this.mailbox.uid, this.flags);
+        this.connection.send(`${this.tag} OK APPEND completed`);
     }
 
     getInfo(args) {
