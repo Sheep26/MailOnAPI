@@ -65,7 +65,7 @@ export class AppendCommand extends Command {
 
             console.log(data.content)
 
-            this.database.addEmail(this.connection.user.email, data.to, data.from, data['reply-to'] ?? data.from, data.bcc ?? [], data.cc ?? [], data.mail_id, data['message-id'], data['content-type'], data.subject, data.content, null, null, this.mailbox.uid, this.flags);
+            this.database.addEmail(this.connection.user.email, data.to, data.from, data.from, data.bcc ?? [], data.cc ?? [], data.mail_id, data['message-id'], data['content-type'], data.subject, data.content, null, null, this.mailbox.uid, this.flags);
             this.connection.send(`${this.tag} OK APPEND completed`);
         }
     }
