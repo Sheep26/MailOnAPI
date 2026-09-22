@@ -11,13 +11,13 @@
         <main class="font">
             <div class="flex vcentered">
                 <div class="flex card column centered gap-1">
-                    <span class="bold">Login</span>
+                    <span class="bold">Create Account</span>
 
                     <form class="flex column gap-1 centered" action="/api/create_account" method="POST" onsubmit="checkLogin(event)">
                         <%- renderUtils.textField('email', 'Email') %>
                         <%- renderUtils.textField('name', 'Username') %>
                         <%- renderUtils.textField('password', 'Password', 'password') %>
-                        <%- renderUtils.textField('password2', 'Password', 'password') %>
+                        <%- renderUtils.textField('password2', 'Password again', 'password') %>
 
                         <input type="submit" class="submit" id="login" value="Create Account">
                         <span style="display: none;" id="inc-login">Passwords are not the same</span>
