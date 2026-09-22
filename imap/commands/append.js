@@ -3,6 +3,8 @@ import { parseEmailAddress } from "../../email/email.js";
 import STATES from '../imapStates.js';
 import crypto from 'node:crypto';
 
+const accepted_headers = ["to", "from", "subject", "message-id", "content-type"];
+
 export class AppendCommand extends Command {
     command = async (tag, args) => {
         if (this.connection.state == STATES.NOT_AUTHENTICATED)
@@ -37,25 +39,33 @@ export class AppendCommand extends Command {
 
         if (this.recieved >= this.literal) {
             this.connection.removeListener(this.appendListenerBound);
-            let data = {to: null, from: null, reply_to: null, bcc: null, cc: null, message_id: null, subject: null, content_type: null, mail_id: crypto.randomBytes(8).readUInt32BE(), content: ""};
+            let data = {to: null, from: null, reply_to: null, bcc: null, cc: null, 'message-id': null, subject: null, 'content-type': null, mail_id: crypto.randomBytes(8).readUInt32BE(), content: ""};
 
             for (let line of this.buffer) {
-                if (line.toLowerCase().startsWith("to: "))
-                    data.to = line.slice(4).replace(/[\r\n]+/g, '');
-                else if (line.toLowerCase().startsWith("from: "))
-                    data.from = line.slice(6).replace(/[\r\n]+/g, '');
-                else if (line.toLowerCase().startsWith("subject: "))
-                    data.subject = line.slice(9).replace(/[\r\n]+/g, '');
-                else if (line.toLowerCase().startsWith("message-id: "))
-                    data.message_id = line.slice(12).replace(/[\r\n]+/g, '');
-                else if (line.toLowerCase().startsWith("content-type: ")) {
-                    const content_type = line.slice(14).replace(/[\r\n]+/g, '');
-                    data.content_type = content_type.split("; ")[0];
-                } else
+                if (line == this.connection.newLine && !this.content_started) {
+                    this.content_started = true;
+
+                    continue;
+                }
+
+                if (this.content_started) {
                     data.content += `${line}`;
+
+                    continue;
+                }
+
+                const split = line.split(": ");
+
+                const header = split[0].toLowerCase();
+                const header_content = split[1];
+
+                if (accepted_headers.includes(header))
+                    data[header] = header_content;
             }
 
-            this.database.addEmail(this.connection.user.email, data.to, data.from, data.reply_to ?? data.from, data.bcc ?? [], data.cc ?? [], data.mail_id, data.message_id, data.content_type, data.subject, data.content, null, null, this.mailbox.uid, this.flags);
+            console.log(data.content)
+
+            this.database.addEmail(this.connection.user.email, data.to, data.from, data.reply_to ?? data.from, data.bcc ?? [], data.cc ?? [], data.mail_id, data['message-id'], data['content-type'], data.subject, data.content, null, null, this.mailbox.uid, this.flags);
             this.connection.send(`${this.tag} OK APPEND completed`);
         }
     }
