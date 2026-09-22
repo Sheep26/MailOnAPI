@@ -121,13 +121,13 @@ async function loadInbox() {
         return box;
     }();
 
-    const mail_box_emails = emails.filter((email) => email.mail_box == mail_box.uid);
+    const mail_box_emails = emails.filter((email) => email.mail_box == mail_box.uid && !email.flags.includes("\\Deleted"));
 
     document.getElementById('mailbox-text').innerText = mail_box.name;
     document.getElementById(`${mail_box.uid}-side-element`).classList.add('open-box');
 
     if (!mail_box_emails.length) {
-        inbox.innerHTML = `<span class="unselectable bold">Nothing yet</span>`;
+        inbox.innerHTML = `<span class="unselectable bold">Mailbox is empty</span>`;
 
         return;
     }
@@ -141,9 +141,6 @@ async function loadInbox() {
     mail_box_emails.reverse();
 
     for (let email of mail_box_emails) {
-        if (email.flags.includes("\\Deleted"))
-            continue;
-
         let element = document.createElement('div');
 
         element.id = email.mail_id;
