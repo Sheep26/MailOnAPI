@@ -3,7 +3,7 @@ import { parseEmailAddress } from "../../email/email.js";
 import STATES from '../imapStates.js';
 import crypto from 'node:crypto';
 
-const accepted_headers = ["to", "from", "subject", "message-id", "content-type"];
+const accepted_headers = ["to", "from", "subject", "message-id", "content-type", "cc", "bcc", "reply-to"];
 
 export class AppendCommand extends Command {
     command = async (tag, args) => {
@@ -39,7 +39,7 @@ export class AppendCommand extends Command {
 
         if (this.recieved >= this.literal) {
             this.connection.removeListener(this.appendListenerBound);
-            let data = {to: null, from: null, reply_to: null, bcc: null, cc: null, 'message-id': null, subject: null, 'content-type': null, mail_id: crypto.randomBytes(8).readUInt32BE(), content: ""};
+            let data = {to: null, from: null, 'reply-to': null, bcc: null, cc: null, 'message-id': null, subject: null, 'content-type': null, mail_id: crypto.randomBytes(8).readUInt32BE(), content: ""};
 
             for (let line of this.buffer) {
                 if (line == this.connection.newLine && !this.content_started) {
@@ -65,7 +65,7 @@ export class AppendCommand extends Command {
 
             console.log(data.content)
 
-            this.database.addEmail(this.connection.user.email, data.to, data.from, data.reply_to ?? data.from, data.bcc ?? [], data.cc ?? [], data.mail_id, data['message-id'], data['content-type'], data.subject, data.content, null, null, this.mailbox.uid, this.flags);
+            this.database.addEmail(this.connection.user.email, data.to, data.from, data['reply-to'] ?? data.from, data.bcc ?? [], data.cc ?? [], data.mail_id, data['message-id'], data['content-type'], data.subject, data.content, null, null, this.mailbox.uid, this.flags);
             this.connection.send(`${this.tag} OK APPEND completed`);
         }
     }
