@@ -18,7 +18,7 @@ export function imapHandleRecieved(belongs_to, exists, updated_mailbox) {
         connection.send(`* ${exists} EXISTS`);
 }
 
-function create_connection(secure) {
+function create_connection(socket, database, secure) {
     const connection = new ImapConnection(socket, database, capabilities, secure);
     connections.push(connection);
 
@@ -31,11 +31,11 @@ function create_connection(secure) {
 
 export function startImap(database) {
     const server = tls.createServer({key: fs.readFileSync(config.tls.private_key), cert: fs.readFileSync(config.tls.cert)}, (socket) => {
-        create_connection(true);
+        create_connection(socket, database, true);
     });
 
     const server_unsecure = net.createServer((socket) => {
-        create_connection(false);
+        create_connection(socket, database, false);
     });
 
     server_unsecure.listen(config.imap_port, () => {
