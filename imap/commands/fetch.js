@@ -120,90 +120,53 @@ export class FetchCommand extends Command {
         for (const requestedHeader of requestedHeaders) {
             const header = requestedHeader.toLowerCase();
 
-            if (header === "from") {
-                if (email.mail_from)
-                    headers += `From: ${email.mail_from}\r\n`;
-            }
+            if (header === "from" && email.mail_from)
+                headers += `From: ${email.mail_from}\r\n`;
 
-            else if (header === "to") {
-                if (email.mail_to)
-                    headers += `To: ${email.mail_to}\r\n`;
-            }
+            else if (header === "to" && email.mail_to)
+                headers += `To: ${email.mail_to}\r\n`;
 
-            else if (header === "cc") {
-                if (Array.isArray(email.cc)) {
-                    if (email.cc.length > 0)
-                        headers += `Cc: ${email.cc.join(", ")}\r\n`;
-                } else if (email.cc) {
-                    headers += `Cc: ${email.cc}\r\n`;
-                }
-            }
+            else if (header === "cc" && email.cc && email.cc.length > 0)
+                headers += `Cc: ${email.cc.join(", ")}\r\n`;
 
-            else if (header === "bcc") {
-                if (Array.isArray(email.bcc)) {
-                    if (email.bcc.length > 0)
-                        headers += `Bcc: ${email.bcc.join(", ")}\r\n`;
-                } else if (email.bcc) {
-                    headers += `Bcc: ${email.bcc}\r\n`;
-                }
-            }
+            else if (header === "bcc" && email.bcc && email.bcc.length > 0)
+                    headers += `Bcc: ${email.bcc.join(", ")}\r\n`;
 
-            else if (header === "subject") {
-                if (email.subject)
-                    headers += `Subject: ${email.subject}\r\n`;
-            }
+            else if (header === "subject" && email.subject)
+                headers += `Subject: ${email.subject}\r\n`;
 
-            else if (header === "date") {
+            else if (header === "date" && email.time)
                 headers += `Date: ${new Date(Number(email.time)).toUTCString()}\r\n`;
-            }
 
-            else if (header === "message-id") {
-                if (email.message_id)
+            else if (header === "message-id" && email.message_id)
                     headers += `Message-ID: ${email.message_id}\r\n`;
-            }
 
-            else if (header === "priority") {
-                if (email.priority)
-                    headers += `Priority: ${email.priority ?? 0}\r\n`;
-            }
+            else if (header === "priority" && email.priority)
+                headers += `Priority: ${email.priority ?? 0}\r\n`;
 
-            else if (header === "x-priority") {
-                if (email.x_priority)
-                    headers += `X-Priority: ${email.x_priority ?? 0}\r\n`;
-            }
+            else if (header === "x-priority" && email.x_priority)
+                headers += `X-Priority: ${email.x_priority ?? 0}\r\n`;
 
-            else if (header === "references") {
-                if (email.references)
-                    headers += `References: ${email.references ?? ""}\r\n`;
-            }
+            else if (header === "references" && email.references)
+                headers += `References: ${email.references ?? ""}\r\n`;
 
-            else if (header === "newsgroups") {
-                if (email.newsgroups)
-                    headers += `Newsgroups: ${email.newsgroups ?? ""}\r\n`;
-            }
+            else if (header === "newsgroups" && email.newsgroups)
+                headers += `Newsgroups: ${email.newsgroups ?? ""}\r\n`;
 
-            else if (header === "in-reply-to") {
-                if (email.in_reply_to)
-                    headers += `In-Reply-To: ${email.in_reply_to ?? ""}\r\n`;
-            }
+            else if (header === "in-reply-to" && email.in_reply_to)
+                headers += `In-Reply-To: ${email.in_reply_to ?? ""}\r\n`;
 
-            else if (header === "content-type") {
+            else if (header === "content-type")
                 headers += `Content-Type: ${email.html_format}; charset=utf-8\r\n`;
-            }
 
-            else if (header === "content-transfer-encoding") {
+            else if (header === "content-transfer-encoding")
                 headers += `Content-Transfer-Encoding: 8bit\r\n`;
-            }
 
-            else if (header === "reply-to") {
-                if (email.reply_to)
-                    headers += `Reply-To: ${email.reply_to}\r\n`;
-            }
+            else if (header === "reply-to" && email.reply_to)
+                headers += `Reply-To: ${email.reply_to}\r\n`;
 
-            else if (header === "received") {
-                if (email.received)
-                    headers += `Received: ${email.received}\r\n`;
-            }
+            else if (header === "received" && email.received)
+                headers += `Received: ${email.received}\r\n`;
         }
 
         return headers + "\r\n";
