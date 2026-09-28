@@ -13,6 +13,7 @@ export class StoreCommand extends Command {
         const sequence = args[0];
         const action = args[1];
         const flags = args[2].map(flag => this.capitalize(flag));
+        console.log(flags)
 
         const emails = await this.database.getUsersEmails(this.connection.user.email);
         const mailboxEmails = emails.filter(email => email.mail_box === this.connection.mailbox.uid).sort((a, b) => a.uid - b.uid);
