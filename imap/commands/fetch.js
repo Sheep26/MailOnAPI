@@ -100,7 +100,6 @@ export class FetchCommand extends Command {
                 const subject = email.subject ? `"${email.subject}"` : "NIL";
                 const msgId = email.message_id ? `"${email.message_id}"` : "NIL";
                 
-                // Simple helper to format IMAP address structures: ((name route mailbox host))
                 const parseAddress = (addrStr) => {
                     if (!addrStr) return "NIL";
                     const match = addrStr.match(/(?:"?([^"<]*)"?\s+)?<?([^@>]+)@([^>]+)>?/);
