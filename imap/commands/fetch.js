@@ -220,8 +220,16 @@ export class FetchCommand extends Command {
         if (email.received)
             message += `Received: ${email.received}\r\n`;
 
-        message += `MIME-Version: 1.0\r\n`;
-        message += `Content-Type: ${email.html_format ? "text/html" : "text/plain"}; charset=utf-8\r\n`;
+        if (email.mime_version)
+            message += `MIME-Version: ${email.mime_version}\r\n`;
+        else
+            message += `MIME-Version: 1.0\r\n`;
+
+        if (email.charset)
+            message += `Content-Type: ${email.html_format ?? "text/plain"}; charset=${email.charset}\r\n`;
+        else
+            message += `Content-Type: ${email.html_format ?? "text/plain"}; charset=utf-8\r\n`;
+
         message += `Content-Transfer-Encoding: 8bit\r\n`;
         message += "\r\n";
         message += email.content ?? "";
