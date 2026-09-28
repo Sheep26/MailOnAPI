@@ -23,6 +23,7 @@ import { CheckCommand } from "./check.js";
 import { CopyCommand } from "./copy.js";
 import { ExpungeCommand } from "./expunge.js";
 import { StartTLSCommand } from "./starttls.js";
+import { SearchCommand } from "./search.js";
 
 export default function getCommands(database, connection) {
     return {
@@ -50,6 +51,7 @@ export default function getCommands(database, connection) {
         "CHECK": new CheckCommand(database, connection).command,
         "COPY": new CopyCommand(database, connection).command,
         "EXPUNGE": new ExpungeCommand(database, connection).command,
-        "STARTTLS": new StartTLSCommand(database, connection).command
+        "STARTTLS": new StartTLSCommand(database, connection).command,
+        "SEARCH": new SearchCommand(database, connection).command
     };
 }
