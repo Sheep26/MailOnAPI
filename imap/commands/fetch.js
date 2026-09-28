@@ -150,8 +150,8 @@ export class FetchCommand extends Command {
             else if (header === "x-priority" && email.x_priority)
                 headers += `X-Priority: ${email.x_priority}\r\n`;
 
-            else if (header === "references" && email.references)
-                headers += `References: ${email.references}\r\n`;
+            else if (header === "references" && email.email_references)
+                headers += `References: ${email.email_references}\r\n`;
 
             else if (header === "newsgroups" && email.newsgroups)
                 headers += `Newsgroups: ${email.newsgroups}\r\n`;
@@ -209,8 +209,8 @@ export class FetchCommand extends Command {
         if (email.x_priority)
             message += `X-Priority: ${email.x_priority}\r\n`;
 
-        if (email.references)
-            message += `References: ${email.references}\r\n`;
+        if (email.email_references)
+            message += `References: ${email.email_references}\r\n`;
 
         if (email.in_reply_to)
             message += `In-Reply-To: ${email.in_reply_to}\r\n`;
