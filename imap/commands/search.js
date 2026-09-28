@@ -76,6 +76,13 @@ export class SearchCommand extends Command {
                 case "ALL":
                     return () => true;
 
+                case "UID": {
+                    const value = this.nextArgument(criteria, position++);
+                    const uidSet = this.parseNumberSet(value);
+
+                    return email => this.numberSetContains(uidSet, email.uid);
+                }
+
                 case "SEEN":
                     return email => this.hasFlag(email, "\\Seen");
 
