@@ -95,7 +95,7 @@ export class AppendCommand extends Command {
         const bcc = data.bcc?.split(',').map(value => value.trim()) ?? null;
         const cc = data.cc?.split(',').map(value => value.trim()) ?? null;
 
-        this.database.addEmail(this.connection.user.email, data.to, data.from, data['reply-to'] ?? data.from, bcc ?? [], cc ?? [], data.mail_id, data['message-id'], content_type, data.subject, data.content, null, null, this.mailbox.uid, this.flags, data['in-reply-to'], data['mime-version'], data.charset);
+        this.database.addEmail(this.connection.user.email, data.to, data.from, data['reply-to'] ?? data.from, bcc ?? [], cc ?? [], data.mail_id, data['message-id'], null, data.subject, data.content, null, null, this.mailbox.uid, this.flags, data['in-reply-to'], data['mime-version'], data.charset, content_type);
         this.connection.send(`${this.tag} OK APPEND completed`);
     }
 
