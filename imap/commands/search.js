@@ -3,37 +3,36 @@ import STATES from "../imapStates.js";
 
 export class SearchCommand extends Command {
     command = async (tag, args, options = {}) => {
-        const uid = false;
+        const uid = options.uid === true;
 
-        if (this.connection.state == STATES.NOT_AUTHENTICATED)
+        if (this.connection.state === STATES.NOT_AUTHENTICATED)
             return this.connection.send(`${tag} NO Please Authenticate First`);
 
-        if (this.connection.state != STATES.SELECTED)
+        if (this.connection.state !== STATES.SELECTED)
             return this.connection.send(`${tag} NO Select a mailbox first`);
 
-        const emails = await this.database.getUsersEmails(this.connection.user.email);
-        const mailboxEmails = emails.filter(email => email.mail_box === this.connection.mailbox.uid).sort((a, b) => a.uid - b.uid);
-
         try {
+            const emails = await this.database.getUsersEmails(this.connection.user.email);
+
+            const mailboxEmails = emails.filter(email => email.mail_box === this.connection.mailbox.uid).sort((a, b) => Number(a.uid) - Number(b.uid));
+
             let criteria = this.flattenArgs(args);
-            let uidSet = null;
-
-            if (uid) {
-                if (!criteria.length)
-                    throw new Error("Missing UID sequence set");
-
-                uidSet = this.parseNumberSet(criteria.shift());
-            }
-
             let selectedEmails = mailboxEmails;
 
-            if (uidSet)
-                selectedEmails = selectedEmails.filter(email => this.numberSetContains(uidSet, email.uid));
+            if (criteria.length && this.isNumberSet(criteria[0])) {
+                const sequenceSet = this.parseNumberSet(criteria.shift(), mailboxEmails, uid);
+
+                selectedEmails = mailboxEmails.filter((email, index) => {
+                    const value = uid ? Number(email.uid) : index + 1;
+
+                    return this.numberSetContains(sequenceSet, value);
+                });
+            }
 
             if (criteria.length)
                 selectedEmails = this.searchEmails(selectedEmails, criteria);
 
-            const results = selectedEmails.map(email => {
+            const results = selectedEmails.map((email) => {
                 if (uid)
                     return email.uid;
 
@@ -55,18 +54,21 @@ export class SearchCommand extends Command {
             if (position >= criteria.length)
                 throw new Error("Missing search criteria");
 
-            while (criteria[position] === "(") {
+            if (criteria[position] === "(") {
                 position++;
 
                 const criterion = parseCriterion();
 
-                if (criteria[position] === ")") {
-                    position++;
-                    return criterion;
-                }
+                if (position >= criteria.length || criteria[position] !== ")")
+                    throw new Error("Missing closing ')'");
+
+                position++;
 
                 return criterion;
             }
+
+            if (criteria[position] === ")")
+                throw new Error("Unexpected ')'");
 
             const key = String(criteria[position++]).toUpperCase();
 
@@ -111,43 +113,43 @@ export class SearchCommand extends Command {
                     return email => email.recent != 1;
 
                 case "FROM": {
-                    const value = this.nextArgument(criteria, position++);
+                    const value = this.readArgument(criteria, () => position++);
 
                     return email => this.contains(email.mail_from, value);
                 }
 
                 case "TO": {
-                    const value = this.nextArgument(criteria, position++);
+                    const value = this.readArgument(criteria, () => position++);
 
                     return email => this.contains(email.mail_to, value);
                 }
 
                 case "CC": {
-                    const value = this.nextArgument(criteria, position++);
+                    const value = this.readArgument(criteria, () => position++);
 
                     return email => this.containsJSON(email.cc, value);
                 }
 
                 case "BCC": {
-                    const value = this.nextArgument(criteria, position++);
+                    const value = this.readArgument(criteria, () => position++);
 
                     return email => this.containsJSON(email.bcc, value);
                 }
 
                 case "SUBJECT": {
-                    const value = this.nextArgument(criteria, position++);
+                    const value = this.readArgument(criteria, () => position++);
 
                     return email => this.contains(email.subject, value);
                 }
 
                 case "BODY": {
-                    const value = this.nextArgument(criteria, position++);
+                    const value = this.readArgument(criteria, () => position++);
 
                     return email => this.contains(email.content, value);
                 }
 
                 case "TEXT": {
-                    const value = this.nextArgument(criteria, position++);
+                    const value = this.readArgument(criteria, () => position++);
 
                     return email => {
                         const fields = [email.mail_from, email.mail_to, email.subject, email.content];
@@ -157,33 +159,35 @@ export class SearchCommand extends Command {
                 }
 
                 case "KEYWORD": {
-                    const value = this.nextArgument(criteria, position++);
+                    const value = this.readArgument(criteria, () => position++);
 
                     return email => this.hasFlag(email, value);
                 }
 
                 case "UNKEYWORD": {
-                    const value = this.nextArgument(criteria, position++);
+                    const value = this.readArgument(criteria, () => position++);
 
                     return email => !this.hasFlag(email, value);
                 }
 
                 case "LARGER": {
-                    const value = this.nextArgument(criteria, position++);
+                    const value = this.readArgument(criteria, () => position++);
+                    const size = Number(value);
 
-                    if (!Number.isFinite(value))
-                        throw new Error("Invalid LARGER value");
+                    if (!Number.isFinite(size) || size < 0)
+                        throw new Error(`Invalid LARGER value: ${value}`);
 
-                    return email => this.getEmailSize(email) > value;
+                    return email => this.getEmailSize(email) > size;
                 }
 
                 case "SMALLER": {
-                    const value = this.nextArgument(criteria, position++);
+                    const value = this.readArgument(criteria, () => position++);
+                    const size = Number(value);
 
-                    if (!Number.isFinite(value))
-                        throw new Error("Invalid SMALLER value");
+                    if (!Number.isFinite(size) || size < 0)
+                        throw new Error(`Invalid SMALLER value: ${value}`);
 
-                    return email => this.getEmailSize(email) < value;
+                    return email => this.getEmailSize(email) < size;
                 }
 
                 case "NOT": {
@@ -200,21 +204,21 @@ export class SearchCommand extends Command {
                 }
 
                 case "BEFORE": {
-                    const value = this.nextArgument(criteria, position++);
+                    const value = this.readArgument(criteria, () => position++);
                     const date = this.parseIMAPDate(value);
 
                     return email => this.getEmailDate(email) < date;
                 }
 
                 case "SINCE": {
-                    const value = this.nextArgument(criteria, position++);
+                    const value = this.readArgument(criteria, () => position++);
                     const date = this.parseIMAPDate(value);
 
                     return email => this.getEmailDate(email) >= date;
                 }
 
                 case "ON": {
-                    const value = this.nextArgument(criteria, position++);
+                    const value = this.readArgument(criteria, () => position++);
 
                     const date = this.parseIMAPDate(value);
                     const nextDay = new Date(date);
@@ -229,24 +233,25 @@ export class SearchCommand extends Command {
                 }
 
                 case "SENTBEFORE": {
-                    const value = this.nextArgument(criteria, position++);
+                    const value = this.readArgument(criteria, () => position++);
                     const date = this.parseIMAPDate(value);
 
                     return email => this.getEmailDate(email) < date;
                 }
 
                 case "SENTSINCE": {
-                    const value = this.nextArgument(criteria, position++);
+                    const value = this.readArgument(criteria, () => position++);
                     const date = this.parseIMAPDate(value);
 
                     return email => this.getEmailDate(email) >= date;
                 }
 
                 case "SENTON": {
-                    const value = this.nextArgument(criteria, position++);
-                    const date = this.parseIMAPDate(value);
+                    const value = this.readArgument(criteria, () => position++);
 
+                    const date = this.parseIMAPDate(value);
                     const nextDay = new Date(date);
+
                     nextDay.setUTCDate(nextDay.getUTCDate() + 1);
 
                     return email => {
@@ -264,10 +269,8 @@ export class SearchCommand extends Command {
         const predicates = [];
 
         while (position < criteria.length) {
-            if (criteria[position] === ")") {
-                position++;
-                continue;
-            }
+            if (criteria[position] === ")")
+                throw new Error("Unexpected ')'");
 
             predicates.push(parseCriterion());
         }
@@ -275,7 +278,9 @@ export class SearchCommand extends Command {
         return emails.filter(email => predicates.every(predicate => predicate(email)));
     }
 
-    nextArgument(criteria, position) {
+    readArgument(criteria, getPosition) {
+        const position = getPosition();
+
         if (position >= criteria.length || criteria[position] === "(" || criteria[position] === ")")
             throw new Error("Missing search argument");
 
@@ -308,11 +313,32 @@ export class SearchCommand extends Command {
     }
 
     hasFlag(email, flag) {
-        return email.flags.some(existing => existing.toLowerCase() === flag.toLowerCase());
+        let flags = email.flags;
+
+        if (typeof flags === "string") {
+            try {
+                flags = JSON.parse(flags);
+            } catch {
+                return false;
+            }
+        }
+
+        if (!Array.isArray(flags))
+            return false;
+
+        return flags.some(existing =>
+            String(existing).toLowerCase() ===
+            String(flag).toLowerCase()
+        );
     }
 
     getEmailDate(email) {
-        return new Date(email.time);
+        const date = new Date(email.time);
+
+        if (Number.isNaN(date.getTime()))
+            throw new Error(`Invalid email date: ${email.time}`);
+
+        return date;
     }
 
     parseIMAPDate(value) {
@@ -343,7 +369,12 @@ export class SearchCommand extends Command {
         if (monthNumber === undefined)
             throw new Error(`Invalid date: ${value}`);
 
-        return new Date(Date.UTC(Number(year), monthNumber, Number(day)));
+        const date = new Date(Date.UTC(Number(year), monthNumber,Number(day)));
+
+        if (date.getUTCDate() !== Number(day))
+            throw new Error(`Invalid date: ${value}`);
+
+        return date;
     }
 
     getEmailSize(email) {
@@ -401,28 +432,38 @@ export class SearchCommand extends Command {
         return message;
     }
 
-    parseNumberSet(value) {
+    isNumberSet(value) {
+        return /^(?:\d+|\*)(?::(?:\d+|\*))?(?:,(?:\d+|\*)(?::(?:\d+|\*))?)*$/.test(String(value));
+    }
+
+    parseNumberSet(value, mailboxEmails = [], uid = false) {
         const ranges = [];
 
         for (const part of String(value).split(",")) {
-            if (part.includes(":")) {
-                let [start, end] = part.split(":");
+            const trimmed = part.trim();
 
-                start = Number(start);
+            if (!trimmed)
+                throw new Error(`Invalid number set: ${value}`);
 
-                if (end === "*")
-                    end = Number.MAX_SAFE_INTEGER;
-                else
-                    end = Number(end);
+            if (trimmed.includes(":")) {
+                const values = trimmed.split(":");
 
-                if (!Number.isInteger(start) || !Number.isInteger(end))
+                if (values.length !== 2)
+                    throw new Error(`Invalid number set: ${value}`);
+
+                let [start, end] = values;
+
+                start = this.resolveNumberSetValue(start, mailboxEmails, uid);
+                end = this.resolveNumberSetValue(end, mailboxEmails, uid);
+
+                if (start === null || end === null)
                     throw new Error(`Invalid number set: ${value}`);
 
                 ranges.push([Math.min(start, end), Math.max(start, end)]);
             } else {
-                const number = Number(part);
+                const number = this.resolveNumberSetValue(trimmed, mailboxEmails, uid);
 
-                if (!Number.isInteger(number))
+                if (number === null)
                     throw new Error(`Invalid number set: ${value}`);
 
                 ranges.push([number, number]);
@@ -430,6 +471,27 @@ export class SearchCommand extends Command {
         }
 
         return ranges;
+    }
+
+    resolveNumberSetValue(value, mailboxEmails, uid) {
+        value = String(value).trim();
+
+        if (value === "*") {
+            if (!mailboxEmails.length)
+                return null;
+
+            if (uid)
+                return Number(mailboxEmails[mailboxEmails.length - 1].uid);
+
+            return mailboxEmails.length;
+        }
+
+        const number = Number(value);
+
+        if (!Number.isInteger(number) || number < 1)
+            return null;
+
+        return number;
     }
 
     numberSetContains(ranges, number) {
