@@ -38,9 +38,5 @@ export class ExamineCommand extends Command {
         this.connection.send(`* FLAGS (${mailbox.flags})`);
         this.connection.send(`* OK [PERMANENTFLAGS (${mailbox.flags})] Permanent flags`);
         this.connection.send(`${tag} OK [READ-ONLY] EXAMINE completed`);
-
-        recent.forEach(async email => {
-            await this.database.markNotRecent(this.connection.user.email, email.mail_id);
-        });
     };
 }

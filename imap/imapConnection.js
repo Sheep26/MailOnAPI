@@ -190,7 +190,7 @@ export class ImapConnection {
     async baseListener(line, next) {
         console.log("C:", line);
 
-        next();
+        await next();
     }
 
     async handleCommand(line, next) {
