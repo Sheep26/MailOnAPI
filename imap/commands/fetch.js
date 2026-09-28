@@ -102,8 +102,10 @@ export class FetchCommand extends Command {
                 
                 const parseAddress = (addrStr) => {
                     if (!addrStr) return "NIL";
+
                     const match = addrStr.match(/(?:"?([^"<]*)"?\s+)?<?([^@>]+)@([^>]+)>?/);
                     if (!match) return "NIL";
+
                     const name = match[1] ? `"${match[1]}"` : "NIL";
                     return `((${name} NIL "${match[2]}" "${match[3]}"))`;
                 };
