@@ -43,6 +43,24 @@ export class FetchCommand extends Command {
                 responseParts.push(`RFC822.SIZE ${size}`);
             }
 
+            const headerMatch = dataItem.match(/BODY(?:\.PEEK)?\[HEADER\](?:<(\d+)(?:\.(\d+))?>)?/i);
+
+            if (headerMatch) {
+                const raw = this.createRawEmail(email);
+
+                const headerEnd = raw.search(/\r\n\r\n/);
+                const headers = headerEnd !== -1 ? raw.slice(0, headerEnd + 2) : raw;
+
+                const hasPartial = headerMatch[1] !== undefined;
+                const start = hasPartial ? Number(headerMatch[1]) : 0;
+                const requestedLength = headerMatch[2] !== undefined ? Number(headerMatch[2]) : headers.length - start;
+
+                const text = headers.slice(start, start + requestedLength);
+                const size = Buffer.byteLength(text, "utf8");
+
+                responseParts.push({type: "literal", name: hasPartial ? `BODY[HEADER]<${start}>` : "BODY[HEADER]", data: text, size});
+            }
+
             const headerFieldsMatch = dataItem.match(/BODY(?:\.PEEK)?\[HEADER\.FIELDS\s*\(\s*([^)]*?)\s*\)\s*\]/i); // /BODY(?:\.PEEK)?\[HEADER\.FIELDS\s*\(([^)]*)\)\]/i
 
             if (headerFieldsMatch) {
