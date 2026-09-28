@@ -179,6 +179,9 @@ export class FetchCommand extends Command {
     createRawEmail(email) {
         let message = "";
 
+        const cc = JSON.parse(email.cc);
+        const bcc = JSON.parse(email.bcc);
+
         if (email.mail_from)
             message += `From: ${email.mail_from}\r\n`;
 
@@ -188,19 +191,11 @@ export class FetchCommand extends Command {
         if (email.reply_to)
             message += `Reply-To: ${email.reply_to}\r\n`;
 
-        if (Array.isArray(email.cc)) {
-            if (email.cc.length > 0)
-                message += `Cc: ${email.cc.join(", ")}\r\n`;
-        } else if (email.cc) {
-            message += `Cc: ${email.cc}\r\n`;
-        }
+        if (cc && cc.length)
+            message += `Cc: ${email.cc.join(", ")}\r\n`;
 
-        if (Array.isArray(email.bcc)) {
-            if (email.bcc.length > 0)
-                message += `Bcc: ${email.bcc.join(", ")}\r\n`;
-        } else if (email.bcc) {
-            message += `Bcc: ${email.bcc}\r\n`;
-        }
+        if (bcc && bcc.length)
+            message += `Bcc: ${email.bcc.join(", ")}\r\n`;
 
         if (email.subject)
             message += `Subject: ${email.subject}\r\n`;
