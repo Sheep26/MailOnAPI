@@ -3,7 +3,7 @@ import STATES from "../imapStates.js";
 
 export class SearchCommand extends Command {
     command = async (tag, args, options = {}) => {
-        const uid = options.uid ?? false;
+        const uid = false;
 
         if (this.connection.state == STATES.NOT_AUTHENTICATED)
             return this.connection.send(`${tag} NO Please Authenticate First`);
@@ -12,7 +12,6 @@ export class SearchCommand extends Command {
             return this.connection.send(`${tag} NO Select a mailbox first`);
 
         const emails = await this.database.getUsersEmails(this.connection.user.email);
-
         const mailboxEmails = emails.filter(email => email.mail_box === this.connection.mailbox.uid).sort((a, b) => a.uid - b.uid);
 
         try {
