@@ -226,24 +226,4 @@ export class FetchCommand extends Command {
 
         return message;
     }
-
-    flattenArgs(args) {
-        const result = [];
-        const flatten = (value, depth = 0) => {
-            for (const item of value)
-                if (Array.isArray(item)) {
-                    if (depth > 0)
-                        result.push("(");
-
-                    flatten(item, depth + 1);
-
-                    if (depth > 0)
-                        result.push(")");
-                } else
-                    result.push(item);
-        };
-
-        flatten(args);
-        return result;
-    }
 }
