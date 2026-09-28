@@ -20,20 +20,23 @@ export class SelectCommand extends Command {
         const unread = filtered_emails.filter(email => !email.flags.includes("\\Seen"));
         const recent = filtered_emails.filter(email => email.recent);
 
+        const unreadIndex = filtered_emails.findIndex(email => !this.hasFlag(email, "\\Seen"));
+
         this.connection.mailbox = mailbox;
         this.connection.state = STATES.SELECTED;
-        this.connection.readonly = true;
+        this.connection.readonly = false;
 
         this.connection.send(`* ${filtered_emails.length} EXISTS`);
         this.connection.send(`* ${recent.length} RECENT`);
 
-        if (unread.length)
-            this.connection.send(`* OK [UNSEEN ${unread.length}] Message ${unread[0].uid} is first unseen`);
+        if (unreadIndex !== -1)
+            this.connection.send(`* OK [UNSEEN ${unreadIndex + 1}] Message ${unreadIndex + 1} is first unseen`);
 
         this.connection.send(`* OK [UIDVALIDITY ${mailbox.uid}] UIDs valid`);
         this.connection.send(`* OK [UIDNEXT ${mailbox.uid_next}] Predicted next UID`);
 
         this.connection.send(`* FLAGS (${mailbox.flags})`);
+        this.connection.send(`* OK [PERMANENTFLAGS (${mailbox.flags})] Permanent flags`);
         this.connection.send(`${tag} OK [READ-WRITE] SELECT completed`);
 
         recent.forEach(async email => {
