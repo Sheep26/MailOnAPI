@@ -12,19 +12,27 @@ export class SearchCommand extends Command {
             return this.connection.send(`${tag} NO Select a mailbox first`);
 
         const emails = await this.database.getUsersEmails(this.connection.user.email);
-        const mailboxEmails = emails .filter(email => email.mail_box === this.connection.mailbox.uid).sort((a, b) => a.uid - b.uid);
 
-        if (!args.length) {
-            const results = mailboxEmails.map((email, index) => uid ? email.uid : index + 1);
-
-            this.connection.send(`* SEARCH${results.length ? " " + results.join(" ") : ""}`);
-
-            return this.connection.send(`${tag} OK SEARCH completed`);
-        }
+        const mailboxEmails = emails.filter(email => email.mail_box === this.connection.mailbox.uid).sort((a, b) => a.uid - b.uid);
 
         try {
-            const criteria = this.flattenArgs(args);
-            const selectedEmails = this.searchEmails(mailboxEmails, criteria);
+            let criteria = this.flattenArgs(args);
+            let uidSet = null;
+
+            if (uid) {
+                if (!criteria.length)
+                    throw new Error("Missing UID sequence set");
+
+                uidSet = this.parseNumberSet(criteria.shift());
+            }
+
+            let selectedEmails = mailboxEmails;
+
+            if (uidSet)
+                selectedEmails = selectedEmails.filter(email => this.numberSetContains(uidSet, email.uid));
+
+            if (criteria.length)
+                selectedEmails = this.searchEmails(selectedEmails, criteria);
 
             const results = selectedEmails.map(email => {
                 if (uid)
@@ -35,9 +43,9 @@ export class SearchCommand extends Command {
 
             this.connection.send(`* SEARCH${results.length ? " " + results.join(" ") : ""}`);
 
-            this.connection.send(`${tag} OK SEARCH completed`);
+            return this.connection.send(`${tag} OK SEARCH completed`);
         } catch (error) {
-            this.connection.send(`${tag} BAD ${error.message}`);
+            return this.connection.send(`${tag} BAD ${error.message}`);
         }
     };
 
@@ -177,13 +185,6 @@ export class SearchCommand extends Command {
                         throw new Error("Invalid SMALLER value");
 
                     return email => this.getEmailSize(email) < value;
-                }
-
-                case "UID": {
-                    const value = this.nextArgument(criteria, position++);
-                    const uidSet = this.parseNumberSet(value);
-
-                    return email => this.numberSetContains(uidSet, email.uid);
                 }
 
                 case "NOT": {
