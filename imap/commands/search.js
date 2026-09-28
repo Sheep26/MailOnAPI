@@ -39,7 +39,8 @@ export class SearchCommand extends Command {
                 return mailboxEmails.indexOf(email) + 1;
             });
 
-            this.connection.send(`* SEARCH${results.length ? " " + results.join(" ") : ""}`);
+            const searchResponse = ["* SEARCH", ...results].join(" ");
+            this.connection.send(searchResponse);
 
             return this.connection.send(`${tag} OK SEARCH completed`);
         } catch (error) {
