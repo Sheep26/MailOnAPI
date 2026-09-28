@@ -107,4 +107,9 @@ export class Command {
     hasFlag(email, flag) {
         return email.flags.includes(flag);
     }
+
+    capitalize(str) {
+        if (!str) return str;
+        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    }
 }
