@@ -122,7 +122,6 @@ export class FetchCommand extends Command {
 
         for (const requestedHeader of requestedHeaders) {
             const header = requestedHeader.toLowerCase();
-            
 
             if (header === "from" && email.mail_from)
                 headers += `From: ${email.mail_from}\r\n`;
@@ -161,7 +160,7 @@ export class FetchCommand extends Command {
                 headers += `In-Reply-To: ${email.in_reply_to}\r\n`;
 
             else if (header === "content-type")
-                headers += `Content-Type: ${email.content_type}; charset=utf-8\r\n`;
+                headers += `Content-Type: ${email.content_type == "multipart/alternative" ? 'text/html' : email.content_type}; charset=utf-8\r\n`;
 
             else if (header === "content-transfer-encoding")
                 headers += `Content-Transfer-Encoding: 8bit\r\n`;
@@ -192,10 +191,10 @@ export class FetchCommand extends Command {
             message += `Reply-To: ${email.reply_to}\r\n`;
 
         if (cc && cc.length)
-            message += `Cc: ${email.cc.join(", ")}\r\n`;
+            message += `Cc: ${cc.join(", ")}\r\n`;
 
         if (bcc && bcc.length)
-            message += `Bcc: ${email.bcc.join(", ")}\r\n`;
+            message += `Bcc: ${bcc.join(", ")}\r\n`;
 
         message += `Subject: ${email.subject}\r\n`;
 
@@ -220,7 +219,7 @@ export class FetchCommand extends Command {
             message += `Received: ${email.received}\r\n`;
 
         message += `MIME-Version: ${email.mime_version}\r\n`;
-        message += `Content-Type: ${email.content_type}; charset=${email.charset}\r\n`;
+        message += `Content-Type: ${email.content_type == "multipart/alternative" ? 'text/html' : email.content_type}; charset=${email.charset}\r\n`;
         message += `Content-Transfer-Encoding: 8bit\r\n`;
         message += "\r\n";
         message += email.content ?? "";
