@@ -312,26 +312,6 @@ export class SearchCommand extends Command {
         return parsed.some(item => this.contains(item, search));
     }
 
-    hasFlag(email, flag) {
-        let flags = email.flags;
-
-        if (typeof flags === "string") {
-            try {
-                flags = JSON.parse(flags);
-            } catch {
-                return false;
-            }
-        }
-
-        if (!Array.isArray(flags))
-            return false;
-
-        return flags.some(existing =>
-            String(existing).toLowerCase() ===
-            String(flag).toLowerCase()
-        );
-    }
-
     getEmailDate(email) {
         const date = new Date(email.time);
 

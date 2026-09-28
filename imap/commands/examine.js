@@ -20,7 +20,7 @@ export class ExamineCommand extends Command {
         const unread = filtered_emails.filter(email => !email.flags.includes("\\Seen"));
         const recent = filtered_emails.filter(email => email.recent);
 
-        const unreadIndex = filtered_emails.findIndex(email => !email.flags.includes("\\Seen"));
+        const unreadIndex = filtered_emails.findIndex(email => !this.hasFlag(email, "\\Seen"));
 
         this.connection.mailbox = mailbox;
         this.connection.state = STATES.SELECTED;

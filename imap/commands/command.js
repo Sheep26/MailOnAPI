@@ -103,4 +103,8 @@ export class Command {
         flatten(args);
         return result;
     }
+
+    hasFlag(email, flag) {
+        return email.flags.includes(flag);
+    }
 }
