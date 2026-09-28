@@ -115,6 +115,6 @@ export class Command {
 
     capitalizeFlag(str) {
         if (!str) return str;
-        return str.charAt(1).toUpperCase() + str.slice(2).toLowerCase();
+        return '\\' + str.charAt(1).toUpperCase() + str.slice(2).toLowerCase();
     }
 }
