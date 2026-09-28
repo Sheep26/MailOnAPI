@@ -83,8 +83,6 @@ export class AppendCommand extends Command {
             const header = line.slice(0, separator).trim().toLowerCase();
             const header_content = line.slice(separator + 1).trim();
 
-            console.log("APPEND: ", data);
-
             if (accepted_headers.includes(header))
                 data[header] = header_content;
         }
