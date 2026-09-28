@@ -112,4 +112,9 @@ export class Command {
         if (!str) return str;
         return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
     }
+
+    capitalizeFlag(str) {
+        if (!str) return str;
+        return str.charAt(1).toUpperCase() + str.slice(2).toLowerCase();
+    }
 }

@@ -12,8 +12,7 @@ export class StoreCommand extends Command {
         const uid = options.uid ?? false;
         const sequence = args[0];
         const action = args[1];
-        const flags = args[2].map(flag => this.capitalize(flag));
-        console.log(flags)
+        const flags = args[2].map(flag => this.capitalizeFlag(flag));
 
         const emails = await this.database.getUsersEmails(this.connection.user.email);
         const mailboxEmails = emails.filter(email => email.mail_box === this.connection.mailbox.uid).sort((a, b) => a.uid - b.uid);
@@ -26,7 +25,7 @@ export class StoreCommand extends Command {
                         await this.database.addFlag(email.mail_id, this.connection.user.email, flag);
                 else if (action.toUpperCase().startsWith("-FLAGS"))
                     if (this.hasFlag(email, flag))
-                        await this.database.removeFlag(email.mail_id, this.connection.user.email, flag);
+                        await this.database.removeFlag(email.mail_id, this.connection.user.email, lag);
 
             if (!action.toUpperCase().endsWith(".SILENT")) {
                 const email_updated = await this.database.getEmail(email.mail_id, this.connection.user.email);
