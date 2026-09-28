@@ -27,6 +27,10 @@ export class FetchCommand extends Command {
             const responseParts = [];
             const upperDataItem = dataItem.toUpperCase();
 
+            const headerMatch = dataItem.match(/BODY(?:\.PEEK)?\[HEADER\](?:<(\d+)(?:\.(\d+))?>)?/i);
+            const headerFieldsMatch = dataItem.match(/BODY(?:\.PEEK)?\[HEADER\.FIELDS\s*\(\s*([^)]*?)\s*\)\s*\]/i); // /BODY(?:\.PEEK)?\[HEADER\.FIELDS\s*\(([^)]*)\)\]/i
+            const bodyTextMatch = dataItem.match(/BODY(?:\.PEEK)?\[TEXT\](?:<(\d+)(?:\.(\d+))?>)?/i);
+
             if (uid || /\bUID\b/i.test(dataItem))
                 responseParts.push(`UID ${email.uid}`);
 
@@ -43,8 +47,6 @@ export class FetchCommand extends Command {
                 responseParts.push(`RFC822.SIZE ${size}`);
             }
 
-            const headerMatch = dataItem.match(/BODY(?:\.PEEK)?\[HEADER\](?:<(\d+)(?:\.(\d+))?>)?/i);
-
             if (headerMatch) {
                 const headers = this.createRawHeaders(email);
                 const hasPartial = headerMatch[1] !== undefined;
@@ -57,8 +59,6 @@ export class FetchCommand extends Command {
                 responseParts.push({type: "literal", name: hasPartial ? `BODY[HEADER]<${start}>` : "BODY[HEADER]", data: text, size});
             }
 
-            const headerFieldsMatch = dataItem.match(/BODY(?:\.PEEK)?\[HEADER\.FIELDS\s*\(\s*([^)]*?)\s*\)\s*\]/i); // /BODY(?:\.PEEK)?\[HEADER\.FIELDS\s*\(([^)]*)\)\]/i
-
             if (headerFieldsMatch) {
                 const requestedHeaders = headerFieldsMatch[1].split(/\s+/).filter(Boolean);
                 const headers = this.createRequestedHeaders(email, requestedHeaders);
@@ -66,8 +66,6 @@ export class FetchCommand extends Command {
 
                 responseParts.push({type: "literal", name: `BODY[HEADER.FIELDS (${requestedHeaders.join(" ")})]`, data: headers, size});
             }
-
-            const bodyTextMatch = dataItem.match(/BODY(?:\.PEEK)?\[TEXT\](?:<(\d+)(?:\.(\d+))?>)?/i);
 
             if (bodyTextMatch && !headerFieldsMatch) {
                 const raw = email.content ?? "";
@@ -80,9 +78,7 @@ export class FetchCommand extends Command {
                 responseParts.push({type: "literal", name: hasPartial ? `BODY[TEXT]<${start}>` : "BODY[TEXT]", data: text, size});
             }
 
-            const wantsBody = /BODY(?:\.PEEK)?\[\]/i.test(dataItem);
-
-            if (wantsBody) {
+            if (/BODY(?:\.PEEK)?\[\]/i.test(dataItem)) {
                 const raw = this.createRawEmail(email);
                 const size = Buffer.byteLength(raw, "utf8");
 
