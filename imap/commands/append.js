@@ -41,7 +41,8 @@ export class AppendCommand extends Command {
 
         this.connection.removeListener(this.appendListenerBound);
 
-        let data = {to: null,
+        let data = {
+            to: null,
             from: null,
             'reply-to': null,
             bcc: null,
@@ -89,7 +90,10 @@ export class AppendCommand extends Command {
         const content_type_split = data['content-type'].split(";");
         const content_type = content_type_split[0];
 
-        this.database.addEmail(this.connection.user.email, data.to, data.from, data['reply-to'] ?? data.from, data.bcc ?? [], data.cc ?? [], data.mail_id, data['message-id'], content_type, data.subject, data.content, null, null, this.mailbox.uid, this.flags);
+        const bcc = data.bcc.split(',').map(value => value.trim());
+        const cc = data.cc.split(',').map(value => value.trim());
+
+        this.database.addEmail(this.connection.user.email, data.to, data.from, data['reply-to'] ?? data.from, bcc ?? [], cc ?? [], data.mail_id, data['message-id'], content_type, data.subject, data.content, null, null, this.mailbox.uid, this.flags);
         this.connection.send(`${this.tag} OK APPEND completed`);
     }
 
