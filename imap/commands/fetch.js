@@ -46,16 +46,12 @@ export class FetchCommand extends Command {
             const headerMatch = dataItem.match(/BODY(?:\.PEEK)?\[HEADER\](?:<(\d+)(?:\.(\d+))?>)?/i);
 
             if (headerMatch) {
-                const raw = this.createRawEmail(email);
-
-                const headerEnd = raw.search(/\r\n\r\n/);
-                const headers = headerEnd !== -1 ? raw.slice(0, headerEnd + 2) : raw;
-
+                const headers = this.createRawHeaders(email);
                 const hasPartial = headerMatch[1] !== undefined;
                 const start = hasPartial ? Number(headerMatch[1]) : 0;
-                const requestedLength = headerMatch[2] !== undefined ? Number(headerMatch[2]) : headers.length - start;
 
-                const text = headers.slice(start, start + requestedLength);
+                const requestedLength = headerMatch[2] !== undefined ? Number(headerMatch[2]) : Buffer.byteLength(headers, "utf8") - start;
+                const text = Buffer.from(headers, "utf8").subarray(start, start + requestedLength).toString("utf8");
                 const size = Buffer.byteLength(text, "utf8");
 
                 responseParts.push({type: "literal", name: hasPartial ? `BODY[HEADER]<${start}>` : "BODY[HEADER]", data: text, size});
@@ -230,7 +226,7 @@ export class FetchCommand extends Command {
         return headers + "\r\n";
     }
 
-    createRawEmail(email) {
+    createRawHeaders(email) {
         let message = "";
 
         const cc = JSON.parse(email.cc);
@@ -273,6 +269,13 @@ export class FetchCommand extends Command {
         message += `MIME-Version: ${email.mime_version}\r\n`;
         message += `Content-Type: ${email.content_type == "multipart/alternative" ? 'text/html' : email.content_type}; charset=${email.charset}\r\n`;
         message += `Content-Transfer-Encoding: 8bit\r\n`;
+
+        return message;
+    }
+
+    createRawEmail(email) {
+        let message = this.createRawHeaders(email);
+
         message += "\r\n";
         message += email.content ?? "";
 
