@@ -77,7 +77,7 @@ export class SearchCommand extends Command {
                     return () => true;
 
                 case "UID": {
-                    const value = this.nextArgument(criteria, position++);
+                    const value = this.readArgument(criteria, position++);
                     const uidSet = this.parseNumberSet(value);
 
                     return email => this.numberSetContains(uidSet, email.uid);
