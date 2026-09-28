@@ -72,6 +72,7 @@ export class EmailResend extends Email {
     async handle(body) {
         const { data } = await this.resend.emails.receiving.get(body.data.email_id);
         const user = await this.database.getUser(data.to[0]);
+        console.log(data)
 
         if (!user)
             return;

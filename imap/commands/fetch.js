@@ -146,22 +146,22 @@ export class FetchCommand extends Command {
                     headers += `Message-ID: ${email.message_id}\r\n`;
 
             else if (header === "priority" && email.priority)
-                headers += `Priority: ${email.priority ?? 0}\r\n`;
+                headers += `Priority: ${email.priority}\r\n`;
 
             else if (header === "x-priority" && email.x_priority)
-                headers += `X-Priority: ${email.x_priority ?? 0}\r\n`;
+                headers += `X-Priority: ${email.x_priority}\r\n`;
 
             else if (header === "references" && email.references)
-                headers += `References: ${email.references ?? ""}\r\n`;
+                headers += `References: ${email.references}\r\n`;
 
             else if (header === "newsgroups" && email.newsgroups)
-                headers += `Newsgroups: ${email.newsgroups ?? ""}\r\n`;
+                headers += `Newsgroups: ${email.newsgroups}\r\n`;
 
             else if (header === "in-reply-to" && email.in_reply_to)
-                headers += `In-Reply-To: ${email.in_reply_to ?? ""}\r\n`;
+                headers += `In-Reply-To: ${email.in_reply_to}\r\n`;
 
             else if (header === "content-type")
-                headers += `Content-Type: ${email.html_format}; charset=utf-8\r\n`;
+                headers += `Content-Type: ${email.content_type}; charset=utf-8\r\n`;
 
             else if (header === "content-transfer-encoding")
                 headers += `Content-Transfer-Encoding: 8bit\r\n`;
@@ -171,6 +171,9 @@ export class FetchCommand extends Command {
 
             else if (header === "received" && email.received)
                 headers += `Received: ${email.received}\r\n`;
+
+            else if (header === "x-received" && email.x_received)
+                headers += `Received: ${email.x_received}\r\n`;
         }
 
         return headers + "\r\n";
@@ -182,11 +185,8 @@ export class FetchCommand extends Command {
         const cc = JSON.parse(email.cc);
         const bcc = JSON.parse(email.bcc);
 
-        if (email.mail_from)
-            message += `From: ${email.mail_from}\r\n`;
-
-        if (email.mail_to)
-            message += `To: ${email.mail_to}\r\n`;
+        message += `From: ${email.mail_from}\r\n`;
+        message += `To: ${email.mail_to}\r\n`;
 
         if (email.reply_to)
             message += `Reply-To: ${email.reply_to}\r\n`;
@@ -197,8 +197,7 @@ export class FetchCommand extends Command {
         if (bcc && bcc.length)
             message += `Bcc: ${email.bcc.join(", ")}\r\n`;
 
-        if (email.subject)
-            message += `Subject: ${email.subject}\r\n`;
+        message += `Subject: ${email.subject}\r\n`;
 
         if (email.message_id)
             message += `Message-ID: ${email.message_id}\r\n`;
@@ -220,16 +219,8 @@ export class FetchCommand extends Command {
         if (email.received)
             message += `Received: ${email.received}\r\n`;
 
-        if (email.mime_version)
-            message += `MIME-Version: ${email.mime_version}\r\n`;
-        else
-            message += `MIME-Version: 1.0\r\n`;
-
-        if (email.charset)
-            message += `Content-Type: ${email.html_format ?? "text/plain"}; charset=${email.charset}\r\n`;
-        else
-            message += `Content-Type: ${email.html_format ?? "text/plain"}; charset=utf-8\r\n`;
-
+        message += `MIME-Version: ${email.mime_version}\r\n`;
+        message += `Content-Type: ${email.content_type}; charset=${email.charset}\r\n`;
         message += `Content-Transfer-Encoding: 8bit\r\n`;
         message += "\r\n";
         message += email.content ?? "";
