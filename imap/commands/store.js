@@ -21,10 +21,10 @@ export class StoreCommand extends Command {
         for (let email of selectedMails) {
             for (let flag of flags)
                 if (action.toUpperCase().startsWith("+FLAGS"))
-                    if (!email.flags.includes(flag))
+                    if (!this.hasFlag(email, flag))
                         await this.database.addFlag(email.mail_id, this.connection.user.email, flag);
                 else if (action.toUpperCase().startsWith("-FLAGS"))
-                    if (email.flags.includes(flag))
+                    if (this.hasFlag(email, flag))
                         await this.database.removeFlag(email.mail_id, this.connection.user.email, flag);
 
             if (!action.toUpperCase().endsWith(".SILENT")) {
