@@ -82,6 +82,39 @@ export class FetchCommand extends Command {
                 responseParts.push({type: "literal", name: "RFC822", data: raw, size});
             }
 
+            if (/\bINTERNALDATE\b/i.test(dataItem)) {
+                const dateObj = new Date(Number(email.time));
+                const day = String(dateObj.getUTCDate()).padStart(2, '0');
+                const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                const month = months[dateObj.getUTCMonth()];
+                const year = dateObj.getUTCFullYear();
+                const hours = String(dateObj.getUTCHours()).padStart(2, '0');
+                const minutes = String(dateObj.getUTCMinutes()).padStart(2, '0');
+                const seconds = String(dateObj.getUTCSeconds()).padStart(2, '0');
+                
+                responseParts.push(`INTERNALDATE "${day}-${month}-${year} ${hours}:${minutes}:${seconds} +0000"`);
+            }
+
+            if (/\bENVELOPE\b/i.test(dataItem)) {
+                const dateStr = new Date(Number(email.time)).toUTCString();
+                const subject = email.subject ? `"${email.subject}"` : "NIL";
+                const msgId = email.message_id ? `"${email.message_id}"` : "NIL";
+                
+                // Simple helper to format IMAP address structures: ((name route mailbox host))
+                const parseAddress = (addrStr) => {
+                    if (!addrStr) return "NIL";
+                    const match = addrStr.match(/(?:"?([^"<]*)"?\s+)?<?([^@>]+)@([^>]+)>?/);
+                    if (!match) return "NIL";
+                    const name = match[1] ? `"${match[1]}"` : "NIL";
+                    return `((${name} NIL "${match[2]}" "${match[3]}"))`;
+                };
+
+                const fromArr = parseAddress(email.mail_from);
+                const toArr = parseAddress(email.mail_to);
+                
+                responseParts.push(`ENVELOPE ("${dateStr}" ${subject} ${fromArr} ${fromArr} ${fromArr} ${toArr} NIL NIL NIL ${msgId})`);
+            }
+
             this.connection.sendRaw(`* ${sequenceNumber} FETCH (`);
 
             const normalParts = responseParts.filter(part => typeof part === "string");
