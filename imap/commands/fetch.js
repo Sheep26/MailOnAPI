@@ -68,9 +68,12 @@ export class FetchCommand extends Command {
             }
 
             if (bodyTextMatch && !headerFieldsMatch) {
-                const raw = email.content ?? "";
+                let raw = email.content ?? "";
+                raw = raw.replace(/\r?\n/g, "\r\n");
+
                 const hasPartial = bodyTextMatch[1] !== undefined;
                 const start = hasPartial ? Number(bodyTextMatch[1]) : 0;
+
                 const requestedLength = bodyTextMatch[2] !== undefined ? Number(bodyTextMatch[2]) : raw.length - start;
                 const text = raw.slice(start, start + requestedLength);
                 const size = Buffer.byteLength(text, "utf8");
@@ -146,13 +149,15 @@ export class FetchCommand extends Command {
                     this.connection.sendRaw(" ");
 
                 this.connection.sendRaw(`${part.name} {${part.size}}\r\n`);
-
                 this.connection.sendRaw(part.data);
 
                 first = false;
             }
 
-            this.connection.sendRaw(")\r\n");
+            if (literalParts.length > 0)
+                this.connection.sendRaw(" )\r\n");
+            else
+                this.connection.sendRaw(")\r\n");
         }
 
         this.connection.send(`${tag} OK FETCH completed`);
@@ -270,11 +275,8 @@ export class FetchCommand extends Command {
     }
 
     createRawEmail(email) {
-        let message = this.createRawHeaders(email);
+        const headers = this.createRawHeaders(email);
 
-        message += "\r\n";
-        message += email.content ?? "";
-
-        return message;
+        return `${headers}\r\n${email.content ?? ""}`;
     }
 }
