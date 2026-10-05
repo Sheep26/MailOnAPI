@@ -26,9 +26,7 @@ export class AttachmentManager {
         if (!response.ok)
             throw new Error(`Download failed: ${response.status} ${response.statusText}`);
 
-        if (!fs.existsSync(output_path))
-            fs.mkdirSync(output_path, { recursive: true });
-
+        fs.mkdirSync(path.dirname(output_path), { recursive: true });
         await pipeline(response.body, fs.createWriteStream(output_path));
     }
 }
