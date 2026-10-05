@@ -10,13 +10,17 @@ export class DatabaseManager {
         initDB();
     }
 
+    randStr(len) {
+        return crypto.randomBytes(len).toString('base64url').slice(0, len);
+    }
+
     async addEmail(belongs_to, to, from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, references, mail_box, flags=[], in_reply_to=null, mime_version=null, charset='utf-8', content_type="text/plain", received=null) {
         const mailbox = await this.getMailBoxUID(belongs_to, mail_box);
 
         if (!mailbox)
             return;
 
-        await db.execute('INSERT INTO emails (belongs_to, mail_to, mail_from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, email_references, time, mail_box, flags, uid, in_reply_to, mime_version, charset, content_type, received) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+        await db.execute('INSERT INTO emails (belongs_to, mail_to, mail_from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, email_references, time, mail_box, flags, uid, in_reply_to, mime_version, charset, content_type, received, boundary) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
             belongs_to,
             to,
             from,
@@ -38,7 +42,8 @@ export class DatabaseManager {
             mime_version,
             charset,
             content_type,
-            received
+            received,
+            randStr(28)
         ]);
 
         await this.incrementUIDNext(mailbox.belongs_to, mailbox.name);
