@@ -129,7 +129,7 @@ export class SearchCommand extends Command {
                 case "TO": {
                     const value = this.readArgument(criteria, () => position++);
 
-                    return email => this.contains(email.mail_to, value);
+                    return email => this.contains(email.mail_to.join(","), value);
                 }
 
                 case "CC": {
