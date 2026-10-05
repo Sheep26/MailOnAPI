@@ -1,5 +1,6 @@
 volumes:
   db:
+  attachments:
 
 services:
   mailonapi:
@@ -13,7 +14,8 @@ services:
       - "143:143"
       - "993:993"
     volumes:
-      - YOUR_PATH_TO_TLS_KEYS:/keys/
+      - YOUR_PATH_TO_TLS_KEYS:/etc/letsencrypt:ro
+      - attachments:/attachments
 
   mailonapi-db:
     image: mysql:latest
