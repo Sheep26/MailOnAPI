@@ -203,8 +203,8 @@ export class Command {
             body += `Content-Transfer-Encoding: base64\r\n`;
             body += `\r\n`;
 
-            if (!skip_attachments_content)
-                body += `${await this.getAttachmentAsBase64(email, attachment)}\r\n`;
+            //if (!skip_attachments_content)
+                //body += `${await this.getAttachmentAsBase64(email, attachment)}\r\n`;
         }
 
         body += `--${email.boundary}--`;
