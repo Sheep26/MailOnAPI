@@ -83,28 +83,28 @@ export class EmailResend extends Email {
             }
 
         for (let to of data.to) {  
+            const user = await this.database.getUser(to);
             const mailbox = await this.database.getMailBox(to, 'Inbox');
 
+            if (!user) {
+                console.log(`Email Address ${to} does not exist`);
+
+                const { data } = await this.resend.emails.send({
+                    from: `Email bounce <noreply@drewfitzgerald.co.nz>`,
+                    to: data.from,
+                    replyTo: 'noreply@drewfitzgerald.co.nz',
+                    subject: `Email address ${to} is not active`,
+                    html: `<span>Email address <strong>${to}</string> is not currently active</span>`
+                });
+
+                console.log(`Email ${data.id} has been sent`);
+
+                continue;
+            }
+
             if (mailbox) {
-                const user = await this.database.getUser(to);
-
-                if (!user) {
-                    console.log(`Email Address ${to} does not exist`);
-
-                    const { data } = await this.resend.emails.send({
-                        from: `Email bounce <noreply@drewfitzgerald.co.nz>`,
-                        to: data.from,
-                        replyTo: 'noreply@drewfitzgerald.co.nz',
-                        subject: `Email address ${to} is not active`,
-                        html: `<span>Email address <strong>${to}</string> is not currently active</span>`
-                    });
-
-                    console.log(`Email ${data.id} has been sent`);
-
-                    continue;
-                }
-
                 await this.database.addEmail(to, data.to, data.from, data.reply_to, data.bcc, data.cc, data.id, data.message_id, data.html_format, data.subject, data.headers['content-type'] == 'text/plain' ? data.text : data.html, data.attachments, references, mailbox.uid, [], data.headers['in-reply-to'], data.headers['mime-version'], 'utf-8', data.headers['content-type'], data.headers['received']);
+
                 await super.updateImap(user.email, mailbox.uid);
             }
         }
