@@ -5,6 +5,7 @@ import config from "./config.json" with { type: "json" };
 import { email_types } from './email/types.js';
 import { DatabaseManager } from './database/database.js';
 import { SessionManager } from './sessions/sessionManager.js';
+import { AttachmentManager } from './attachments/attachments.js';
 import { existsSync } from 'fs';
 import renderUtils from './renderUtils.js';
 import { startImap } from './imap/imapServer.js';
@@ -15,6 +16,9 @@ const PORT = config.port | 8080;
 const database = new DatabaseManager();
 const email = new email_types[config.email.type](database, config.email.auth);
 const sessionManager = new SessionManager();
+const attachmentManager = new AttachmentManager(email);
+
+database.setAttachmentManager(attachmentManager);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

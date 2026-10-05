@@ -7,7 +7,13 @@ const hasher = new BcryptManager();
 
 export class DatabaseManager {
     constructor() {
+        this.attachments = null;
+
         initDB();
+    }
+
+    setAttachmentManager(attachmentManager) {
+        this.attachments = attachmentManager;
     }
 
     randStr(len) {
@@ -45,6 +51,12 @@ export class DatabaseManager {
             received,
             this.randStr(28)
         ]);
+
+        for (let attachment of attachments) {
+            console.log(`Downloading attachment ${attachment.filename}`);
+
+            await this.attachments.downloadAttachment(mail_id, attachment.id);
+        }
 
         await this.incrementUIDNext(mailbox.belongs_to, mailbox.name);
     }
