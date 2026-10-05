@@ -59,7 +59,7 @@ export class DatabaseManager {
             if (!fs.existsSync(path.join(config.attachment_path, String(mail_id), String(attachment.id)))) {
                 console.log(`Downloading attachment ${attachment.filename}`);
 
-                await this.attachments.downloadAttachment(mail_id, attachment.id);
+                await this.attachments.downloadAttachment(String(mail_id), String(attachment.id));
             }
         }
 
