@@ -183,7 +183,7 @@ export class Command {
         }
     }
 
-    async createMessageBody(email) {
+    async createMessageBody(email, skip_attachments_content=false) {
         const content = email.content ?? "";
 
         if (!email.content_type?.startsWith("multipart"))
@@ -211,18 +211,20 @@ export class Command {
             body += `Content-Disposition: attachment; filename="${attachment.filename}"\r\n`;
             body += `Content-Transfer-Encoding: base64\r\n`;
             body += `\r\n`;
-            body += `${await this.getAttachmentAsBase64(email, attachment)}\r\n`;
+
+            if (!skip_attachments_content)
+                body += `${await this.getAttachmentAsBase64(email, attachment)}\r\n`;
         }
 
         body += `--${email.boundary}--`;
         return body;
     }
 
-    async createRawEmail(email) {
+    async createRawEmail(email, skip_attachments_content=false) {
         const headers  = this.createRawHeaders(email);
         const content = email.content ?? "";
 
-        return `${headers}\r\n${await this.createMessageBody(email)}`;
+        return `${headers}\r\n${await this.createMessageBody(email, skip_attachments_content)}`;
     }
 
     randStr(len) {

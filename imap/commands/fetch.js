@@ -25,7 +25,6 @@ export class FetchCommand extends Command {
             const sequenceNumber = mailboxEmails.indexOf(email) + 1;
 
             const responseParts = [];
-            const upperDataItem = dataItem.toUpperCase();
 
             const headerMatch = dataItem.match(/BODY(?:\.PEEK)?\[HEADER\](?:<(\d+)(?:\.(\d+))?>)?/i);
             const headerFieldsMatch = dataItem.match(/BODY(?:\.PEEK)?\[HEADER\.FIELDS\s*\(\s*([^)]*?)\s*\)\s*\]/i); // /BODY(?:\.PEEK)?\[HEADER\.FIELDS\s*\(([^)]*)\)\]/i
@@ -41,8 +40,11 @@ export class FetchCommand extends Command {
             }
 
             if (/\bRFC822\.SIZE\b/i.test(dataItem)) {
-                const raw = await this.createRawEmail(email);
-                const size = Buffer.byteLength(raw, "utf8");
+                const raw = await this.createRawEmail(email, true);
+                let size = Buffer.byteLength(raw, "utf8");
+
+                for (const attachment of email.attachments ?? [])
+                    size += 4 * Math.ceil(attachment.size / 3);
 
                 responseParts.push(`RFC822.SIZE ${size}`);
             }
@@ -68,8 +70,7 @@ export class FetchCommand extends Command {
             }
 
             if (bodyTextMatch && !headerFieldsMatch) {
-                let raw = this.createMessageBody(email);
-                raw = raw.replace(/\r?\n/g, "\r\n");
+                const raw = await this.createMessageBody(email);
 
                 const hasPartial = bodyTextMatch[1] !== undefined;
                 const start = hasPartial ? Number(bodyTextMatch[1]) : 0;
