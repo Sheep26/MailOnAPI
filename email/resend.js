@@ -89,15 +89,13 @@ export class EmailResend extends Email {
             if (!user) {
                 console.log(`Email Address ${to} does not exist`);
 
-                const { data } = await this.resend.emails.send({
+                await this.resend.emails.send({
                     from: `Email bounce <noreply@drewfitzgerald.co.nz>`,
                     to: data.from,
                     replyTo: 'noreply@drewfitzgerald.co.nz',
                     subject: `Email address ${to} is not active`,
                     html: `<span>Email address <strong>${to}</string> is not currently active</span>`
                 });
-
-                console.log(`Email ${data.id} has been sent`);
 
                 continue;
             }
