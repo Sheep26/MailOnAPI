@@ -43,7 +43,7 @@ export class DatabaseManager {
             charset,
             content_type,
             received,
-            randStr(28)
+            this.randStr(28)
         ]);
 
         await this.incrementUIDNext(mailbox.belongs_to, mailbox.name);
