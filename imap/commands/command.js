@@ -166,21 +166,12 @@ export class Command {
     }
 
     async getAttachmentAsBase64(email, attachment) {
-        try {
-            const { download_url, error } = await this.connection.email.getAttatchment(email.mail_id, attachment.id);
-            if (error) throw new Error(`Error: ${error}`);
+        const { data, error } = this.connection.attachments.getAttatchment(email.mail_id, attachment.id);
 
-            const response = await fetch(download_url);
-            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        if (error)
+            return error.toString('base64');
 
-            const arrayBuffer = await response.arrayBuffer();
-            const buffer = Buffer.from(arrayBuffer);
-            const base64String = buffer.toString('base64');
-
-            return base64String;
-        } catch (error) {
-            console.error('Error fetching or converting attachment:', error);
-        }
+        return data.toString('base64');
     }
 
     async createMessageBody(email, skip_attachments_content=false) {

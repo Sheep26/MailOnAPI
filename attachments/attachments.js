@@ -32,4 +32,16 @@ export class AttachmentManager {
 
         await pipeline(response.body, fs.createWriteStream(output_path));
     }
+
+    async getAttatchment(email_id, attachment_id) {
+        const file_path = path.join(config.attachment_path, email_id, attachment_id);
+
+        try {
+            const data = await fs.promises.readFile(file_path);
+
+            return { data, error: null, path: file_path };
+        } catch (error) {
+            return { data: null, error: error.message, path: file_path };
+        }
+    }
 }

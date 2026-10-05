@@ -206,21 +206,12 @@ app.get('/attachment/:email_id/:attachment_id', async (req, res) => {
     if (!mail)
         return res.sendStatus(403);
 
-    try {
-        const { download_url, error } = await email.getAttatchment(email_id, attachment_id);
+    const { data, error, path } = attachmentManager.getAttatchment(email_id, attachment_id);
 
-        if (error) {
-            console.error(error);
+    if (error)
+        return res.status(500).send(error);
 
-            return res.status(500).send('Failed to get attachment');
-        }
-
-        return res.redirect(download_url);
-    } catch (err) {
-        console.error(err);
-
-        res.status(500).send('Failed to download attachment');
-    }
+    return res.sendFile(path);
 });
 
 app.post('/api/create_account', async (req, res) => {
