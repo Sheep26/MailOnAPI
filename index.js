@@ -211,7 +211,7 @@ app.get('/attachment/:email_id/:attachment_id', async (req, res) => {
     if (error)
         return res.status(500).send(error);
 
-    console.log(path)
+    console.log(data)
 
     return res.sendFile(path);
 });
