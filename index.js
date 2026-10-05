@@ -206,12 +206,10 @@ app.get('/attachment/:email_id/:attachment_id', async (req, res) => {
     if (!mail)
         return res.sendStatus(403);
 
-    const { data, error, path } = attachmentManager.getAttatchment(email_id, attachment_id);
+    const { data, error, path } = await attachmentManager.getAttatchment(email_id, attachment_id);
 
     if (error)
         return res.status(500).send(error);
-
-    console.log(data)
 
     return res.sendFile(path);
 });
