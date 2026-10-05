@@ -72,7 +72,7 @@ async function addMailBoxes() {
 
         element.id = `${mail_box.uid}-side-element`;
 
-        element.innerHTML = `<span>${mail_box.name}</span> <img src="/static/assets/delete_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" width="20px" onclick="deleteMailbox('${mail_box.name}', event)"></img>` ;
+        element.innerHTML = `<span>${mail_box.name}</span> ${!mail_box.permanent ? `<img src="/static/assets/delete_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" width="20px" onclick="deleteMailbox('${mail_box.name}', event)"></img>` : ''}`;
         element.href = `/?mail_box=${mail_box.uid}`;
 
         mail_boxes.prepend(element);

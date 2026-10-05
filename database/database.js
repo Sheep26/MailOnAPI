@@ -81,8 +81,11 @@ export class DatabaseManager {
             return false;
 
         await db.execute('INSERT INTO users (username, passwd, email) VALUES (?, ?, ?)', [username, await hasher.hash(passwd), email]);
-        await this.addMailBox(email, 'Inbox');
-        await this.addMailBox(email, 'Sent', "\\Seen \\Deleted", "\\Sent");
+        await this.addMailBox(email, 'Inbox', "\\Answered \\Flagged \\Deleted \\Seen \\Draft", "", true);
+        await this.addMailBox(email, 'Sent', "\\Answered \\Flagged \\Deleted \\Seen \\Draft", "\\Sent", true);
+        await this.addMailBox(email, 'Drafts', "\\Answered \\Flagged \\Deleted \\Seen \\Draft", "\\Drafts", true);
+        await this.addMailBox(email, 'Trash', "\\Answered \\Flagged \\Deleted \\Seen \\Draft", "\\Trash", true);
+        await this.addMailBox(email, 'Spam', "\\Answered \\Flagged \\Deleted \\Seen \\Draft", "\\Junk", true);
 
         return true;
     }
@@ -145,17 +148,17 @@ export class DatabaseManager {
         await db.execute('UPDATE mailboxes SET name=? WHERE name=? AND belongs_to=?', [name, mailbox, email]);
     }
 
-    async addMailBox(email, name, flags="\\Seen \\Deleted", special_use_flags="") {
+    async addMailBox(email, name, flags="\\Answered \\Flagged \\Deleted \\Seen \\Draft", special_use_flags="", permanent=false) {
         const [rows] = await db.query('SELECT * FROM mailboxes WHERE belongs_to=? AND name=?', [email, name]);
 
         if (rows[0])
             return;
 
-        await db.execute("INSERT INTO mailboxes (belongs_to, name, uid, flags, special_use_flags) VALUES (?, ?, ?, ?, ?)", [email, name, crypto.randomBytes(4).readUint32BE(), flags, special_use_flags])
+        await db.execute("INSERT INTO mailboxes (belongs_to, name, uid, flags, special_use_flags, permanent) VALUES (?, ?, ?, ?, ?, ?)", [email, name, crypto.randomBytes(4).readUint32BE(), flags, special_use_flags, permanent])
     }
 
     async deleteMailBox(email, name) {
-        await db.execute('DELETE FROM mailboxes WHERE belongs_to=? AND name=?', [email, name]);
+        await db.execute('DELETE FROM mailboxes WHERE belongs_to=? AND name=? AND permanent=0', [email, name]);
     }
 
     async moveMail(email, mail_id, mail_box) {
