@@ -1,3 +1,6 @@
+import crypto from 'node:crypto';
+import config from "../../config.json" with { type: "json" };
+
 export class Command {
     constructor (database, connection) {
         this.database = database;
@@ -156,15 +159,73 @@ export class Command {
             message += `Received: ${email.received}\r\n`;
 
         message += `MIME-Version: ${email.mime_version}\r\n`;
-        message += `Content-Type: ${email.content_type == "multipart/alternative" ? 'text/html' : email.content_type}; charset=${email.charset}\r\n`;
+        message += `Content-Type: ${email.content_type}; charset=${email.charset}${email.content_type.startsWith("multipart") ? `; boundary="${email.boundary}"` : ''}\r\n`;
         message += `Content-Transfer-Encoding: 8bit\r\n`;
 
         return message;
     }
 
-    createRawEmail(email) {
-        const headers = this.createRawHeaders(email);
+    async getAttachmentAsBase64(email, attachment) {
+        try {
+            const { download_url, error } = await this.connection.email.getAttatchment(email.mail_id, attachment.id);
+            if (error) throw new Error(`Error: ${error}`);
 
-        return `${headers}\r\n${email.content ?? ""}`;
+            const response = await fetch(download_url);
+            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+            const arrayBuffer = await response.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            const base64String = buffer.toString('base64');
+
+            return base64String;
+        } catch (error) {
+            console.error('Error fetching or converting attachment:', error);
+        }
+    }
+
+    async createMessageBody(email) {
+        const content = email.content ?? "";
+
+        if (!email.content_type?.startsWith("multipart"))
+            return content;
+
+        let body = "";
+
+        /*
+        [{"id": "a4725d19-3628-43e3-917c-ee2eebe9d5e4", "size": 3879, "filename": "Screenshot_20260820_101002.png",
+        "content_id": "<ii_muuvphhg0>", "content_type": "image/png",
+        "content_disposition": "inline"},
+        {"id": "7a7fc67b-8a6e-48d1-89f1-be8e50d60ace", "size": 4045216,
+        "filename": "Composition 2 - FINAL.mp3", "content_id": "<f_muuvpkn01>",
+        "content_type": "audio/mpeg", "content_disposition": "attachment"}]
+        */
+
+        body += `--${email.boundary}\r\n`;
+        body += 'Content-Type: text/html\r\n';
+        body += `Content-Transfer-Encoding: 8bit\r\n`;
+        body += `\r\n${content}\r\n`;
+
+        for (let attachment of email.attachments) {
+            body += `--${email.boundary}\r\n`;
+            body += `Content-Type: ${attachment.content_type || "application/octet-stream"}\r\n`;
+            body += `Content-Disposition: attachment; filename="${attachment.filename}"\r\n`;
+            body += `Content-Transfer-Encoding: base64\r\n`;
+            body += `\r\n`;
+            body += `${await this.getAttachmentAsBase64(email, attachment)}\r\n`;
+        }
+
+        body += `--${email.boundary}--`;
+        return body;
+    }
+
+    async createRawEmail(email) {
+        const headers  = this.createRawHeaders(email);
+        const content = email.content ?? "";
+
+        return `${headers}\r\n${await this.createMessageBody(email)}`;
+    }
+
+    randStr(len) {
+        return crypto.randomBytes(len).toString('base64url').slice(0, len);
     }
 }

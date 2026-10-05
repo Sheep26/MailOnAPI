@@ -41,7 +41,7 @@ export class FetchCommand extends Command {
             }
 
             if (/\bRFC822\.SIZE\b/i.test(dataItem)) {
-                const raw = this.createRawEmail(email);
+                const raw = await this.createRawEmail(email);
                 const size = Buffer.byteLength(raw, "utf8");
 
                 responseParts.push(`RFC822.SIZE ${size}`);
@@ -68,7 +68,7 @@ export class FetchCommand extends Command {
             }
 
             if (bodyTextMatch && !headerFieldsMatch) {
-                let raw = email.content ?? "";
+                let raw = this.createMessageBody(email);
                 raw = raw.replace(/\r?\n/g, "\r\n");
 
                 const hasPartial = bodyTextMatch[1] !== undefined;
@@ -82,14 +82,14 @@ export class FetchCommand extends Command {
             }
 
             if (/BODY(?:\.PEEK)?\[\]/i.test(dataItem)) {
-                const raw = this.createRawEmail(email);
+                const raw = await this.createRawEmail(email);
                 const size = Buffer.byteLength(raw, "utf8");
 
                 responseParts.push({type: "literal", name: "BODY[]", data: raw, size});
             }
 
             if (/\bRFC822\b/i.test(dataItem) && !/\bRFC822\.SIZE\b/i.test(dataItem)) {
-                const raw = this.createRawEmail(email);
+                const raw = await this.createRawEmail(email);
                 const size = Buffer.byteLength(raw, "utf8");
 
                 responseParts.push({type: "literal", name: "RFC822", data: raw, size});
@@ -206,7 +206,7 @@ export class FetchCommand extends Command {
                 headers += `In-Reply-To: ${email.in_reply_to}\r\n`;
 
             else if (header === "content-type")
-                headers += `Content-Type: ${email.content_type == "multipart/alternative" ? 'text/html' : email.content_type}; charset=utf-8\r\n`;
+                headers += `Content-Type: ${email.content_type}; charset=utf-8\r\n`;
 
             else if (header === "content-transfer-encoding")
                 headers += `Content-Transfer-Encoding: 8bit\r\n`;

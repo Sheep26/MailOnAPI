@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 import STATES from './imapStates.js';
 
 export class ImapConnection {
-    constructor(socket, database, capabilities, secure) {
+    constructor(socket, database, capabilities, secure, email) {
         this.socket = socket;
         this.database = database;
         this.buffer = "";
@@ -21,6 +21,8 @@ export class ImapConnection {
         this.idle = false;
         this.readonly = false;
         this.secure = secure;
+
+        this.email = email;
 
         if (!secure) {
             this.addCapabiltity('LOGINDISABLED');

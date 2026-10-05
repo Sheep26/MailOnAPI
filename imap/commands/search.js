@@ -30,7 +30,7 @@ export class SearchCommand extends Command {
             }
 
             if (criteria.length)
-                selectedEmails = this.searchEmails(selectedEmails, criteria);
+                selectedEmails = await this.searchEmails(selectedEmails, criteria);
 
             const results = selectedEmails.map((email) => {
                 if (uid)
@@ -48,17 +48,17 @@ export class SearchCommand extends Command {
         }
     };
 
-    searchEmails(emails, criteria) {
+    async searchEmails(emails, criteria) {
         let position = 0;
 
-        const parseCriterion = () => {
+        const parseCriterion = async () => {
             if (position >= criteria.length)
                 throw new Error("Missing search criteria");
 
             if (criteria[position] === "(") {
                 position++;
 
-                const criterion = parseCriterion();
+                const criterion = await parseCriterion();
 
                 if (position >= criteria.length || criteria[position] !== ")")
                     throw new Error("Missing closing ')'");
@@ -185,7 +185,7 @@ export class SearchCommand extends Command {
                     if (!Number.isFinite(size) || size < 0)
                         throw new Error(`Invalid LARGER value: ${value}`);
 
-                    return email => this.getEmailSize(email) > size;
+                    return async email => await this.getEmailSize(email) > size;
                 }
 
                 case "SMALLER": {
@@ -195,18 +195,18 @@ export class SearchCommand extends Command {
                     if (!Number.isFinite(size) || size < 0)
                         throw new Error(`Invalid SMALLER value: ${value}`);
 
-                    return email => this.getEmailSize(email) < size;
+                    return async email => await this.getEmailSize(email) < size;
                 }
 
                 case "NOT": {
-                    const criterion = parseCriterion();
+                    const criterion = await parseCriterion();
 
                     return email => !criterion(email);
                 }
 
                 case "OR": {
-                    const left = parseCriterion();
-                    const right = parseCriterion();
+                    const left = await parseCriterion();
+                    const right = await parseCriterion();
 
                     return email => left(email) || right(email);
                 }
@@ -280,7 +280,7 @@ export class SearchCommand extends Command {
             if (criteria[position] === ")")
                 throw new Error("Unexpected ')'");
 
-            predicates.push(parseCriterion());
+            predicates.push(await parseCriterion());
         }
 
         return emails.filter(email => predicates.every(predicate => predicate(email)));
@@ -365,8 +365,8 @@ export class SearchCommand extends Command {
         return date;
     }
 
-    getEmailSize(email) {
-        const raw = this.createRawEmail(email);
+    async getEmailSize(email) {
+        const raw = await this.createRawEmail(email);
 
         return Buffer.byteLength(raw, "utf8");
     }
