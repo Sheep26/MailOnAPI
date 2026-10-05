@@ -27,7 +27,7 @@ export class CopyCommand extends Command {
             await this.database.addEmail(email.belongs_to, email.mail_to, email.mail_from, email.reply_to, email.bcc, email.cc, mail_id, email.message_id, email.html_format, email.subject, email.content, email.attachments, email.email_references, target_mailbox.uid, email.flags);
 
             if (fs.existsSync(attachment_path))
-                await fs.promises.cp(attachment_path, path.join(config.attachment_path, String(mail_id)));
+                fs.cpSync(attachment_path, path.join(config.attachment_path, String(mail_id)), { recursive: true });
         }
 
         return this.connection.send(`${tag} OK COPY completed`);
