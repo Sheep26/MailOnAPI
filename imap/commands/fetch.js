@@ -170,7 +170,7 @@ export class FetchCommand extends Command {
             const header = requestedHeader.toLowerCase();
 
             if (header === "from")
-                headers += `From: ${email.mail_from.join(",")}\r\n`;
+                headers += `From: ${email.mail_from}\r\n`;
 
             else if (header === "to")
                 headers += `To: ${email.mail_to.join(",")}\r\n`;

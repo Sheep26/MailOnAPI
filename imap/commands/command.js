@@ -121,7 +121,7 @@ export class Command {
     createRawHeaders(email) {
         let message = "";
 
-        message += `From: ${email.mail_from.join(",")}\r\n`;
+        message += `From: ${email.mail_from}\r\n`;
         message += `To: ${email.mail_to.join(",")}\r\n`;
 
         if (email.reply_to)
