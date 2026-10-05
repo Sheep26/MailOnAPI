@@ -88,8 +88,17 @@ export class EmailResend extends Email {
             if (mailbox) {
                 const user = await this.database.getUser(to);
 
-                if (!user)
+                if (!user) {
+                    await this.resend.emails.send({
+                        from: `Email bounce <noreply@drewfitzgerald.co.nz>`,
+                        to: data.from,
+                        replyTo: 'noreply@drewfitzgerald.co.nz',
+                        subject: `Email ${to} is not active`,
+                        html: `<span>Email address <strong>${to}</string> is not currently active</span>`
+                    });
+
                     continue;
+                }
 
                 await this.database.addEmail(to, data.to, data.from, data.reply_to, data.bcc, data.cc, data.id, data.message_id, data.html_format, data.subject, data.headers['content-type'] == 'text/plain' ? data.text : data.html, data.attachments, references, mailbox.uid, [], data.headers['in-reply-to'], data.headers['mime-version'], 'utf-8', data.headers['content-type'], data.headers['received']);
                 await super.updateImap(user.email, mailbox.uid);
