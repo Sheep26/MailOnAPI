@@ -8,7 +8,7 @@ export class AttachmentManager {
         this.email = email;
 
         if (!fs.existsSync(config.attachment_path))
-            fs.mkdir(config.attachment_path);
+            fs.mkdirSync(config.attachment_path);
     }
 
     async downloadAttachment(email_id, attachment_id) {
