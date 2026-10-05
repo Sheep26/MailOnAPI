@@ -1,6 +1,7 @@
 import { db, initDB } from './connection.js';
 import { BcryptManager, BcryptCache } from './encryption.js';
 import { Session } from '../sessions/sessionManager.js';
+import config from "../config.json" with { type: "json" };
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
