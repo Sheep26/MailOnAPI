@@ -101,7 +101,7 @@ export class EmailResend extends Email {
             }
 
             if (mailbox) {
-                await this.database.addEmail(to, data.to, data.headers.from, data.reply_to, data.bcc, data.cc, data.id, data.message_id, data.html_format, data.subject, data.headers['content-type'] == 'text/plain' ? data.text : data.html, data.attachments, references, mailbox.uid, [], data.headers['in-reply-to'], data.headers['mime-version'], 'utf-8', data.headers['content-type'], data.headers['received']);
+                await this.database.addEmail(to, data.to, data.headers.from, data.reply_to.length ? data.reply_to : [data.from], data.bcc, data.cc, data.id, data.message_id, data.html_format, data.subject, data.headers['content-type'] == 'text/plain' ? data.text : data.html, data.attachments, references, mailbox.uid, [], data.headers['in-reply-to'], data.headers['mime-version'], 'utf-8', data.headers['content-type'], data.headers['received']);
 
                 await super.updateImap(user.email, mailbox.uid);
             }
