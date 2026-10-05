@@ -56,7 +56,7 @@ export class DatabaseManager {
         ]);
 
         for (let attachment of attachments) {
-            if (!fs.existsSync(path.join(config.attachment_path, mail_id, attachment.id))) {
+            if (!fs.existsSync(path.join(config.attachment_path, string(mail_id), String(attachment.id)))) {
                 console.log(`Downloading attachment ${attachment.filename}`);
 
                 await this.attachments.downloadAttachment(mail_id, attachment.id);
