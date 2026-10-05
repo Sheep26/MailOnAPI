@@ -14,6 +14,7 @@ export class AttachmentManager {
     async downloadAttachment(email_id, attachment_id) {
         const { download_url, error } = await this.email.getAttatchment(email_id, attachment_id);
         const output_path = path.join(config.attachment_path, email_id, attachment_id);
+        const dirname = path.dirname(output_path);
 
         if (error)
             throw new Error(`Failed to get attachment: ${error}`);
@@ -26,7 +27,9 @@ export class AttachmentManager {
         if (!response.ok)
             throw new Error(`Download failed: ${response.status} ${response.statusText}`);
 
-        fs.mkdirSync(path.dirname(output_path), { recursive: true });
+        if (!fs.existsSync(dirname))
+            fs.mkdirSync(dirname, { recursive: true });
+
         await pipeline(response.body, fs.createWriteStream(output_path));
     }
 }
