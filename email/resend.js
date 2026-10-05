@@ -21,7 +21,7 @@ export class EmailResend extends Email {
         const mailbox = await this.database.getMailBox(user.email, 'Sent');
 
         if (mailbox)
-            this.database.addEmail(user.email, [to], `${user.username} <${user.email}>`, reply_to, bcc, cc, data.id, null, null, subject, text, null, null, mailbox.uid, ["\\Seen"]);
+            this.database.addEmail(user.email, [to], `${user.username} <${user.email}>`, [reply_to], bcc, cc, data.id, null, null, subject, text, null, null, mailbox.uid, ["\\Seen"]);
     }
 
     async sendHTML(user, to, reply_to, subject, html, bcc=[], cc=[]) {
@@ -38,7 +38,7 @@ export class EmailResend extends Email {
         const mailbox = await this.database.getMailBox(user.email, 'Sent');
 
         if (mailbox)
-            this.database.addEmail(user.email, [to], `${user.username} <${user.email}>`, reply_to, bcc, cc, data.id, null, null, subject, html, null, null, mailbox.uid, ["\\Seen"], null, '1.0', 'utf-8', 'text/html');
+            this.database.addEmail(user.email, [to], `${user.username} <${user.email}>`, [reply_to], bcc, cc, data.id, null, null, subject, html, null, null, mailbox.uid, ["\\Seen"], null, '1.0', 'utf-8', 'text/html');
     }
 
     async reply(user, mail_id, content) {
@@ -66,7 +66,7 @@ export class EmailResend extends Email {
         const mailbox = await this.database.getMailBox(user.email, 'Sent');
 
         if (mailbox)
-            this.database.addEmail(user.email, mail.reply_to, `${user.username} <${user.email}>`, user.email, [], [], data.id, null, null, `Re: ${mail.subject}`, content, null, [...mail.email_references ?? "", mail.message_id], mailbox.uid, ["\\Seen"]);
+            this.database.addEmail(user.email, mail.reply_to, `${user.username} <${user.email}>`, [user.email], [], [], data.id, null, null, `Re: ${mail.subject}`, content, null, [...mail.email_references ?? "", mail.message_id], mailbox.uid, ["\\Seen"]);
     }
 
     async handle(body) {
