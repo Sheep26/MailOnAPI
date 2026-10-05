@@ -121,20 +121,17 @@ export class Command {
     createRawHeaders(email) {
         let message = "";
 
-        const cc = JSON.parse(email.cc);
-        const bcc = JSON.parse(email.bcc);
-
-        message += `From: ${email.mail_from}\r\n`;
-        message += `To: ${email.mail_to}\r\n`;
+        message += `From: ${email.mail_from.join(",")}\r\n`;
+        message += `To: ${email.mail_to.join(",")}\r\n`;
 
         if (email.reply_to)
-            message += `Reply-To: ${email.reply_to}\r\n`;
+            message += `Reply-To: ${email.reply_to.join(",")}\r\n`;
 
-        if (cc && cc.length)
-            message += `Cc: ${cc.join(", ")}\r\n`;
+        if (email.cc && email.cc.length)
+            message += `Cc: ${email.cc.join(", ")}\r\n`;
 
-        if (bcc && bcc.length)
-            message += `Bcc: ${bcc.join(", ")}\r\n`;
+        if (email.bcc && email.bcc.length)
+            message += `Bcc: ${email.bcc.join(", ")}\r\n`;
 
         message += `Subject: ${email.subject}\r\n`;
 

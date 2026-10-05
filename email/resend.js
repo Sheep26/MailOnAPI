@@ -71,10 +71,6 @@ export class EmailResend extends Email {
 
     async handle(body) {
         const { data } = await this.resend.emails.receiving.get(body.data.email_id);
-        const user = await this.database.getUser(data.to[0]);
-
-        if (!user)
-            return;
 
         let references = data.headers.references ?? null;
 
@@ -89,8 +85,15 @@ export class EmailResend extends Email {
         const mailbox = await this.database.getMailBox(user.email, 'Inbox');
 
         if (mailbox) {
-            await this.database.addEmail(data.to[0], data.to[0], data.headers.from, data.headers['return-path'], JSON.stringify(data.bcc), JSON.stringify(data.cc), data.id, data.message_id, data.html_format, data.subject, data.html, data.attachments, references, mailbox.uid, [], null, data.headers['mime-version'], 'utf-8', data.headers['content-type'], data.headers['received']);
-            await super.updateImap(user.email, mailbox.uid);
+            for (let to in data.to) {  
+                const user = await this.database.getUser(to);
+
+                if (!user)
+                    continue;
+
+                await this.database.addEmail(to, data.to, data.from, data.reply_to, data.bcc, data.cc, data.id, data.message_id, data.html_format, data.subject, data.html, data.attachments, references, mailbox.uid, [], null, data.headers['mime-version'], 'utf-8', data.headers['content-type'], data.headers['received']);
+                await super.updateImap(user.email, mailbox.uid);
+            }
         }
 
         console.log(`Email ${data.id} has been recieved from ${data.headers.from}`);

@@ -166,23 +166,20 @@ export class FetchCommand extends Command {
     createRequestedHeaders(email, requestedHeaders) {
         let headers = "";
 
-        const cc = JSON.parse(email.cc);
-        const bcc = JSON.parse(email.bcc);
-
         for (const requestedHeader of requestedHeaders) {
             const header = requestedHeader.toLowerCase();
 
-            if (header === "from" && email.mail_from)
-                headers += `From: ${email.mail_from}\r\n`;
+            if (header === "from")
+                headers += `From: ${email.mail_from.join(",")}\r\n`;
 
-            else if (header === "to" && email.mail_to)
-                headers += `To: ${email.mail_to}\r\n`;
+            else if (header === "to")
+                headers += `To: ${email.mail_to.join(",")}\r\n`;
 
-            else if (header === "cc" && cc && cc.length > 0)
-                headers += `Cc: ${cc.join(", ")}\r\n`;
+            else if (header === "cc" && email.cc && email.cc.length > 0)
+                headers += `Cc: ${email.cc.join(", ")}\r\n`;
 
-            else if (header === "bcc" && bcc && bcc.length > 0)
-                    headers += `Bcc: ${bcc.join(", ")}\r\n`;
+            else if (header === "bcc" && email.bcc && email.bcc.length > 0)
+                    headers += `Bcc: ${email.bcc.join(", ")}\r\n`;
 
             else if (header === "subject" && email.subject)
                 headers += `Subject: ${email.subject}\r\n`;
