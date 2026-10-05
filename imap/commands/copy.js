@@ -3,7 +3,7 @@ import STATES from '../imapStates.js';
 import crypto from 'node:crypto';
 import fs from 'fs';
 import path from 'path';
-import config from "../config.json" with { type: "json" };
+import config from "../../config.json" with { type: "json" };
 
 export class CopyCommand extends Command {
     command = async (tag, args, options) => {
