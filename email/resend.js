@@ -82,10 +82,10 @@ export class EmailResend extends Email {
                     references = [references];
             }
 
-        const mailbox = await this.database.getMailBox(user.email, 'Inbox');
+        for (let to in data.to) {  
+            const mailbox = await this.database.getMailBox(to, 'Inbox');
 
-        if (mailbox) {
-            for (let to in data.to) {  
+            if (mailbox) {
                 const user = await this.database.getUser(to);
 
                 if (!user)
