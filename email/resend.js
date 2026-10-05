@@ -93,7 +93,7 @@ export class EmailResend extends Email {
                         from: `Email bounce <noreply@drewfitzgerald.co.nz>`,
                         to: data.from,
                         replyTo: 'noreply@drewfitzgerald.co.nz',
-                        subject: `Email ${to} is not active`,
+                        subject: `Email address ${to} is not active`,
                         html: `<span>Email address <strong>${to}</string> is not currently active</span>`
                     });
 
