@@ -166,7 +166,7 @@ export class Command {
     }
 
     async getAttachmentAsBase64(email, attachment) {
-        const { data, error } = await this.connection.attachments.getAttatchment(email.mail_id, attachment.id);
+        const { data, error, path } = await this.connection.attachments.getAttatchment(email.mail_id, attachment.id);
 
         if (error)
             return error.toString('base64');

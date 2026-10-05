@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 import STATES from './imapStates.js';
 
 export class ImapConnection {
-    constructor(socket, database, capabilities, secure, email, attachments) {
+    constructor(socket, database, capabilities, secure, attachments) {
         this.socket = socket;
         this.database = database;
         this.buffer = "";
@@ -22,7 +22,6 @@ export class ImapConnection {
         this.readonly = false;
         this.secure = secure;
 
-        this.email = email;
         this.attachments = attachments;
 
         if (!secure) {
