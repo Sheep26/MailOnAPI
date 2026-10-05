@@ -159,7 +159,7 @@ export class Command {
             message += `Received: ${email.received}\r\n`;
 
         message += `MIME-Version: ${email.mime_version}\r\n`;
-        message += `Content-Type: ${email.content_type == "multipart/alternative" ? 'text/html' : email.content_type}; charset=${email.charset}\r\n`;
+        message += `Content-Type: ${email.content_type/* == "multipart/alternative" ? 'text/html' : email.content_type*/}; charset=${email.charset}\r\n`;
         message += `Content-Transfer-Encoding: 8bit\r\n`;
 
         return message;
