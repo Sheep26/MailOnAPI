@@ -2,6 +2,8 @@ import { db, initDB } from './connection.js';
 import { BcryptManager, BcryptCache } from './encryption.js';
 import { Session } from '../sessions/sessionManager.js';
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
 
 const hasher = new BcryptManager();
 
@@ -53,9 +55,11 @@ export class DatabaseManager {
         ]);
 
         for (let attachment of attachments) {
-            console.log(`Downloading attachment ${attachment.filename}`);
+            if (!fs.existsSync(path.join(config.attachment_path, mail_id, attachment.id))) {
+                console.log(`Downloading attachment ${attachment.filename}`);
 
-            await this.attachments.downloadAttachment(mail_id, attachment.id);
+                await this.attachments.downloadAttachment(mail_id, attachment.id);
+            }
         }
 
         await this.incrementUIDNext(mailbox.belongs_to, mailbox.name);
