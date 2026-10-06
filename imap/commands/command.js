@@ -108,7 +108,7 @@ export class Command {
     }
 
     hasFlag(email, flag) {
-        return email.map(x => this.capitalizeFlag(x)).flags.includes(this.capitalizeFlag(flag));
+        return email.flags.map(x => this.capitalizeFlag(x)).includes(this.capitalizeFlag(flag));
     }
 
     capitalize(str) {
