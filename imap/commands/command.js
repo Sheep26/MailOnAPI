@@ -209,7 +209,7 @@ export class Command {
                 body += `${await this.getAttachmentAsBase64(email, attachment)}\r\n`;
         }
 
-        if (!body.endsWith(`--${email.boundary}--`))
+        if (!body.trim().endsWith(`--${email.boundary}--`))
             body += `--${email.boundary}--`;
 
         return body;
