@@ -197,7 +197,7 @@ export class Command {
             body = 
 `--${email.boundary}\r\n
 Content-Type: text/html\r\n
-Content-Transfer-Encoding: 8bit\r\n
+Content-Transfer-Encoding: 8bit; charset=${email.charset}\r\n
 \r\n
 ${body}`; // Im sorry I had to format this I couldn't read it. Yes it looks like shit fuck you.
 
