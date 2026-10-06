@@ -55,8 +55,6 @@ export class DatabaseManager {
             boundary ?? this.randStr(28)
         ]);
 
-        console.log(content)
-
         for (let attachment of attachments ?? []) {
             if (!fs.existsSync(path.join(config.attachment_path, String(mail_id), String(attachment.id)))) {
                 console.log(`Downloading attachment ${attachment.filename}`);
