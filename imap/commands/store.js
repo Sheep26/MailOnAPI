@@ -19,13 +19,15 @@ export class StoreCommand extends Command {
         const selectedMails = this.selectEmails(mailboxEmails, sequence, uid);
 
         for (let email of selectedMails) {
-            for (let flag of flags)
-                if (action.toUpperCase().startsWith("+FLAGS"))
+            for (let flag of flags) {
+                if (action.toUpperCase().startsWith("+FLAGS")) {
                     if (!this.hasFlag(email, flag))
                         await this.database.addFlag(email.mail_id, this.connection.user.email, flag);
-                else if (action.toUpperCase().startsWith("-FLAGS"))
+                } else if (action.toUpperCase().startsWith("-FLAGS")) {
                     if (this.hasFlag(email, flag))
                         await this.database.removeFlag(email.mail_id, this.connection.user.email, flag);
+                }
+            }
 
             if (!action.toUpperCase().endsWith(".SILENT")) {
                 const email_updated = await this.database.getEmail(email.mail_id, this.connection.user.email);
