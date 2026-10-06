@@ -193,14 +193,12 @@ export class Command {
         
         body += `${content}\r\n`;
 
-        if (!body.trim().startsWith(`--${email.boundary}`)) {
-            body += `--${email.boundary}\r\n`;
-            body += 'Content-Type: text/html\r\n';
-            body += `Content-Transfer-Encoding: 8bit\r\n`;
-            body += `\r\n${content}\r\n`;
-
-            body = `--${email.boundary}\r\nContent-Type: text/html\r\nContent-Transfer-Encoding: 8bit\r\n\r\n${body}`;
-        }
+        if (!body.trim().startsWith(`--${email.boundary}`))
+            body = `--${email.boundary}\r\n
+        Content-Type: text/html\r\n
+        Content-Transfer-Encoding: 8bit\r\n
+        \r\n
+        ${body}`;
 
         for (let attachment of email.attachments ?? []) {
             body += `--${email.boundary}\r\n`;
