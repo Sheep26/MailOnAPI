@@ -23,7 +23,7 @@ export class DatabaseManager {
         return crypto.randomBytes(len).toString('base64url').slice(0, len);
     }
 
-    async addEmail(belongs_to, to, from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, references, mail_box, flags=[], in_reply_to=null, mime_version=null, charset='utf-8', content_type="text/plain", received=null) {
+    async addEmail(belongs_to, to, from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, references, mail_box, flags=[], in_reply_to=null, mime_version=null, charset='utf-8', content_type="text/plain", received=null, boundary=null) {
         const mailbox = await this.getMailBoxUID(belongs_to, mail_box);
 
         if (!mailbox)
@@ -52,7 +52,7 @@ export class DatabaseManager {
             charset,
             content_type,
             received,
-            this.randStr(28)
+            boundary ?? this.randStr(28)
         ]);
 
         for (let attachment of attachments) {
