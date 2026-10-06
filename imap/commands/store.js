@@ -25,7 +25,7 @@ export class StoreCommand extends Command {
                         await this.database.addFlag(email.mail_id, this.connection.user.email, flag);
                 else if (action.toUpperCase().startsWith("-FLAGS"))
                     if (this.hasFlag(email, flag))
-                        await this.database.removeFlag(email.mail_id, this.connection.user.email, lag);
+                        await this.database.removeFlag(email.mail_id, this.connection.user.email, flag);
 
             if (!action.toUpperCase().endsWith(".SILENT")) {
                 const email_updated = await this.database.getEmail(email.mail_id, this.connection.user.email);
