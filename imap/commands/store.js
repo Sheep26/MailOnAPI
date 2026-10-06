@@ -31,7 +31,7 @@ export class StoreCommand extends Command {
                 const email_updated = await this.database.getEmail(email.mail_id, this.connection.user.email);
                 const email_sequence = await this.connection.database.getEmailIndex(this.connection.user.email, email.mail_id, email.mail_box);
 
-                this.connection.send(`* ${email_sequence} FETCH (FLAGS (${email_updated.flags}))`);
+                this.connection.send(`* ${email_sequence} FETCH (FLAGS (${email_updated.flags.join(' ')}))`);
             }
         }
 
