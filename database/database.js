@@ -204,7 +204,17 @@ export class DatabaseManager {
     }
 
     async removeFlag(mail_id, email, flag) {
-        await db.execute(`UPDATE emails SET flags=JSON_REMOVE(flags, JSON_SEARCH(flags, 'one', ?)) WHERE mail_id=? AND belongs_to=? AND JSON_SEARCH(flags, 'one', ?) IS NOT NULL`, [flag, mail_id, email, flag]);
+        await db.execute(
+            `UPDATE emails
+            SET flags = JSON_REMOVE(
+                flags,
+                JSON_SEARCH(flags, 'one', ?)
+            )
+            WHERE mail_id = ?
+            AND belongs_to = ?
+            AND JSON_SEARCH(flags, 'one', ?) IS NOT NULL`,
+            [flag, mail_id, email, flag]
+        );
     }
 
     async markSeen(mail_id, email) {

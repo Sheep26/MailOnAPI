@@ -25,11 +25,8 @@ export class StoreCommand extends Command {
                     if (!this.hasFlag(email, flag))
                         await this.database.addFlag(email.mail_id, this.connection.user.email, flag);
                 } else if (action.toUpperCase().startsWith("-FLAGS")) {
-                    if (this.hasFlag(email, flag)) {
-                        console.log(flag);
-                        console.log('OMG IUASHDILAWHDHDIAWHDLWAKHDAWDKHWAKJDLHAKJDHS');
+                    if (this.hasFlag(email, flag))
                         await this.database.removeFlag(email.mail_id, this.connection.user.email, flag);
-                    }
                 }
             }
 
