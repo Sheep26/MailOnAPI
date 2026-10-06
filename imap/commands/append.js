@@ -90,7 +90,7 @@ export class AppendCommand extends Command {
         const contentTypeHeader = data['content-type'] ?? "text/plain";
 
         const [content_type, ...params] = contentTypeHeader.split(";").map(value => value.trim());
-        const charset = params.find(param => param.toLowerCase().startsWith("charset="))?.slice("charset=".length).trim() ?? null;
+        const charset = params.find(param => param.toLowerCase().startsWith("charset="))?.slice("charset=".length).trim() ?? null ?? "utf-8";
         const boundary = params.find(param => param.toLowerCase().startsWith("boundary="))?.slice("boundary=".length).trim() ?? null;
 
         const bcc = data.bcc?.split(',').map(value => value.trim()) ?? [];
