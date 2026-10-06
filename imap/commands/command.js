@@ -180,7 +180,7 @@ export class Command {
         if (!email.content_type?.startsWith("multipart"))
             return content;
 
-        let body = "";
+        let body = `${content}\r\n`;
 
         /*
         [{"id": "a4725d19-3628-43e3-917c-ee2eebe9d5e4", "size": 3879, "filename": "Screenshot_20260820_101002.png",
@@ -190,16 +190,13 @@ export class Command {
         "filename": "Composition 2 - FINAL.mp3", "content_id": "<f_muuvpkn01>",
         "content_type": "audio/mpeg", "content_disposition": "attachment"}]
         */
-        
-        body += `${content}\r\n`;
 
-        if (!body.trim().startsWith(`--${email.boundary}`))
-            body = 
-`--${email.boundary}\r\n
-Content-Type: text/html\r\n
-Content-Transfer-Encoding: 8bit; charset=${email.charset ?? 'utf-8'}\r\n
-\r\n
-${body}`; // Im sorry I had to format this I couldn't read it. Yes it looks like shit fuck you.
+        if (!body.trim().startsWith(`--${email.boundary}`)) {
+            body = `--${email.boundary}\r\n`;
+            body += `Content-Type: text/html\r\n`;
+            body += `Content-Transfer-Encoding: 8bit; charset=${email.charset ?? 'utf-8'}\r\n`
+            body += `\r\n${content}\r\n`;
+        }
 
         for (let attachment of email.attachments ?? []) {
             body += `--${email.boundary}\r\n`;
