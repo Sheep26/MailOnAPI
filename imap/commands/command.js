@@ -196,15 +196,17 @@ export class Command {
         body += `Content-Transfer-Encoding: 8bit\r\n`;
         body += `\r\n${content}\r\n`;
 
-        for (let attachment of email.attachments) {
-            body += `--${email.boundary}\r\n`;
-            body += `Content-Type: ${attachment.content_type || "application/octet-stream"}\r\n`;
-            body += `Content-Disposition: attachment; filename="${attachment.filename}"\r\n`;
-            body += `Content-Transfer-Encoding: base64\r\n`;
-            body += `\r\n`;
+        if (email.attachments && Array.isArray(email.attachments)) {
+            for (let attachment of email.attachments) {
+                body += `--${email.boundary}\r\n`;
+                body += `Content-Type: ${attachment.content_type || "application/octet-stream"}\r\n`;
+                body += `Content-Disposition: attachment; filename="${attachment.filename}"\r\n`;
+                body += `Content-Transfer-Encoding: base64\r\n`;
+                body += `\r\n`;
 
-            if (!skip_attachments_content)
-                body += `${await this.getAttachmentAsBase64(email, attachment)}\r\n`;
+                if (!skip_attachments_content)
+                    body += `${await this.getAttachmentAsBase64(email, attachment)}\r\n`;
+            }
         }
 
         body += `--${email.boundary}--`;
