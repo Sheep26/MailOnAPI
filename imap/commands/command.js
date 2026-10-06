@@ -193,7 +193,7 @@ export class Command {
         
         body += `${content}\r\n`;
 
-        if (!body.startsWith(`--${email.boundary}`)) {
+        if (!body.trim().startsWith(`--${email.boundary}`)) {
             body += `--${email.boundary}\r\n`;
             body += 'Content-Type: text/html\r\n';
             body += `Content-Transfer-Encoding: 8bit\r\n`;
