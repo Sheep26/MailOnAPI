@@ -190,11 +190,17 @@ export class Command {
         "filename": "Composition 2 - FINAL.mp3", "content_id": "<f_muuvpkn01>",
         "content_type": "audio/mpeg", "content_disposition": "attachment"}]
         */
+        
+        body += `${content}\r\n`;
 
-        body += `--${email.boundary}\r\n`;
-        body += 'Content-Type: text/html\r\n';
-        body += `Content-Transfer-Encoding: 8bit\r\n`;
-        body += `\r\n${content}\r\n`;
+        if (!body.startsWith(`--${email.boundary}`)) {
+            body += `--${email.boundary}\r\n`;
+            body += 'Content-Type: text/html\r\n';
+            body += `Content-Transfer-Encoding: 8bit\r\n`;
+            body += `\r\n${content}\r\n`;
+
+            body = `--${email.boundary}\r\nContent-Type: text/html\r\nContent-Transfer-Encoding: 8bit\r\n\r\n${body}`;
+        }
 
         for (let attachment of email.attachments ?? []) {
             body += `--${email.boundary}\r\n`;
@@ -207,7 +213,9 @@ export class Command {
                 body += `${await this.getAttachmentAsBase64(email, attachment)}\r\n`;
         }
 
-        body += `--${email.boundary}--`;
+        if (!body.endsWith(`--${email.boundary}--`))
+            body += `--${email.boundary}--`;
+
         return body;
     }
 
