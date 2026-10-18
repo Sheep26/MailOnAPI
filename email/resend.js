@@ -89,13 +89,13 @@ export class EmailResend extends Email {
             if (!user) {
                 console.log(`Email Address ${to} does not exist`);
 
-                await this.resend.emails.send({
+                /* await this.resend.emails.send({
                     from: `Email bounce <noreply@drewfitzgerald.co.nz>`,
                     to: data.from,
                     replyTo: 'noreply@drewfitzgerald.co.nz',
                     subject: `Email address ${to} is not active`,
                     html: `<strong>Email address ${to} is not currently active</strong>`
-                });
+                }); */ // Don't it bounces when addresses don't exist that we send to and damages our trust.
 
                 continue;
             }
