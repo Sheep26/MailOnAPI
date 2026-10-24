@@ -269,6 +269,13 @@ export class SearchCommand extends Command {
                     };
                 }
 
+                case "HEADER": {
+                    const field = String(this.readArgument(criteria, () => position++));
+                    const value = this.readArgument(criteria, () => position++);
+
+                    return email => this.contains(this.getEmailHeader(email, field), value);
+                }
+
                 default:
                     throw new Error(`Unsupported SEARCH key: ${key}`);
             }
@@ -284,6 +291,25 @@ export class SearchCommand extends Command {
         }
 
         return emails.filter(email => predicates.every(predicate => predicate(email)));
+    }
+
+    getEmailHeader(email, field) {
+        const target = String(field).toLowerCase();
+        const headers = this.createRawHeaders(email);
+
+        if (!headers)
+            return "";
+
+        const unfolded = headers.replace(/\r?\n[ \t]+/g, " ");
+
+        const values = unfolded.split(/\r?\n/).filter(line => {
+            const colon = line.indexOf(":");
+
+            return colon !== -1 &&
+                line.slice(0, colon).trim().toLowerCase() === target;
+        }).map(line => line.slice(line.indexOf(":") + 1).trim());
+
+        return values.join(" ");
     }
 
     readArgument(criteria, getPosition) {
