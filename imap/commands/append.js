@@ -92,6 +92,7 @@ export class AppendCommand extends Command {
         const [content_type, ...params] = contentTypeHeader.split(";").map(value => value.trim());
         const charset = params.find(param => param.toLowerCase().startsWith("charset="))?.slice("charset=".length).trim().replace(/^["']|["']$/g, '') ?? null ?? "utf-8";
         const boundary = params.find(param => param.toLowerCase().startsWith("boundary="))?.slice("boundary=".length).trim().replace(/^["']|["']$/g, '') ?? null;
+        console.log(boundary)
 
         const bcc = data.bcc?.split(',').map(value => value.trim()) ?? [];
         const cc = data.cc?.split(',').map(value => value.trim()) ?? [];

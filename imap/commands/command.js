@@ -191,7 +191,7 @@ export class Command {
         "content_type": "audio/mpeg", "content_disposition": "attachment"}]
         */
 
-        if (!body.trim().startsWith(`--${email.boundary}`)) {
+        if (!body.trim().startsWith(`--${email.boundary}`) && !body.trim().toLowerCase().replaceAll('-', '').startsWith(`this is a multipart message in mime format.`)) {
             body = `--${email.boundary}\r\n`;
             body += `Content-Type: text/html\r\n`;
             body += `Content-Transfer-Encoding: 8bit; charset=${email.charset ?? 'utf-8'}\r\n`
