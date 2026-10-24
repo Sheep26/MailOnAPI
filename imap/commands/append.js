@@ -90,8 +90,8 @@ export class AppendCommand extends Command {
         const contentTypeHeader = data['content-type'] ?? "text/plain";
 
         const [content_type, ...params] = contentTypeHeader.split(";").map(value => value.trim());
-        const charset = params.find(param => param.toLowerCase().startsWith("charset="))?.slice("charset=".length).trim() ?? null ?? "utf-8";
-        const boundary = params.find(param => param.toLowerCase().startsWith("boundary="))?.slice("boundary=".length).trim().replace(/["']/g, '') ?? null;
+        const charset = params.find(param => param.toLowerCase().startsWith("charset="))?.slice("charset=".length).trim().replace(/^["']|["']$/g, '') ?? null ?? "utf-8";
+        const boundary = params.find(param => param.toLowerCase().startsWith("boundary="))?.slice("boundary=".length).trim().replace(/^["']|["']$/g, '') ?? null;
 
         const bcc = data.bcc?.split(',').map(value => value.trim()) ?? [];
         const cc = data.cc?.split(',').map(value => value.trim()) ?? [];
@@ -99,7 +99,7 @@ export class AppendCommand extends Command {
         const to = data.to.split(',').map(x => x.trim()) ?? [];
         const reply_to = (data['reply-to'] ?? data.from).split(",").map(x => x.trim()) ?? [];
 
-        this.database.addEmail(this.connection.user.email, to, data.from, reply_to, bcc, cc, data.mail_id, data['message-id'], null, data.subject, data.content, null, null, this.mailbox.uid, this.flags, data['in-reply-to'], data['mime-version'], charset, content_type, null, boundary);
+        await this.database.addEmail(this.connection.user.email, to, data.from, reply_to, bcc, cc, data.mail_id, data['message-id'], null, data.subject, data.content, null, null, this.mailbox.uid, this.flags, data['in-reply-to'], data['mime-version'], charset, content_type, null, boundary);
         this.connection.send(`${this.tag} OK APPEND completed`);
     }
 
