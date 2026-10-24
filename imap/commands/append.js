@@ -57,42 +57,61 @@ export class AppendCommand extends Command {
         };
 
         let content_started = false;
+        let current_header = null;
+        const headers = {};
 
-        for (let line of this.buffer) {
+        const saveHeader = () => {
+            if (!current_header)
+                return;
+
+            const separator = current_header.indexOf(":");
+
+            if (separator === -1)
+                return;
+
+            const name = current_header.slice(0, separator).trim().toLowerCase();
+            const value = current_header.slice(separator + 1).trim();
+
+            if (accepted_headers.includes(name))
+                headers[name] = headers[name] ? `${headers[name]}, ${value}` : value;
+        };
+
+        for (const line of this.buffer) {
+            const normalized = line.replace(/(?:\r\n|\n|\r)$/, "");
+
             if (!content_started) {
-                const isEmptyLine = line === this.connection.newLine || line === "";
-
-                if (isEmptyLine) {
+                if (normalized === "") {
+                    saveHeader();
                     content_started = true;
+                    continue;
+                }
+
+                if (/^[ \t]/.test(normalized) && current_header !== null) {
+                    current_header += ` ${normalized.trim()}`;
 
                     continue;
                 }
-            }
 
-            if (content_started) {
-                data.content += `${line}`;
-
+                saveHeader();
+                current_header = normalized;
                 continue;
             }
 
-            const separator = line.indexOf(":");
-
-            if (separator === -1)
-                continue;
-
-            const header = line.slice(0, separator).trim().toLowerCase();
-            const header_content = line.slice(separator + 1).trim();
-
-            if (accepted_headers.includes(header))
-                data[header] = header_content;
+            data.content += line;
         }
+
+        if (!content_started)
+            saveHeader();
+
+        for (const header of accepted_headers)
+            if (headers[header] !== undefined)
+                data[header] = headers[header];
 
         const contentTypeHeader = data['content-type'] ?? "text/plain";
 
         const [content_type, ...params] = contentTypeHeader.split(";").map(value => value.trim());
         const charset = params.find(param => param.toLowerCase().startsWith("charset="))?.slice("charset=".length).trim().replace(/^["']|["']$/g, '') ?? null ?? "utf-8";
         const boundary = params.find(param => param.toLowerCase().startsWith("boundary="))?.slice("boundary=".length).trim().replace(/^["']|["']$/g, '') ?? null;
-        console.log(boundary)
 
         const bcc = data.bcc?.split(',').map(value => value.trim()) ?? [];
         const cc = data.cc?.split(',').map(value => value.trim()) ?? [];
