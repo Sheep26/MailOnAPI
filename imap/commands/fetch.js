@@ -131,8 +131,7 @@ export class FetchCommand extends Command {
             }
 
             if (/\bBODYSTRUCTURE\b/i.test(dataItem)) {
-                const structure = await this.createBodyStructure(email);
-                responseParts.push(`BODYSTRUCTURE ${structure}`);
+                // TODO
             }
 
             this.connection.sendRaw(`* ${sequenceNumber} FETCH (`);
