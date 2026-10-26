@@ -222,6 +222,23 @@ export class Command {
         return `${headers}\r\n${await this.createMessageBody(email, skip_attachments_content)}`;
     }
 
+    createBodyStructure(email) {
+        const contentType = email.content_type || "text/plain";
+        const [type, subtype] = contentType.split("/");
+
+        const content = email.content ?? "";
+        const size = Buffer.byteLength(content, "utf8");
+        const lines = (content.match(/\r\n|\r|\n/g) ?? []).length;
+
+        const quote = (value) => `"${String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+        const params = email.charset ? `("CHARSET" ${quote(email.charset)})` : "NIL";
+
+        if (type.toLowerCase() === "text")
+            return `(${quote(type.toUpperCase())} ${quote(subtype.toUpperCase())} ${params} NIL NIL "8BIT" ${size} ${lines})`;
+
+        return `(${quote(type.toUpperCase())} ${quote(subtype.toUpperCase())} ${params} NIL NIL "8BIT" ${size})`;
+    }
+
     randStr(len) {
         return crypto.randomBytes(len).toString('base64url').slice(0, len);
     }

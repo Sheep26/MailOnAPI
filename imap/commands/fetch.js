@@ -130,6 +130,11 @@ export class FetchCommand extends Command {
                 responseParts.push(`ENVELOPE ("${dateStr}" ${subject} ${fromArr} ${fromArr} ${fromArr} ${toArr} NIL NIL NIL ${msgId})`);
             }
 
+            if (/\bBODYSTRUCTURE\b/i.test(dataItem)) {
+                const structure = await this.createBodyStructure(email);
+                responseParts.push(`BODYSTRUCTURE ${structure}`);
+            }
+
             this.connection.sendRaw(`* ${sequenceNumber} FETCH (`);
 
             const normalParts = responseParts.filter(part => typeof part === "string");
