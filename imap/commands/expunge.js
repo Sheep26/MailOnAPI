@@ -9,7 +9,7 @@ export class ExpungeCommand extends Command {
         const marked = await this.database.getMarkedDeleted(this.connection.user.email);
 
         for (let email of marked) {
-            let index = this.database.getEmailIndex(this.connection.user.email, email.mail_id, email.mail_box);
+            let index = await this.database.getEmailIndex(this.connection.user.email, email.mail_id, email.mail_box);
 
             this.connection.send(`* ${index} EXPUNGE`);
         }
