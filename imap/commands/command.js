@@ -193,8 +193,8 @@ export class Command {
 
         if (!body.trim().startsWith(`--${email.boundary}`) && !body.trim().toLowerCase().replaceAll('-', '').startsWith(`this is a multipart message in mime format.`)) {
             body = `--${email.boundary}\r\n`;
-            body += `Content-Type: text/html\r\n`;
-            body += `Content-Transfer-Encoding: ${email.charset == "utf-7" ? '7bit' : '8bit'}; charset=${email.charset ?? 'utf-8'}\r\n`
+            body += `Content-Type: text/html; charset=${email.charset ?? 'utf-8'}\r\n`;
+            body += `Content-Transfer-Encoding: ${email.charset == "utf-7" ? '7bit' : '8bit'}\r\n`
             body += `\r\n${content}\r\n`;
         }
 
