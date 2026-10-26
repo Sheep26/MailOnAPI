@@ -159,8 +159,8 @@ export class Command {
             message += `Received: ${email.received}\r\n`;
 
         message += `MIME-Version: ${email.mime_version}\r\n`;
-        message += `Content-Type: ${email.content_type}; charset=${email.charset}${email.content_type.startsWith("multipart") ? `; boundary="${email.boundary}"` : ''}\r\n`;
-        message += `Content-Transfer-Encoding: 8bit\r\n`;
+        message += `Content-Type: ${email.content_type}; charset=${email.charset ?? 'utf-8'}${email.content_type.startsWith("multipart") ? `; boundary="${email.boundary}"` : ''}\r\n`;
+        message += `Content-Transfer-Encoding: ${email.charset == 'utf-7' ? '7bit' : '8bit'}\r\n`;
 
         return message;
     }
@@ -194,7 +194,7 @@ export class Command {
         if (!body.trim().startsWith(`--${email.boundary}`) && !body.trim().toLowerCase().replaceAll('-', '').startsWith(`this is a multipart message in mime format.`)) {
             body = `--${email.boundary}\r\n`;
             body += `Content-Type: text/html\r\n`;
-            body += `Content-Transfer-Encoding: 8bit; charset=${email.charset ?? 'utf-8'}\r\n`
+            body += `Content-Transfer-Encoding: ${email.charset == "utf-7" ? '7bit' : '8bit'}; charset=${email.charset ?? 'utf-8'}\r\n`
             body += `\r\n${content}\r\n`;
         }
 
@@ -217,26 +217,102 @@ export class Command {
 
     async createRawEmail(email, skip_attachments_content=false) {
         const headers  = this.createRawHeaders(email);
-        const content = email.content ?? "";
 
         return `${headers}\r\n${await this.createMessageBody(email, skip_attachments_content)}`;
     }
 
-    createBodyStructure(email) {
+    async createBodyStructure(email) {
+        const quote = value => `"${String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+
+        const parseHeaders = raw => {
+            const headers = {};
+
+            for (const line of raw.split(/\r?\n/)) {
+                const index = line.indexOf(":");
+
+                if (index === -1)
+                    continue;
+
+                headers[line.slice(0, index).toLowerCase()] = line.slice(index + 1).trim();
+            }
+
+            return headers;
+        };
+
+        const parsePart = (raw, attachment = null) => {
+            const separator = raw.search(/\r?\n\r?\n/);
+
+            const headerText = separator === -1 ? "" : raw.slice(0, separator);
+            const content = separator === -1 ? raw : raw.slice(separator + (raw.slice(separator).startsWith("\r\n\r\n") ? 4 : 2));
+
+            const headers = parseHeaders(headerText);
+            const contentType = headers["content-type"] || attachment?.content_type || "text/plain";
+            const [type = "text", subtype = "plain"] = contentType.split(";")[0].trim().split("/");
+
+            const params = [];
+            const charset = contentType.match(/charset\s*=\s*"?([^";\s]+)/i);
+            const filename = attachment?.filename;
+
+            if (charset)
+                params.push(`"CHARSET" ${quote(charset[1])}`);
+
+            if (filename)
+                params.push(`"NAME" ${quote(filename)}`);
+
+            const parameters = params.length ? `(${params.join(" ")})` : "NIL";
+            const encoding = headers["content-transfer-encoding"] || (attachment ? "base64" : "8bit");
+
+            let size = Buffer.byteLength(content.replace(/\r?\n$/, ""), "utf8");
+
+            if (attachment && !content.trim()) {
+                const base64Length = 4 * Math.ceil((attachment.size || 0) / 3);
+                size = base64Length + 2 * Math.ceil(base64Length / 76);
+            }
+
+            const disposition = headers["content-disposition"] || (attachment ? `attachment; filename="${filename}"` : "");
+
+            let extension = "";
+
+            if (disposition) {
+                const [kind, ...attrs] = disposition.split(";");
+                const dispositionParams = attrs.map(attr => {
+                    const [key, ...value] = attr.trim().split("=");
+                    return `"${key.toUpperCase()}" ${quote(value.join("=").replace(/^"|"$/g, ""))}`;
+                });
+
+                extension += ` (${quote(kind.trim().toUpperCase())} ${dispositionParams.length ? `(${dispositionParams.join(" ")})` : "NIL"})`;
+            } else
+                extension += " NIL";
+
+            if (type.toLowerCase() === "text") {
+                const lines = (content.match(/\r\n|\n|\r/g) || []).length;
+
+                return `(${quote(type.toUpperCase())} ${quote(subtype.toUpperCase())} ${parameters} NIL NIL ${quote(encoding.toUpperCase())} ${size} ${lines}${extension})`;
+            }
+
+            return `(${quote(type.toUpperCase())} ${quote(subtype.toUpperCase())} ${parameters} NIL NIL ${quote(encoding.toUpperCase())} ${size}${extension})`;
+        };
+
         const contentType = email.content_type || "text/plain";
-        const [type, subtype] = contentType.split("/");
 
-        const content = email.content ?? "";
-        const size = Buffer.byteLength(content, "utf8");
-        const lines = (content.match(/\r\n|\r|\n/g) ?? []).length;
+        if (!contentType.toLowerCase().startsWith("multipart/"))
+            return parsePart(email.content ?? "");
 
-        const quote = (value) => `"${String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
-        const params = email.charset ? `("CHARSET" ${quote(email.charset)})` : "NIL";
+        const boundary = email.boundary;
 
-        if (type.toLowerCase() === "text")
-            return `(${quote(type.toUpperCase())} ${quote(subtype.toUpperCase())} ${params} NIL NIL "8BIT" ${size} ${lines})`;
+        if (!boundary)
+            return parsePart(email.content ?? "");
 
-        return `(${quote(type.toUpperCase())} ${quote(subtype.toUpperCase())} ${params} NIL NIL "8BIT" ${size})`;
+        const body = await this.createMessageBody(email, true);
+        const sections = body.split(`--${boundary}`).slice(1).filter(section => !section.trim().startsWith("--")).map(section => section.replace(/^\r?\n/, "").replace(/\r?\n$/, ""));
+
+        const parts = sections.map((section, index) => {
+            const attachment = email.attachments?.[index - 1] ?? null;
+            return parsePart(section, attachment);
+        });
+
+        const subtype = contentType.split("/")[1].split(";")[0].trim().toUpperCase();
+        return `(${parts.join(" ")} ${quote(subtype)} ("BOUNDARY" ${quote(boundary)}) NIL NIL)`;
     }
 
     randStr(len) {

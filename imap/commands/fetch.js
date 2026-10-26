@@ -212,10 +212,10 @@ export class FetchCommand extends Command {
                 headers += `In-Reply-To: ${email.in_reply_to}\r\n`;
 
             else if (header === "content-type")
-                headers += `Content-Type: ${email.content_type}; charset=utf-8\r\n`;
+                headers += `Content-Type: ${email.content_type}; charset=${email.charset ?? 'utf-8'}\r\n`;
 
             else if (header === "content-transfer-encoding")
-                headers += `Content-Transfer-Encoding: 8bit\r\n`;
+                headers += `Content-Transfer-Encoding: ${email.charset == "utf-7" ? "7bit" : "8bit"}\r\n`;
 
             else if (header === "reply-to" && email.reply_to)
                 headers += `Reply-To: ${email.reply_to}\r\n`;
