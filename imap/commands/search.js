@@ -3,7 +3,8 @@ import STATES from "../imapStates.js";
 
 export class SearchCommand extends Command {
     command = async (tag, args, options = {}) => {
-        const uid = options.uid === true;
+        // const uid = options.uid === true;
+        const uid = false; // I'm sick of this
 
         if (this.connection.state === STATES.NOT_AUTHENTICATED)
             return this.connection.send(`${tag} NO Please Authenticate First`);
