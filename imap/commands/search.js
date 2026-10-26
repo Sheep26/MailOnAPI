@@ -3,8 +3,7 @@ import STATES from "../imapStates.js";
 
 export class SearchCommand extends Command {
     command = async (tag, args, options = {}) => {
-        // const uid = options.uid === true;
-        const uid = false; // I'm sick of this
+        const uid = options.uid === true;
 
         if (this.connection.state === STATES.NOT_AUTHENTICATED)
             return this.connection.send(`${tag} NO Please Authenticate First`);
@@ -14,17 +13,16 @@ export class SearchCommand extends Command {
 
         try {
             const emails = await this.database.getUsersEmails(this.connection.user.email);
-
             const mailboxEmails = emails.filter(email => email.mail_box === this.connection.mailbox.uid).sort((a, b) => Number(a.uid) - Number(b.uid));
 
             let criteria = this.flattenArgs(args);
             let selectedEmails = mailboxEmails;
 
             if (criteria.length && this.isNumberSet(criteria[0])) {
-                const sequenceSet = this.parseNumberSet(criteria.shift(), mailboxEmails, uid);
+                const sequenceSet = this.parseNumberSet(criteria.shift(), mailboxEmails, /*uid*/ false); // HERE
 
                 selectedEmails = mailboxEmails.filter((email, index) => {
-                    const value = uid ? Number(email.uid) : index + 1;
+                    const value = /*uid*/ false ? Number(email.uid) : index + 1; // HERE
 
                     return this.numberSetContains(sequenceSet, value);
                 });
