@@ -300,12 +300,10 @@ export class SearchCommand extends Command {
             return "";
 
         const unfolded = headers.replace(/\r?\n[ \t]+/g, " ");
-
         const values = unfolded.split(/\r?\n/).filter(line => {
             const colon = line.indexOf(":");
 
-            return colon !== -1 &&
-                line.slice(0, colon).trim().toLowerCase() === target;
+            return colon !== -1 && line.slice(0, colon).trim().toLowerCase() === target;
         }).map(line => line.slice(line.indexOf(":") + 1).trim());
 
         return values.join(" ");
