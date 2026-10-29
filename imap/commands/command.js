@@ -121,6 +121,14 @@ export class Command {
         return `\\${str.charAt(1).toUpperCase()}${str.slice(2).toLowerCase()}`;
     }
 
+    getContentTransferEncoding(email) {
+        for (const [encoding, charsets] of Object.entries(config.encodings))
+            if (charsets.includes(email.charset?.toLowerCase()))
+                return encoding;
+
+        return "quoted-printable";
+    }
+
     createRawHeaders(email) {
         let message = "";
 
@@ -160,7 +168,7 @@ export class Command {
 
         message += `MIME-Version: ${email.mime_version}\r\n`;
         message += `Content-Type: ${email.content_type}; charset=${email.charset ?? 'utf-8'}${email.content_type.startsWith("multipart") ? `; boundary="${email.boundary}"` : ''}\r\n`;
-        message += `Content-Transfer-Encoding: ${email.charset == 'utf-7' ? '7bit' : '8bit'}\r\n`;
+        message += `Content-Transfer-Encoding: ${this.getContentTransferEncoding(email)}\r\n`;
 
         return message;
     }
@@ -177,7 +185,7 @@ export class Command {
     async createMessageBody(email, skip_attachments_content=false) {
         const content = email.content ?? "";
 
-        if (!email.content_type?.startsWith("multipart"))
+        if (!email.content_type?.startsWith("multipart") && email.attachments?.length === 0)
             return content;
 
         let body = `${content}\r\n`;
@@ -194,7 +202,7 @@ export class Command {
         if (!body.trim().startsWith(`--${email.boundary}`) && !body.trim().toLowerCase().replaceAll('-', '').startsWith(`this is a multipart message in mime format.`)) {
             body = `--${email.boundary}\r\n`;
             body += `Content-Type: text/html; charset=${email.charset ?? 'utf-8'}\r\n`;
-            body += `Content-Transfer-Encoding: ${email.charset == "utf-7" ? '7bit' : '8bit'}\r\n`
+            body += `Content-Transfer-Encoding: ${this.getContentTransferEncoding(email)}\r\n`
             body += `\r\n${content}\r\n`;
         }
 

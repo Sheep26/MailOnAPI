@@ -204,9 +204,6 @@ export class FetchCommand extends Command {
             else if (header === "references" && email.email_references)
                 headers += `References: ${email.email_references}\r\n`;
 
-            else if (header === "newsgroups" && email.newsgroups)
-                headers += `Newsgroups: ${email.newsgroups}\r\n`;
-
             else if (header === "in-reply-to" && email.in_reply_to)
                 headers += `In-Reply-To: ${email.in_reply_to}\r\n`;
 
@@ -214,7 +211,7 @@ export class FetchCommand extends Command {
                 headers += `Content-Type: ${email.content_type}; charset=${email.charset ?? 'utf-8'}\r\n`;
 
             else if (header === "content-transfer-encoding")
-                headers += `Content-Transfer-Encoding: ${email.charset == "utf-7" ? "7bit" : "8bit"}\r\n`;
+                headers += `Content-Transfer-Encoding: ${this.getContentTransferEncoding(email)}\r\n`;
 
             else if (header === "reply-to" && email.reply_to)
                 headers += `Reply-To: ${email.reply_to}\r\n`;
