@@ -122,8 +122,10 @@ export class Command {
     }
 
     getContentTransferEncoding(email) {
+        const charset = email.charset ?? 'utf-8';
+
         for (const [encoding, charsets] of Object.entries(config.encodings))
-            if (charsets.includes(email.charset?.toLowerCase()))
+            if (charsets.includes(charset.toLowerCase()))
                 return encoding;
 
         return "quoted-printable";
