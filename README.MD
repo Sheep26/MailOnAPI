@@ -50,7 +50,11 @@ Example Config
         "private_key": "",
         "cert": ""
     },
-    "salt_rounds": 12
+    "salt_rounds": 12,
+    "attachment_path": "/attachments",
+    "encodings": {
+        "7bit": ["utf-7", "us-ascii"]
+    }
 }
 ```
 
