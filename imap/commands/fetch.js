@@ -25,7 +25,7 @@ export class FetchCommand extends Command {
             const sequenceNumber = mailboxEmails.indexOf(email) + 1;
 
             const responseParts = [];
-            const bodyMatch = dataItem.match(/BODY(?:\.PEEK)?\[(\d+|TEXT|HEADER|HEADER\.FIELDS|HEADER\.FIELDS\.NOT)(?:\s*\(\s*([^)]*?)\s*\)\s*|)\](?:<(\d+)(?:\.(\d+))?>)?/i);
+            const bodyMatch = dataItem.match(/BODY(?:\.PEEK)?\[(\d+|TEXT|HEADER|HEADER\.FIELDS|HEADER\.FIELDS\.NOT|)(?:\s*\(\s*([^)]*?)\s*\)\s*)?\](?:<(\d+)(?:\.(\d+))?>)?/i);
 
             if (uid || /\bUID\b/i.test(dataItem))
                 responseParts.push(`UID ${email.uid}`);
@@ -49,7 +49,12 @@ export class FetchCommand extends Command {
             if (bodyMatch) {
                 const req = bodyMatch[1];
 
-                if (req == "TEXT") {
+                if (req == "") {
+                    const raw = await this.createRawEmail(email);
+                    const size = Buffer.byteLength(raw, "utf8");
+
+                    responseParts.push({type: "literal", name: "BODY[]", data: raw, size});
+                } else if (req == "TEXT") {
                     const raw = await this.createMessageBody(email);
 
                     const hasPartial = bodyMatch[3] !== undefined;
@@ -91,13 +96,6 @@ export class FetchCommand extends Command {
                     // Select body part.
                     // TODO
                 }
-            }
-
-            if (/BODY(?:\.PEEK)?\[\]/i.test(dataItem)) {
-                const raw = await this.createRawEmail(email);
-                const size = Buffer.byteLength(raw, "utf8");
-
-                responseParts.push({type: "literal", name: "BODY[]", data: raw, size});
             }
 
             if (/\bRFC822\b/i.test(dataItem) && !/\bRFC822\.SIZE\b/i.test(dataItem)) {
