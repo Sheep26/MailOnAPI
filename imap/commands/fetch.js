@@ -25,10 +25,7 @@ export class FetchCommand extends Command {
             const sequenceNumber = mailboxEmails.indexOf(email) + 1;
 
             const responseParts = [];
-
-            const headerMatch = dataItem.match(/BODY(?:\.PEEK)?\[HEADER\](?:<(\d+)(?:\.(\d+))?>)?/i);
-            const headerFieldsMatch = dataItem.match(/BODY(?:\.PEEK)?\[HEADER\.FIELDS\s*\(\s*([^)]*?)\s*\)\s*\]/i); // /BODY(?:\.PEEK)?\[HEADER\.FIELDS\s*\(([^)]*)\)\]/i
-            const bodyTextMatch = dataItem.match(/BODY(?:\.PEEK)?\[TEXT\](?:<(\d+)(?:\.(\d+))?>)?/i);
+            const bodyMatch = dataItem.match(/BODY(?:\.PEEK)?\[(\d+|TEXT|HEADER|HEADER\.FIELDS\s*\(\s*([^)]*?)\s*\)\s*|HEADER\.FIELDS\.NOT\s*\(\s*([^)]*?)\s*\)\s*)\](?:<(\d+)(?:\.(\d+))?>)?/i);
 
             if (uid || /\bUID\b/i.test(dataItem))
                 responseParts.push(`UID ${email.uid}`);
@@ -49,37 +46,51 @@ export class FetchCommand extends Command {
                 responseParts.push(`RFC822.SIZE ${size}`);
             }
 
-            if (headerMatch) {
-                const headers = this.createRawHeaders(email);
-                const hasPartial = headerMatch[1] !== undefined;
-                const start = hasPartial ? Number(headerMatch[1]) : 0;
+            if (bodyMatch) {
+                const req = bodyMatch[1];
 
-                const requestedLength = headerMatch[2] !== undefined ? Number(headerMatch[2]) : Buffer.byteLength(headers, "utf8") - start;
-                const text = Buffer.from(headers, "utf8").subarray(start, start + requestedLength).toString("utf8");
-                const size = Buffer.byteLength(text, "utf8");
+                if (req == "TEXT") {
+                    const raw = await this.createMessageBody(email);
 
-                responseParts.push({type: "literal", name: hasPartial ? `BODY[HEADER]<${start}>` : "BODY[HEADER]", data: text, size});
-            }
+                    const hasPartial = bodyMatch[4] !== undefined;
+                    const start = hasPartial ? Number(bodyMatch[4]) : 0;
 
-            if (headerFieldsMatch) {
-                const requestedHeaders = headerFieldsMatch[1].split(/\s+/).filter(Boolean);
-                const headers = this.createRequestedHeaders(email, requestedHeaders);
-                const size = Buffer.byteLength(headers, "utf8");
+                    const requestedLength = bodyMatch[4] !== undefined ? Number(bodyMatch[5]) : raw.length - start;
+                    const text = raw.slice(start, start + requestedLength);
+                    const size = Buffer.byteLength(text, "utf8");
 
-                responseParts.push({type: "literal", name: `BODY[HEADER.FIELDS (${requestedHeaders.join(" ")})]`, data: headers, size});
-            }
+                    responseParts.push({type: "literal", name: hasPartial ? `BODY[TEXT]<${start}>` : "BODY[TEXT]", data: text, size});
+                } else if (req == "HEADER") {
+                    const headers = this.createRawHeaders(email);
+                    const hasPartial = bodyMatch[4] !== undefined;
+                    const start = hasPartial ? Number(bodyMatch[4]) : 0;
 
-            if (bodyTextMatch && !headerFieldsMatch) {
-                const raw = await this.createMessageBody(email);
+                    const requestedLength = bodyMatch[4] !== undefined ? Number(bodyMatch[5]) : Buffer.byteLength(headers, "utf8") - start;
+                    const text = Buffer.from(headers, "utf8").subarray(start, start + requestedLength).toString("utf8");
+                    const size = Buffer.byteLength(text, "utf8");
 
-                const hasPartial = bodyTextMatch[1] !== undefined;
-                const start = hasPartial ? Number(bodyTextMatch[1]) : 0;
+                    responseParts.push({type: "literal", name: hasPartial ? `BODY[HEADER]<${start}>` : "BODY[HEADER]", data: text, size});
+                } else if (req == "HEADER.FIELDS") {
+                    const requestedHeaders = bodyMatch[3].split(/\s+/).filter(Boolean);
+                    const headers = this.createRequestedHeaders(email, requestedHeaders);
+                    const size = Buffer.byteLength(headers, "utf8");
 
-                const requestedLength = bodyTextMatch[2] !== undefined ? Number(bodyTextMatch[2]) : raw.length - start;
-                const text = raw.slice(start, start + requestedLength);
-                const size = Buffer.byteLength(text, "utf8");
+                    responseParts.push({type: "literal", name: `BODY[HEADER.FIELDS (${requestedHeaders.join(" ")})]`, data: headers, size});
+                } else if (req == "HEADER.FIELDS.NOT") {
+                    const requestedHeaders = bodyMatch[2].split(/\s+/).filter(Boolean);
+                    const headers = this.createRawHeaders(email);
+                    let out_headers = "";
 
-                responseParts.push({type: "literal", name: hasPartial ? `BODY[TEXT]<${start}>` : "BODY[TEXT]", data: text, size});
+                    for (let header of headers.split('\r\n'))
+                        if (requestedHeaders.includes(header))
+                            out_headers += `${header}\r\n`;
+
+                    const size = Buffer.byteLength(header, "utf8");
+                    responseParts.push({type: "literal", name: `BODY[HEADER.FIELDS.NOT (${requestedHeaders.join(" ")})]`, data: out_headers, size});
+                } else if (!Number.isNaN(Number(req))) {
+                    // Select body part.
+                    // TODO
+                }
             }
 
             if (/BODY(?:\.PEEK)?\[\]/i.test(dataItem)) {
@@ -113,7 +124,7 @@ export class FetchCommand extends Command {
                 const dateStr = new Date(Number(email.time)).toUTCString();
                 const subject = email.subject ? `"${email.subject}"` : "NIL";
                 const msgId = email.message_id ? `"${email.message_id}"` : "NIL";
-                
+
                 const parseAddress = (addrStr) => {
                     if (!addrStr) return "NIL";
 
@@ -220,7 +231,7 @@ export class FetchCommand extends Command {
                 headers += `Received: ${email.received}\r\n`;
 
             else if (header === "x-received" && email.x_received)
-                headers += `Received: ${email.x_received}\r\n`;
+                headers += `X-Received: ${email.x_received}\r\n`;
         }
 
         return headers + "\r\n";

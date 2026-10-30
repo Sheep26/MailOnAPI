@@ -156,9 +156,6 @@ export class Command {
         if (email.priority)
             message += `Priority: ${email.priority}\r\n`;
 
-        if (email.x_priority)
-            message += `X-Priority: ${email.x_priority}\r\n`;
-
         if (email.email_references)
             message += `References: ${email.email_references}\r\n`;
 
