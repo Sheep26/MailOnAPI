@@ -25,7 +25,7 @@ export class FetchCommand extends Command {
             const sequenceNumber = mailboxEmails.indexOf(email) + 1;
 
             const responseParts = [];
-            const bodyMatch = dataItem.match(/BODY(?:\.PEEK)?\[(\d+|TEXT|HEADER|HEADER\.FIELDS|HEADER\.FIELDS\.NOT|)(?:\s*\(\s*([^)]*?)\s*\)\s*)?\](?:<(\d+)(?:\.(\d+))?>)?/i);
+            const bodyMatch = dataItem.match(/BODY(?:\.PEEK)?\[((?:\d+|\d+\.\d+)|TEXT|HEADER|HEADER\.FIELDS|HEADER\.FIELDS\.NOT|)(?:\s*\(\s*([^)]*?)\s*\)\s*)?\](?:<(\d+)(?:\.(\d+))?>)?/i);
 
             if (uid || /\bUID\b/i.test(dataItem))
                 responseParts.push(`UID ${email.uid}`);
