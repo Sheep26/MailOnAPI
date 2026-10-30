@@ -92,9 +92,23 @@ export class FetchCommand extends Command {
 
                     const size = Buffer.byteLength(header, "utf8");
                     responseParts.push({type: "literal", name: `BODY[HEADER.FIELDS.NOT (${requestedHeaders.join(" ")})]`, data: out_headers, size});
-                } else if (!Number.isNaN(Number(req))) {
+                } else if (/^\d+(?:\.\d+)*$/.test(req)) {
                     // Select body part.
-                    // TODO
+                    const body = this.createRawEmail(email);
+
+                    const parts = this.parseMimeParts(body, email.boundary);
+                    const part = this.getMimeSection(parts, req);
+
+                    if (part) {
+                        const hasPartial = bodyMatch[3] !== undefined;
+                        const start = hasPartial ? Number(bodyMatch[3]) : 0;
+
+                        const content = part.content;
+                        const text = hasPartial ? content.slice(start, start + Number(bodyMatch[4])) : content;
+
+                        const size = Buffer.byteLength(text, "utf8");
+                        responseParts.push({type: "literal", name: hasPartial ? `BODY[${req}]<${start}>` : `BODY[${req}]`, data: text, size});
+                    }
                 }
             }
 
@@ -233,5 +247,71 @@ export class FetchCommand extends Command {
         }
 
         return headers + "\r\n";
+    }
+
+    parseMimeParts(body, boundary) {
+        if (!boundary)
+            return [];
+
+        const delimiter = `--${boundary}`;
+        const sections = body.split(delimiter);
+
+        const parts = [];
+
+        for (let section of sections.slice(1)) {
+            section = section.replace(/^\r?\n/, "");
+
+            if (section.startsWith("--"))
+                break;
+
+            section = section.replace(/\r?\n$/, "");
+
+            if (!section.trim())
+                continue;
+
+            const separator = section.indexOf("\r\n\r\n");
+            const separatorLength = 4;
+
+            if (separator === -1)
+                continue;
+
+            const rawHeaders = section.slice(0, separator);
+            const content = section.slice(separator + separatorLength);
+
+            const headers = {};
+
+            for (const line of rawHeaders.split(/\r\n/)) {
+                const index = line.indexOf(":");
+
+                if (index === -1)
+                    continue;
+
+                headers[line.slice(0, index).trim().toLowerCase()] = line.slice(index + 1).trim();
+            }
+
+            const contentType = headers["content-type"] ?? "text/plain";
+            const childBoundary = contentType.match(/boundary="?([^";]+)"?/i)?.[1];
+
+            parts.push({headers, content, contentType, boundary: childBoundary, parts: childBoundary ? this.parseMimeParts(content, childBoundary) : []});
+        }
+
+        return parts;
+    }
+
+    getMimeSection(parts, section) {
+        const indexes = section.split(".").map(Number);
+
+        let currentParts = parts;
+        let current = null;
+
+        for (const index of indexes) {
+            if (index < 1 || index > currentParts.length)
+                return null;
+
+            current = currentParts[index - 1];
+            currentParts = current.parts;
+        }
+
+        return current;
     }
 }
