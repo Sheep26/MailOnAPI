@@ -52,10 +52,10 @@ export class FetchCommand extends Command {
                 if (req == "TEXT") {
                     const raw = await this.createMessageBody(email);
 
-                    const hasPartial = bodyMatch[4] !== undefined;
-                    const start = hasPartial ? Number(bodyMatch[4]) : 0;
+                    const hasPartial = bodyMatch[3] !== undefined;
+                    const start = hasPartial ? Number(bodyMatch[3]) : 0;
 
-                    const requestedLength = bodyMatch[4] !== undefined ? Number(bodyMatch[5]) : raw.length - start;
+                    const requestedLength = bodyMatch[3] !== undefined ? Number(bodyMatch[4]) : raw.length - start;
                     const text = raw.slice(start, start + requestedLength);
                     const size = Buffer.byteLength(text, "utf8");
 
@@ -63,15 +63,15 @@ export class FetchCommand extends Command {
                 } else if (req == "HEADER") {
                     const headers = this.createRawHeaders(email);
                     const hasPartial = bodyMatch[4] !== undefined;
-                    const start = hasPartial ? Number(bodyMatch[4]) : 0;
+                    const start = hasPartial ? Number(bodyMatch[3]) : 0;
 
-                    const requestedLength = bodyMatch[4] !== undefined ? Number(bodyMatch[5]) : Buffer.byteLength(headers, "utf8") - start;
+                    const requestedLength = bodyMatch[3] !== undefined ? Number(bodyMatch[4]) : Buffer.byteLength(headers, "utf8") - start;
                     const text = Buffer.from(headers, "utf8").subarray(start, start + requestedLength).toString("utf8");
                     const size = Buffer.byteLength(text, "utf8");
 
                     responseParts.push({type: "literal", name: hasPartial ? `BODY[HEADER]<${start}>` : "BODY[HEADER]", data: text, size});
                 } else if (req == "HEADER.FIELDS") {
-                    const requestedHeaders = bodyMatch[3].split(/\s+/).filter(Boolean);
+                    const requestedHeaders = bodyMatch[2].split(/\s+/).filter(Boolean);
                     const headers = this.createRequestedHeaders(email, requestedHeaders);
                     const size = Buffer.byteLength(headers, "utf8");
 
