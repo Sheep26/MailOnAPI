@@ -147,7 +147,8 @@ export class Command {
         let message = "";
 
         for (let [key, value] of Object.entries(email.headers))
-            message += `${this.capitalizeSeparated(key)}: ${value}\r\n`;
+            if (key.toLowerCase() !== "content-type")
+                message += `${this.capitalizeSeparated(key)}: ${value}\r\n`;
 
         if (!this.checkInHeaders(message, 'from'))
             message += `From: ${email.mail_from}\r\n`;
