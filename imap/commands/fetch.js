@@ -198,7 +198,7 @@ export class FetchCommand extends Command {
         for (const requestedHeader of requestedHeaders) {
             const header = requestedHeader.toLowerCase();
 
-            if (lowercaseHeaders[header] && header !== "content-type")
+            if (lowercaseHeaders[header] && header !== "content-type" && header !== "content-transfer-encoding")
                 headers += `${this.capitalizeSeparated(header)}: ${lowercaseHeaders[header]}\r\n`;
 
             else if (header === "from")

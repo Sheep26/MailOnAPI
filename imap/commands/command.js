@@ -147,7 +147,7 @@ export class Command {
         let message = "";
 
         for (let [key, value] of Object.entries(email.headers))
-            if (key.toLowerCase() !== "content-type")
+            if (key.toLowerCase() !== "content-type" && key.toLowerCase() !== "content-transfer-encoding")
                 message += `${this.capitalizeSeparated(key)}: ${value}\r\n`;
 
         if (!this.checkInHeaders(message, 'from'))
@@ -189,11 +189,8 @@ export class Command {
         if (!this.checkInHeaders(message, 'received'))
             message += `MIME-Version: ${email.mime_version}\r\n`;
 
-        if(!this.checkInHeaders(message, 'received'))
-            message += `Content-Type: ${email.content_type}; charset=${email.charset ?? 'utf-8'}${email.content_type.startsWith("multipart") ? `; boundary="${email.boundary}"` : ''}\r\n`;
-
-        if(!this.checkInHeaders(message, 'received'))
-            message += `Content-Transfer-Encoding: ${this.getContentTransferEncoding(email)}\r\n`;
+        message += `Content-Type: ${email.content_type}; charset=${email.charset ?? 'utf-8'}${email.content_type.startsWith("multipart") ? `; boundary="${email.boundary}"` : ''}\r\n`;
+        message += `Content-Transfer-Encoding: ${this.getContentTransferEncoding(email)}\r\n`;
 
         return message;
     }
