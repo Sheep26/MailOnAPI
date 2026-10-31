@@ -116,6 +116,11 @@ export class Command {
         return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
     }
 
+    capitalizeSeparated(str) {
+        if (!str) return str;
+        return str.split('-').map(part => this.capitalize(part)).join('-');
+    }
+
     capitalizeFlag(str) {
         if (!str) return str;
         return `\\${str.charAt(1).toUpperCase()}${str.slice(2).toLowerCase()}`;
@@ -131,43 +136,63 @@ export class Command {
         return "quoted-printable";
     }
 
+    checkInHeaders(message, header) {
+        if (!header || header === "")
+            return false;
+
+        return message.split('\r\n').some(line => line.trim().toLowerCase().startsWith(header.trim().toLowerCase()));
+    }
+
     createRawHeaders(email) {
         let message = "";
 
-        message += `From: ${email.mail_from}\r\n`;
-        message += `To: ${email.mail_to.join(",")}\r\n`;
+        for (let [key, value] of Object.entries(email.headers))
+            message += `${this.capitalizeSeparated(key)}: ${value}\r\n`;
 
-        if (email.reply_to)
+        if (!this.checkInHeaders(message, 'from'))
+            message += `From: ${email.mail_from}\r\n`;
+
+        if (!this.checkInHeaders(message, 'to'))
+            message += `To: ${email.mail_to.join(",")}\r\n`;
+
+        if (!this.checkInHeaders(message, 'reply-to') && email.reply_to)
             message += `Reply-To: ${email.reply_to.join(",")}\r\n`;
 
-        if (email.cc && email.cc.length)
+        if (!this.checkInHeaders(message, 'cc') && email.cc && email.cc.length)
             message += `Cc: ${email.cc.join(", ")}\r\n`;
 
-        if (email.bcc && email.bcc.length)
+        if (!this.checkInHeaders(message, 'bcc') && email.bcc && email.bcc.length)
             message += `Bcc: ${email.bcc.join(", ")}\r\n`;
 
-        message += `Subject: ${email.subject}\r\n`;
+        if (!this.checkInHeaders(message, 'subject'))
+            message += `Subject: ${email.subject}\r\n`;
 
-        if (email.message_id)
+        if (!this.checkInHeaders(message, 'message-id') && email.message_id)
             message += `Message-ID: ${email.message_id}\r\n`;
 
-        message += `Date: ${new Date(Number(email.time)).toUTCString()}\r\n`;
+        if (!this.checkInHeaders(message, 'date'))
+            message += `Date: ${new Date(Number(email.time)).toUTCString()}\r\n`;
 
-        if (email.priority)
+        if (!this.checkInHeaders(message, 'priority') && email.priority)
             message += `Priority: ${email.priority}\r\n`;
 
-        if (email.email_references)
+        if (!this.checkInHeaders(message, 'references') && email.email_references)
             message += `References: ${email.email_references}\r\n`;
 
-        if (email.in_reply_to)
+        if (!this.checkInHeaders(message, 'in-reply-to') && email.in_reply_to)
             message += `In-Reply-To: ${email.in_reply_to}\r\n`;
 
-        if (email.received)
+        if (!this.checkInHeaders(message, 'received') && email.received)
             message += `Received: ${email.received}\r\n`;
 
-        message += `MIME-Version: ${email.mime_version}\r\n`;
-        message += `Content-Type: ${email.content_type}; charset=${email.charset ?? 'utf-8'}${email.content_type.startsWith("multipart") ? `; boundary="${email.boundary}"` : ''}\r\n`;
-        message += `Content-Transfer-Encoding: ${this.getContentTransferEncoding(email)}\r\n`;
+        if (!this.checkInHeaders(message, 'received'))
+            message += `MIME-Version: ${email.mime_version}\r\n`;
+
+        if(!this.checkInHeaders(message, 'received'))
+            message += `Content-Type: ${email.content_type}; charset=${email.charset ?? 'utf-8'}${email.content_type.startsWith("multipart") ? `; boundary="${email.boundary}"` : ''}\r\n`;
+
+        if(!this.checkInHeaders(message, 'received'))
+            message += `Content-Transfer-Encoding: ${this.getContentTransferEncoding(email)}\r\n`;
 
         return message;
     }

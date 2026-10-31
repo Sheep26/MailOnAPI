@@ -193,11 +193,15 @@ export class FetchCommand extends Command {
 
     createRequestedHeaders(email, requestedHeaders) {
         let headers = "";
+        const lowercaseHeaders = Object.fromEntries(Object.entries(email.headers).map(([key, value]) => [key.toLowerCase(), value]));
 
         for (const requestedHeader of requestedHeaders) {
             const header = requestedHeader.toLowerCase();
 
-            if (header === "from")
+            if (lowercaseHeaders[header])
+                headers += `${this.capitalizeSeparated(header)}: ${lowercaseHeaders[header]}\r\n`;
+
+            else if (header === "from")
                 headers += `From: ${email.mail_from}\r\n`;
 
             else if (header === "to")
