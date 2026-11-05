@@ -206,7 +206,7 @@ export class Command {
 
     async createMessageBody(email, skip_attachments_content=false) {
         const content = email.content ?? "";
-
+        console.log(email.content_type?.startsWith("multipart"), email.attachments?.length === 0)
         if (!email.content_type?.startsWith("multipart") && email.attachments?.length === 0)
             return content;
 
