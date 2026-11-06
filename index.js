@@ -215,6 +215,9 @@ app.get('/attachment/:email_id/:attachment_id', async (req, res) => {
 });
 
 app.post('/api/create_account', async (req, res) => {
+    // Disabled
+    return res.sendStatus(418);
+
     const email = req.body.email;
     const name = req.body.name;
     const password = req.body.password;

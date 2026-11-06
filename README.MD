@@ -1,18 +1,8 @@
 ## Mail On A PI
-MailOnAPI or Mail On a PI is a self hosted email server and client. It acts as a frontend for various popular mail services and is designed to run on a raspberry PI.
+MailOnAPI or Mail On a PI is a self hosted email server and client. It acts as a frontend for various popular mail services and is designed to run on a raspberry PI.  
+It was originally called Mail On a PI but has moreso taken the name MailOnAPI.
 
-![Mail On A PI Inbox](/assets/2CF35572-F876-4498-BDA4-431624BC9675.webp)
-
-[Try It!](https://mail.drewfitzgerald.co.nz)
-
-## !! How to create an account.
-Hello!  
-You may be wondering why you can't create an account with your current email (eg. drew@drewfitzgerald.co.nz)  
-This is because you are creating an email address, not just an account.  
-The domain I have availiable to you is wchouses.co.nz which means when you create an account your email should follow the format of you@wchouses.co.nz  
-Which you can login to the email server with and send and recieve emails  
-Try sending some emails to the email address you made and sending some from that address.  
-Thank you!!
+![Image of Mail On A PI Inbox](/assets/2CF35572-F876-4498-BDA4-431624BC9675.webp)
 
 ### Features
 Mail Recieving  
