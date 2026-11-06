@@ -9,6 +9,7 @@ import { AttachmentManager } from './attachments/attachments.js';
 import { existsSync } from 'fs';
 import renderUtils from './renderUtils.js';
 import { startImap } from './imap/imapServer.js';
+import { Command } from './imap/commands/command.js';
 
 const app = express();
 const PORT = config.port | 8080;
@@ -91,7 +92,10 @@ app.get('/api/get_email', async (req, res) => {
     if (!session)
         return res.sendStatus(401);
 
-    res.send(await database.getEmail(req.query.mail_id, session.user_id));
+    let email = await database.getEmail(req.query.mail_id, session.user_id);
+    email.raw = new Command().createRawEmail(email);
+
+    res.send(email);
 });
 
 app.post('/api/delete_email', async (req, res) => {
