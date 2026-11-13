@@ -119,7 +119,28 @@ export class AppendCommand extends Command {
         const to = data.to.split(',').map(x => x.trim()) ?? [];
         const reply_to = (data['reply-to'] ?? data.from).split(",").map(x => x.trim()) ?? [];
 
-        await this.database.addEmail(this.connection.user.email, to, data.from, reply_to, bcc, cc, data.mail_id, data['message-id'], null, data.subject, data.content, null, null, this.mailbox.uid, this.flags, data['in-reply-to'], data['mime-version'], charset, content_type, null, boundary);
+        await this.database.addEmail({
+            // this.connection.user.email, to, data.from, reply_to, bcc, cc, data.mail_id, data['message-id'], null, data.subject, data.content, null, null,
+            // this.mailbox.uid, this.flags, data['in-reply-to'], data['mime-version'], charset, content_type, null, boundary
+            belongs_to: this.connection.user.email,
+            to: to,
+            from: data.from,
+            reply_to: reply_to,
+            bcc: bcc,
+            cc: cc,
+            mail_id: data.mail_id,
+            message_id: data['message-id'],
+            subject: data.subject,
+            content: data.content,
+            mail_box: this.mailbox.uid,
+            flags: this.flags,
+            in_reply_to: data['in-reply-to'],
+            mime_version: data['mime-version'],
+            charset: charset,
+            content_type: content_type,
+            boundary: boundary
+        });
+
         this.connection.send(`${this.tag} OK APPEND completed`);
     }
 

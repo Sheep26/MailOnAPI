@@ -21,7 +21,21 @@ export class EmailResend extends Email {
         const mailbox = await this.database.getMailBox(user.email, 'Sent');
 
         if (mailbox)
-            this.database.addEmail(user.email, [to], `${user.username} <${user.email}>`, [reply_to], bcc, cc, data.id, null, null, subject, text, null, null, mailbox.uid, ["\\Seen"]);
+            this.database.addEmail({
+                belongs_to: user.email,
+                to: [to],
+                from: `${user.username} <${user.email}>`,
+                reply_to: [reply_to],
+                bcc: bcc,
+                cc: cc,
+                mail_id: data.id,
+                subject: subject,
+                content: text,
+                mail_box: mailbox.uid,
+                flags: ["\\Seen"],
+                content_type: 'text/html',
+                mime_version: '1.0'
+            });
     }
 
     async sendHTML(user, to, reply_to, subject, html, bcc=[], cc=[]) {
@@ -38,7 +52,23 @@ export class EmailResend extends Email {
         const mailbox = await this.database.getMailBox(user.email, 'Sent');
 
         if (mailbox)
-            this.database.addEmail(user.email, [to], `${user.username} <${user.email}>`, [reply_to], bcc, cc, data.id, null, null, subject, html, null, null, mailbox.uid, ["\\Seen"], null, '1.0', 'utf-8', 'text/html');
+            this.database.addEmail({
+                //user.email, [to], `${user.username} <${user.email}>`, [reply_to], bcc, cc, data.id, null, null, subject, html, null, null, mailbox.uid, ["\\Seen"], null,
+                // '1.0', 'utf-8', 'text/html'
+                belongs_to: user.email,
+                to: [to],
+                from: `${user.username} <${user.email}>`,
+                reply_to: [reply_to],
+                bcc: bcc,
+                cc: cc,
+                mail_id: data.id,
+                subject: subject,
+                content: html,
+                mail_box: mailbox.uid,
+                flags: ["\\Seen"],
+                content_type: 'text/html',
+                mime_version: '1.0'
+            });
     }
 
     async reply(user, mail_id, content) {
@@ -66,7 +96,18 @@ export class EmailResend extends Email {
         const mailbox = await this.database.getMailBox(user.email, 'Sent');
 
         if (mailbox)
-            this.database.addEmail(user.email, mail.reply_to, `${user.username} <${user.email}>`, [user.email], [], [], data.id, null, null, `Re: ${mail.subject}`, content, null, [...mail.email_references ?? "", mail.message_id], mailbox.uid, ["\\Seen"]);
+            this.database.addEmail({
+                belongs_to: user.email,
+                to: [mail.reply_to],
+                from: `${user.username} <${user.email}>`,
+                reply_to: [user.email],
+                mail_id: data.id,
+                subject: `Re: ${mail.subject}`,
+                content: content,
+                references: [...mail.email_references ?? "", mail.message_id],
+                mail_box: mailbox.uid,
+                flags: ["\\Seen"]
+            });
     }
 
     async handle(body) {
@@ -101,7 +142,27 @@ export class EmailResend extends Email {
             }
 
             if (mailbox) {
-                await this.database.addEmail(to, data.to, data.headers.from, data.reply_to.length ? data.reply_to : [data.from], data.bcc, data.cc, data.id, data.message_id, data.html_format, data.subject, data.headers['content-type'] == 'text/plain' ? data.text : data.html, data.attachments, references, mailbox.uid, [], data.headers['in-reply-to'], data.headers['mime-version'], 'utf-8', data.headers['content-type'], data.headers['received'], null, data.headers);
+                await this.database.addEmail({
+                    belongs_to: to,
+                    to: data.to,
+                    from: data.headers.from,
+                    reply_to: data.reply_to.length ? data.reply_to : [data.from],
+                    bcc: data.bcc,
+                    cc: data.cc,
+                    mail_id: data.id,
+                    message_id: data.message_id,
+                    html_format: data.html_format,
+                    subject: data.subject,
+                    content: data.headers['content-type'] == 'text/plain' ? data.text : data.html,
+                    attachments: data.attachments,
+                    references: references,
+                    mail_box: mailbox.uid,
+                    in_reply_to: data.headers['in-reply-to'],
+                    mime_version: data.headers['mime-version'],
+                    content_type: data.headers['content-type'],
+                    received: data.headers['received'],
+                    headers: data.headers
+                });
 
                 await super.updateImap(user.email, mailbox.uid);
             }

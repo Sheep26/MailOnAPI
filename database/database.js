@@ -69,13 +69,34 @@ export class DatabaseManager {
         return body;
     }
 
-    async addEmail(belongs_to, to, from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, references, mail_box, flags=[], in_reply_to=null, mime_version=null, charset='utf-8', content_type="text/plain", received=null, boundary=null, headers={}) {
+    async addEmail(context={}) { // belongs_to, to, from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, references, mail_box, flags=[], in_reply_to=null, mime_version=null, charset='utf-8', content_type="text/plain", received=null, boundary=null, headers={}
+        const belongs_to = context.belongs_to ?? null;
+        const to = context.to ?? null;
+        const from = context.from ?? null;
+        const reply_to = context.reply_to ?? null;
+        const bcc = context.bcc ?? [];
+        const cc = context.cc ?? [];
+        const mail_id = context.mail_id ?? null;
+        const message_id = context.message_id ?? null;
+        const html_format = context.html_format ?? null;
+        const subject = context.subject ?? null;
+        const content = context.content ?? null;
+        const attachments = context.attachments ?? null;
+        const references = context.references ?? null;
+        const mail_box = context.mail_box ?? null;
+        const flags = context.flags ?? [];
+        const in_reply_to = context.in_reply_to ?? null;
+        const mime_version = context.mime_version ?? null;
+        const charset = context.charset ?? "utf-8";
+        const content_type = context.content_type ?? "text/plain";
+        const received = context.received ?? null;
+        const boundary = context.boundary ?? this.randStr(28);
+        const headers = context.headers ?? {};
+
         const mailbox = await this.getMailBoxUID(belongs_to, mail_box);
 
         if (!mailbox)
             return;
-
-        const act_boundary = boundary ?? this.randStr(28);
 
         await db.execute('INSERT INTO emails (belongs_to, mail_to, mail_from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, email_references, time, mail_box, flags, uid, in_reply_to, mime_version, charset, content_type, received, boundary, headers) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
             belongs_to,
@@ -88,7 +109,7 @@ export class DatabaseManager {
             message_id,
             html_format ?? 'text/plain',
             subject,
-            await this.createMessageBody(content, content_type, act_boundary, charset, attachments, mail_id),
+            await this.createMessageBody(content, content_type, boundary, charset, attachments, mail_id),
             references,
             Date.now(),
             mail_box,
@@ -99,7 +120,7 @@ export class DatabaseManager {
             charset,
             content_type,
             received,
-            act_boundary,
+            boundary,
             headers
         ]);
 
