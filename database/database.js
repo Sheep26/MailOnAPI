@@ -30,8 +30,6 @@ export class DatabaseManager {
     }
 
     async createMessageBody(content, content_type, boundary, charset, attachments) {
-        const content = content ?? "";
-
         if (!content_type?.startsWith("multipart") && (!attachments || attachments?.length == 0))
             return content;
 
