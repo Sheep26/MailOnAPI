@@ -21,7 +21,7 @@ services:
     container_name: mailonapi-db
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: Pu#rari4
+      MYSQL_ROOT_PASSWORD: YOUR_PASSWORD
     ports:
       - "3308:3306"
     volumes:
