@@ -27,7 +27,33 @@ export class CopyCommand extends Command {
             if (fs.existsSync(attachment_path))
                 fs.cpSync(attachment_path, path.join(config.attachment_path, String(mail_id)), { recursive: true });
 
-            await this.database.addEmail(email.belongs_to, email.mail_to, email.mail_from, email.reply_to, email.bcc, email.cc, mail_id, email.message_id, email.html_format, email.subject, email.content, email.attachments, email.email_references, target_mailbox.uid, email.flags, email.in_reply_to, email.mime_version, email.charset, email.content_type, email.received, email.boundary);
+            await this.database.addEmail({
+                // email.belongs_to, email.mail_to, email.mail_from, email.reply_to, email.bcc, email.cc, mail_id, email.message_id, email.html_format,
+                // email.subject, email.content, email.attachments, email.email_references, target_mailbox.uid, email.flags, email.in_reply_to,
+                // email.mime_version, email.charset, email.content_type, email.received, email.boundary, email.headers
+                belongs_to: email.belongs_to,
+                to: email.mail_to,
+                from: email.mail_from,
+                reply_to: email.reply_to,
+                bcc: email.bcc,
+                cc: email.cc,
+                mail_id: mail_id,
+                message_id: email.message_id,
+                html_format: email.html_format,
+                subject: email.subject,
+                content: email.content,
+                attachments: email.attachments,
+                references: email.references,
+                mail_box: target_mailbox.uid,
+                flags: email.flags,
+                in_reply_to: email.in_reply_to,
+                mime_version: email.mime_version,
+                charset: email.charset,
+                content_type: email.content_type,
+                received: email.received,
+                boundary: email.boundary,
+                headers: email.headers
+            });
         }
 
         return this.connection.send(`${tag} OK COPY completed`);
