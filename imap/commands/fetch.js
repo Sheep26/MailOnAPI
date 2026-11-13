@@ -37,11 +37,8 @@ export class FetchCommand extends Command {
             }
 
             if (/\bRFC822\.SIZE\b/i.test(dataItem)) {
-                const raw = await this.createRawEmail(email, true);
+                const raw = await this.createRawEmail(email);
                 let size = Buffer.byteLength(raw, "utf8");
-
-                for (const attachment of email.attachments ?? [])
-                    size += 4 * Math.ceil(attachment.size / 3);
 
                 responseParts.push(`RFC822.SIZE ${size}`);
             }
