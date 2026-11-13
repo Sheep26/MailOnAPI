@@ -69,7 +69,8 @@ export class DatabaseManager {
         return body;
     }
 
-    async addEmail(context={}) { // belongs_to, to, from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, references, mail_box, flags=[], in_reply_to=null, mime_version=null, charset='utf-8', content_type="text/plain", received=null, boundary=null, headers={}
+    async addEmail(context={}) {
+        // belongs_to, to, from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, references, mail_box, flags=[], in_reply_to=null, mime_version=null, charset='utf-8', content_type="text/plain", received=null, boundary=null, headers={}
         const belongs_to = context.belongs_to ?? null;
         const to = context.to ?? null;
         const from = context.from ?? null;
