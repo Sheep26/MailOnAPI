@@ -29,7 +29,7 @@ export class DatabaseManager {
         return "quoted-printable";
     }
 
-    async createMessageBody(content, content_type, boundary, charset, attachments) {
+    async createMessageBody(content, content_type, boundary, charset, attachments, mail_id) {
         if (!content_type?.startsWith("multipart") && (!attachments || attachments?.length == 0))
             return content;
 
@@ -77,7 +77,7 @@ export class DatabaseManager {
 
         const act_boundary = boundary ?? this.randStr(28);
 
-        await db.execute('INSERT INTO emails (belongs_to, mail_to, mail_from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, email_references, time, mail_box, flags, uid, in_reply_to, mime_version, charset, content_type, received, boundary, headers) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+        await db.execute('INSERT INTO emails (belongs_to, mail_to, mail_from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, email_references, time, mail_box, flags, uid, in_reply_to, mime_version, charset, content_type, received, boundary, headers) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
             belongs_to,
             to,
             from,
@@ -88,8 +88,7 @@ export class DatabaseManager {
             message_id,
             html_format ?? 'text/plain',
             subject,
-            await this.createMessageBody(content, content_type, act_boundary, charset, attachments),
-            attachments,
+            await this.createMessageBody(content, content_type, act_boundary, charset, attachments, mail_id),
             references,
             Date.now(),
             mail_box,
