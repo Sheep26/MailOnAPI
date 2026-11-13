@@ -1,10 +1,8 @@
 import { db, initDB } from './connection.js';
-import { BcryptManager, BcryptCache } from './encryption.js';
+import { BcryptManager } from './encryption.js';
 import { Session } from '../sessions/sessionManager.js';
 import config from "../config.json" with { type: "json" };
 import crypto from 'crypto';
-import fs from 'fs';
-import path from 'path';
 
 const hasher = new BcryptManager();
 
@@ -23,11 +21,63 @@ export class DatabaseManager {
         return crypto.randomBytes(len).toString('base64url').slice(0, len);
     }
 
+    getContentTransferEncoding(charset='utf-8') {
+        for (const [encoding, charsets] of Object.entries(config.encodings))
+            if (charsets.includes(charset.toLowerCase()))
+                return encoding;
+
+        return "quoted-printable";
+    }
+
+    async createMessageBody(content, content_type, boundary, charset, attachments) {
+        const content = content ?? "";
+
+        if (!content_type?.startsWith("multipart") && (!attachments || attachments?.length == 0))
+            return content;
+
+        let body = `${content}\r\n`;
+
+        /*
+        [{"id": "a4725d19-3628-43e3-917c-ee2eebe9d5e4", "size": 3879, "filename": "Screenshot_20260820_101002.png",
+        "content_id": "<ii_muuvphhg0>", "content_type": "image/png",
+        "content_disposition": "inline"},
+        {"id": "7a7fc67b-8a6e-48d1-89f1-be8e50d60ace", "size": 4045216,
+        "filename": "Composition 2 - FINAL.mp3", "content_id": "<f_muuvpkn01>",
+        "content_type": "audio/mpeg", "content_disposition": "attachment"}]
+        */
+
+        if (!body.trim().startsWith(`--${boundary}`) && !body.trim().toLowerCase().replaceAll('-', '').startsWith(`this is a multipart message in mime format.`)) {
+            body = `--${boundary}\r\n`;
+            body += `Content-Type: text/html; charset=${charset ?? 'utf-8'}\r\n`;
+            body += `Content-Transfer-Encoding: ${this.getContentTransferEncoding(charset)}\r\n`
+            body += `\r\n${content}\r\n`;
+        }
+
+        for (let attachment of attachments ?? []) {
+            const buffer = Buffer.from(await this.attachments.downloadAttachment(String(mail_id), String(attachment.id)));
+
+            body += `--${boundary}\r\n`;
+            body += `Content-Type: ${attachment.content_type || "application/octet-stream"}\r\n`;
+            body += `Content-Disposition: attachment; filename="${attachment.filename}"\r\n`;
+            body += `Content-Transfer-Encoding: base64\r\n`;
+
+            body += `\r\n`;
+            body += `${buffer.toString('base64')}\r\n`;
+        }
+
+        if (!body.trim().endsWith(`--${boundary}--`))
+            body += `--${boundary}--`;
+
+        return body;
+    }
+
     async addEmail(belongs_to, to, from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, references, mail_box, flags=[], in_reply_to=null, mime_version=null, charset='utf-8', content_type="text/plain", received=null, boundary=null, headers={}) {
         const mailbox = await this.getMailBoxUID(belongs_to, mail_box);
 
         if (!mailbox)
             return;
+
+        const act_boundary = boundary ?? this.randStr(28);
 
         await db.execute('INSERT INTO emails (belongs_to, mail_to, mail_from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, email_references, time, mail_box, flags, uid, in_reply_to, mime_version, charset, content_type, received, boundary, headers) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
             belongs_to,
@@ -40,7 +90,7 @@ export class DatabaseManager {
             message_id,
             html_format ?? 'text/plain',
             subject,
-            content,
+            await this.createMessageBody(content, content_type, act_boundary, charset, attachments),
             attachments,
             references,
             Date.now(),
@@ -52,17 +102,9 @@ export class DatabaseManager {
             charset,
             content_type,
             received,
-            boundary ?? this.randStr(28),
+            act_boundary,
             headers
         ]);
-
-        for (let attachment of attachments ?? []) {
-            if (!fs.existsSync(path.join(config.attachment_path, String(mail_id), String(attachment.id)))) {
-                console.log(`Downloading attachment ${attachment.filename}`);
-
-                await this.attachments.downloadAttachment(String(mail_id), String(attachment.id));
-            }
-        }
 
         await this.incrementUIDNext(mailbox.belongs_to, mailbox.name);
     }

@@ -55,7 +55,7 @@ export class FetchCommand extends Command {
 
                     responseParts.push({type: "literal", name: "BODY[]", data: raw, size});
                 } else if (req == "TEXT") {
-                    const raw = await this.createMessageBody(email);
+                    const raw = await email.content;
 
                     const hasPartial = bodyMatch[3] !== undefined;
                     const start = hasPartial ? Number(bodyMatch[3]) : 0;

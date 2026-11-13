@@ -195,60 +195,10 @@ export class Command {
         return message;
     }
 
-    async getAttachmentAsBase64(email, attachment) {
-        const { data, error, path } = await this.connection.attachments.getAttatchment(email.mail_id, attachment.id);
-
-        if (error)
-            return error.toString('base64');
-
-        return data.toString('base64');
-    }
-
-    async createMessageBody(email, skip_attachments_content=false) {
-        const content = email.content ?? "";
-
-        if (!email.content_type?.startsWith("multipart") && (!email.attachments || email.attachments?.length == 0))
-            return content;
-
-        let body = `${content}\r\n`;
-
-        /*
-        [{"id": "a4725d19-3628-43e3-917c-ee2eebe9d5e4", "size": 3879, "filename": "Screenshot_20260820_101002.png",
-        "content_id": "<ii_muuvphhg0>", "content_type": "image/png",
-        "content_disposition": "inline"},
-        {"id": "7a7fc67b-8a6e-48d1-89f1-be8e50d60ace", "size": 4045216,
-        "filename": "Composition 2 - FINAL.mp3", "content_id": "<f_muuvpkn01>",
-        "content_type": "audio/mpeg", "content_disposition": "attachment"}]
-        */
-
-        if (!body.trim().startsWith(`--${email.boundary}`) && !body.trim().toLowerCase().replaceAll('-', '').startsWith(`this is a multipart message in mime format.`)) {
-            body = `--${email.boundary}\r\n`;
-            body += `Content-Type: text/html; charset=${email.charset ?? 'utf-8'}\r\n`;
-            body += `Content-Transfer-Encoding: ${this.getContentTransferEncoding(email)}\r\n`
-            body += `\r\n${content}\r\n`;
-        }
-
-        for (let attachment of email.attachments ?? []) {
-            body += `--${email.boundary}\r\n`;
-            body += `Content-Type: ${attachment.content_type || "application/octet-stream"}\r\n`;
-            body += `Content-Disposition: attachment; filename="${attachment.filename}"\r\n`;
-            body += `Content-Transfer-Encoding: base64\r\n`;
-            body += `\r\n`;
-
-            if (!skip_attachments_content)
-                body += `${await this.getAttachmentAsBase64(email, attachment)}\r\n`;
-        }
-
-        if (!body.trim().endsWith(`--${email.boundary}--`))
-            body += `--${email.boundary}--`;
-
-        return body;
-    }
-
-    async createRawEmail(email, skip_attachments_content=false) {
+    async createRawEmail(email) {
         const headers  = this.createRawHeaders(email);
 
-        return `${headers}\r\n${await this.createMessageBody(email, skip_attachments_content)}`;
+        return `${headers}\r\n${email.content}`;
     }
 
     randStr(len) {
