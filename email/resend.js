@@ -174,7 +174,7 @@ export class EmailResend extends Email {
                 received: data.headers['received'],
                 headers: data.headers,
                 boundary: boundary,
-                date: data.headers.date
+                date: data.headers.date.replaceAll("\"", "")
             });
 
             await super.updateImap(user.email, mailbox.uid);
