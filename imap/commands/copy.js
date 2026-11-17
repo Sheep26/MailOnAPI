@@ -52,7 +52,8 @@ export class CopyCommand extends Command {
                 content_type: email.content_type,
                 received: email.received,
                 boundary: email.boundary,
-                headers: email.headers
+                headers: email.headers,
+                date: email.time
             });
         }
 
