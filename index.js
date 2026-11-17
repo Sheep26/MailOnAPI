@@ -32,6 +32,7 @@ app.post('/recieve', (req, res) => {
         res.sendStatus(200);
     } catch (e) {
         console.log(e);
+
         res.sendStatus(500);
     }
 });
