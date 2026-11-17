@@ -82,7 +82,7 @@ export class DatabaseManager {
         await this.incrementUIDNext(mailbox.belongs_to, mailbox.name);
     }
 
-    async getUserStorage(user_email) {
+    async getUserUsedStorage(user_email) {
         const [rows] = await db.query('SELECT COALESCE(SUM(OCTET_LENGTH(content)), 0) AS total_bytes FROM data.emails WHERE belongs_to=?', [user_email]);
 
         return Number(rows[0].total_bytes);
