@@ -194,14 +194,14 @@ export class EmailResend extends Email {
         let body = `This is a multipart message in mime format.\r\n\r\n`;
 
         if (html) {
-            body = `--${boundary}\r\n`;
+            body += `--${boundary}\r\n`;
             body += `Content-Type: text/html; charset='utf-8'\r\n`;
             body += `Content-Transfer-Encoding: 8bit\r\n`;
             body += `\r\n${html}\r\n`;
         }
 
         if (text) {
-            body = `--${boundary}\r\n`;
+            body += `--${boundary}\r\n`;
             body += `Content-Type: text/plain; charset='utf-8'\r\n`;
             body += `Content-Transfer-Encoding: 8bit\r\n`;
             body += `\r\n${text}\r\n`;
