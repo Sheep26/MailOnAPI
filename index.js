@@ -26,9 +26,14 @@ app.use(cookieParser());
 app.use(morgan('combined'));
 
 app.post('/recieve', (req, res) => {
-    email.handle(req.body);
+    try {
+        email.handle(req.body);
 
-    res.sendStatus(200);
+        res.sendStatus(200);
+    } catch (e) {
+        console.log(e);
+        res.sendStatus(500);
+    }
 });
 
 app.post("/api/send", async (req, res) => {
