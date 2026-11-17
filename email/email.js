@@ -1,4 +1,5 @@
 import { imapHandleRecieved } from "../imap/imapServer.js";
+import crypto from 'crypto';
 
 export function parseEmailAddress(value) {
     const match = value.match(/^\s*(.*?)\s*<([^<>]+)>\s*$/);
