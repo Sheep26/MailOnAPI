@@ -2,8 +2,6 @@ import { Command } from "./command.js";
 import STATES from '../imapStates.js';
 import crypto from 'node:crypto';
 
-const accepted_headers = ["to", "from", "subject", "message-id", "content-type", "cc", "bcc", "reply-to", "in-reply-to", "mime-version"];
-
 export class AppendCommand extends Command {
     command = async (tag, args) => {
         if (this.connection.state == STATES.NOT_AUTHENTICATED)
@@ -41,20 +39,7 @@ export class AppendCommand extends Command {
 
         this.connection.removeListener(this.appendListenerBound);
 
-        let data = {
-            to: null,
-            from: null,
-            'reply-to': null,
-            bcc: null,
-            cc: null,
-            'message-id': null,
-            subject: null,
-            'content-type': null,
-            mail_id: crypto.randomBytes(8).readUInt32BE(),
-            content: "",
-            "in-reply-to": null,
-            "mime-version": null
-        };
+        let content = "";
 
         let content_started = false;
         let current_header = null;
@@ -69,78 +54,75 @@ export class AppendCommand extends Command {
             if (separator === -1)
                 return;
 
-            const name = current_header.slice(0, separator).trim().toLowerCase();
+            const name = current_header.slice(0, separator).trim();
             const value = current_header.slice(separator + 1).trim();
 
-            if (accepted_headers.includes(name))
-                headers[name] = headers[name] ? `${headers[name]}, ${value}` : value;
+            headers[name] = headers[name] ? `${headers[name]}, ${value}` : value;
         };
 
         for (const line of this.buffer) {
-            const normalized = line.replace(/(?:\r\n|\n|\r)$/, "");
+            if (content_started) {
+                content += line;
 
-            if (!content_started) {
-                if (normalized === "") {
-                    saveHeader();
-                    content_started = true;
-                    continue;
-                }
-
-                if (/^[ \t]/.test(normalized) && current_header !== null) {
-                    current_header += ` ${normalized.trim()}`;
-
-                    continue;
-                }
-
-                saveHeader();
-                current_header = normalized;
                 continue;
             }
 
-            data.content += line;
+            const normalized = line.replace(/(?:\r\n|\n|\r)$/, "");
+
+            if (normalized === "") {
+                saveHeader();
+                content_started = true;
+                continue;
+            }
+
+            if (/^[ \t]/.test(normalized) && current_header !== null) {
+                current_header += ` ${normalized.trim()}`;
+
+                continue;
+            }
+
+            saveHeader();
+            current_header = normalized;
+            continue;            
         }
 
         if (!content_started)
             saveHeader();
 
-        for (const header of accepted_headers)
-            if (headers[header] !== undefined)
-                data[header] = headers[header];
-
-        console.log(headers);
-
-        const contentTypeHeader = data['content-type'] ?? "text/plain";
+        const lowercaseHeaders = Object.fromEntries(Object.entries(headers).map(([key, value]) => [key.toLowerCase(), value]));
+        const contentTypeHeader = lowercaseHeaders['content-type'] ?? "text/plain";
 
         const [content_type, ...params] = contentTypeHeader.split(";").map(value => value.trim());
         const charset = params.find(param => param.toLowerCase().startsWith("charset="))?.slice("charset=".length).trim().replace(/^["']|["']$/g, '') ?? null ?? "utf-8";
         const boundary = params.find(param => param.toLowerCase().startsWith("boundary="))?.slice("boundary=".length).trim().replace(/^["']|["']$/g, '') ?? null;
 
-        const bcc = data.bcc?.split(',').map(value => value.trim()) ?? [];
-        const cc = data.cc?.split(',').map(value => value.trim()) ?? [];
+        const bcc = lowercaseHeaders.bcc?.split(',').map(value => value.trim()) ?? [];
+        const cc = lowercaseHeaders.cc?.split(',').map(value => value.trim()) ?? [];
 
-        const to = data.to.split(',').map(x => x.trim()) ?? [];
-        const reply_to = (data['reply-to'] ?? data.from).split(",").map(x => x.trim()) ?? [];
+        const to = lowercaseHeaders.to?.split(',').map(x => x.trim()) ?? [];
+        const reply_to = (lowercaseHeaders['reply-to'] ?? lowercaseHeaders.from).split(",").map(x => x.trim()) ?? [];
 
         await this.database.addEmail({
             // this.connection.user.email, to, data.from, reply_to, bcc, cc, data.mail_id, data['message-id'], null, data.subject, data.content, null, null,
             // this.mailbox.uid, this.flags, data['in-reply-to'], data['mime-version'], charset, content_type, null, boundary
             belongs_to: this.connection.user.email,
             to: to,
-            from: data.from,
+            from: lowercaseHeaders.from,
             reply_to: reply_to,
             bcc: bcc,
             cc: cc,
-            mail_id: data.mail_id,
-            message_id: data['message-id'],
-            subject: data.subject,
-            content: data.content,
+            mail_id: crypto.randomBytes(16).readUInt32BE(),
+            message_id: lowercaseHeaders['message-id'],
+            subject: lowercaseHeaders.subject,
+            content: lowercaseHeaders.content,
             mail_box: this.mailbox.uid,
             flags: this.flags,
-            in_reply_to: data['in-reply-to'],
-            mime_version: data['mime-version'],
+            in_reply_to: lowercaseHeaders['in-reply-to'],
+            mime_version: lowercaseHeaders['mime-version'],
             charset: charset,
             content_type: content_type,
-            boundary: boundary
+            boundary: boundary,
+            headers: headers
         });
 
         this.connection.send(`${this.tag} OK APPEND completed`);
