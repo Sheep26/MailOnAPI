@@ -252,7 +252,7 @@ app.use(async (req, res, next) => {
     res.render('base', { title: page, content: page, renderUtils: renderUtils });
 });
 
-startImap(database, attachmentManager);
+startImap(database);
 
 app.listen(PORT, '0.0.0.0', function (err) {
     if (err) {
