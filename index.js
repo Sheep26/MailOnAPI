@@ -19,8 +19,6 @@ const email = new email_types[config.email.type](database, config.email.auth);
 const sessionManager = new SessionManager();
 const attachmentManager = new AttachmentManager(email);
 
-database.setAttachmentManager(attachmentManager);
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');

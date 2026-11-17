@@ -142,6 +142,8 @@ export class EmailResend extends Email {
             }
 
             if (mailbox) {
+                const boundary = this.randStr(28);
+
                 await this.database.addEmail({
                     belongs_to: to,
                     to: data.to,
@@ -153,15 +155,22 @@ export class EmailResend extends Email {
                     message_id: data.message_id,
                     html_format: data.html_format,
                     subject: data.subject,
-                    content: data.headers['content-type'] == 'text/plain' ? data.text : data.html,
-                    attachments: data.attachments,
+                    content: await this.createMessageBody({
+                        text: data.text,
+                        html: data.html,
+                        content_type: data.headers['content-type'],
+                        boundary: boundary,
+                        attachments: data.attachments,
+                        mail_id: data.id
+                    }),
                     references: references,
                     mail_box: mailbox.uid,
                     in_reply_to: data.headers['in-reply-to'],
                     mime_version: data.headers['mime-version'],
                     content_type: data.headers['content-type'],
                     received: data.headers['received'],
-                    headers: data.headers
+                    headers: data.headers,
+                    boundary: boundary
                 });
 
                 await super.updateImap(user.email, mailbox.uid);
@@ -169,6 +178,58 @@ export class EmailResend extends Email {
         }
 
         console.log(`Email ${data.id} has been recieved from ${data.headers.from}`);
+    }
+
+    async createMessageBody(ctx={}) { // text, html, content_type, boundary, attachments, mail_id
+        const text = ctx.text;
+        const html = ctx.html;
+        const content_type = ctx.content_type;
+        const boundary = ctx.boundary;
+        const attachments = ctx.attachments;
+        const mail_id = ctx.mail_id;
+
+        if (!content_type?.startsWith("multipart") && attachments?.length == 0)
+            return content_type == "text/plain" ? text : html;
+
+        let body = `This is a multipart message in mime format.\r\n\r\n`;
+
+        if (html) {
+            body = `--${boundary}\r\n`;
+            body += `Content-Type: text/html; charset='utf-8'\r\n`;
+            body += `Content-Transfer-Encoding: 8bit\r\n`;
+            body += `\r\n${html}\r\n`;
+        }
+
+        if (text) {
+            body = `--${boundary}\r\n`;
+            body += `Content-Type: text/plain; charset='utf-8'\r\n`;
+            body += `Content-Transfer-Encoding: 8bit\r\n`;
+            body += `\r\n${text}\r\n`;
+        }
+
+        /*
+        [{"id": "a4725d19-3628-43e3-917c-ee2eebe9d5e4", "size": 3879, "filename": "Screenshot_20260820_101002.png",
+        "content_id": "<ii_muuvphhg0>", "content_type": "image/png",
+        "content_disposition": "inline"},
+        {"id": "7a7fc67b-8a6e-48d1-89f1-be8e50d60ace", "size": 4045216,
+        "filename": "Composition 2 - FINAL.mp3", "content_id": "<f_muuvpkn01>",
+        "content_type": "audio/mpeg", "content_disposition": "attachment"}]
+        */
+
+        for (let attachment of attachments ?? []) {
+            const buffer = Buffer.from(await this.attachments.downloadAttachment(String(mail_id), String(attachment.id)));
+
+            body += `--${boundary}\r\n`;
+            body += `Content-Type: ${attachment.content_type || "application/octet-stream"}\r\n`;
+            body += `Content-Disposition: attachment; filename="${attachment.filename}"\r\n`;
+            body += `Content-Transfer-Encoding: base64\r\n`;
+
+            body += `\r\n`;
+            body += `${buffer.toString('base64')}\r\n`;
+        }
+
+        body += `--${boundary}--`;
+        return body;
     }
 
     async getAttatchment(email_id, attachment_id) {

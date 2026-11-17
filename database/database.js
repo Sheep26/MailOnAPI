@@ -8,13 +8,7 @@ const hasher = new BcryptManager();
 
 export class DatabaseManager {
     constructor() {
-        this.attachments = null;
-
         initDB();
-    }
-
-    setAttachmentManager(attachmentManager) {
-        this.attachments = attachmentManager;
     }
 
     randStr(len) {
@@ -29,48 +23,8 @@ export class DatabaseManager {
         return "quoted-printable";
     }
 
-    async createMessageBody(content, content_type, boundary, charset, attachments, mail_id) {
-        if (!content_type?.startsWith("multipart") && (!attachments || attachments?.length == 0))
-            return content;
-
-        let body = `${content}\r\n`;
-
-        /*
-        [{"id": "a4725d19-3628-43e3-917c-ee2eebe9d5e4", "size": 3879, "filename": "Screenshot_20260820_101002.png",
-        "content_id": "<ii_muuvphhg0>", "content_type": "image/png",
-        "content_disposition": "inline"},
-        {"id": "7a7fc67b-8a6e-48d1-89f1-be8e50d60ace", "size": 4045216,
-        "filename": "Composition 2 - FINAL.mp3", "content_id": "<f_muuvpkn01>",
-        "content_type": "audio/mpeg", "content_disposition": "attachment"}]
-        */
-
-        if (!body.trim().startsWith(`--${boundary}`) && !body.trim().toLowerCase().replaceAll('-', '').startsWith(`this is a multipart message in mime format.`)) {
-            body = `--${boundary}\r\n`;
-            body += `Content-Type: text/html; charset=${charset ?? 'utf-8'}\r\n`;
-            body += `Content-Transfer-Encoding: ${this.getContentTransferEncoding(charset)}\r\n`
-            body += `\r\n${content}\r\n`;
-        }
-
-        for (let attachment of attachments ?? []) {
-            const buffer = Buffer.from(await this.attachments.downloadAttachment(String(mail_id), String(attachment.id)));
-
-            body += `--${boundary}\r\n`;
-            body += `Content-Type: ${attachment.content_type || "application/octet-stream"}\r\n`;
-            body += `Content-Disposition: attachment; filename="${attachment.filename}"\r\n`;
-            body += `Content-Transfer-Encoding: base64\r\n`;
-
-            body += `\r\n`;
-            body += `${buffer.toString('base64')}\r\n`;
-        }
-
-        if (!body.trim().endsWith(`--${boundary}--`))
-            body += `--${boundary}--`;
-
-        return body;
-    }
-
     async addEmail(context={}) {
-        // belongs_to, to, from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, attachments, references, mail_box, flags=[], in_reply_to=null, mime_version=null, charset='utf-8', content_type="text/plain", received=null, boundary=null, headers={}
+        // belongs_to, to, from, reply_to, bcc, cc, mail_id, message_id, html_format, subject, content, references, mail_box, flags=[], in_reply_to=null, mime_version=null, charset='utf-8', content_type="text/plain", received=null, boundary=null, headers={}
         const belongs_to = context.belongs_to ?? null;
         const to = context.to ?? null;
         const from = context.from ?? null;
@@ -82,7 +36,6 @@ export class DatabaseManager {
         const html_format = context.html_format ?? null;
         const subject = context.subject ?? null;
         const content = context.content ?? null;
-        const attachments = context.attachments ?? null;
         const references = context.references ?? null;
         const mail_box = context.mail_box ?? null;
         const flags = context.flags ?? [];
@@ -110,7 +63,7 @@ export class DatabaseManager {
             message_id,
             html_format ?? 'text/plain',
             subject,
-            await this.createMessageBody(content, content_type, boundary, charset, attachments, mail_id),
+            content,
             references,
             Date.now(),
             mail_box,

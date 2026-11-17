@@ -37,6 +37,10 @@ export class Email {
         
     }
 
+    async createMessageBody(ctx={}) {
+        return null;
+    }
+
     async updateImap(email, mailbox) {
         const emails = await this.database.getUsersEmails(email);
         const emails_filtered = emails.filter(email => email.mail_box == mailbox);
