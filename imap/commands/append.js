@@ -123,7 +123,7 @@ export class AppendCommand extends Command {
             content_type: content_type,
             boundary: boundary,
             headers: headers,
-            date: lowercaseHeaders.date ?? null
+            
         });
 
         this.connection.send(`${this.tag} OK APPEND completed`);
