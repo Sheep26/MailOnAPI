@@ -41,6 +41,10 @@ export class Email {
         return null;
     }
 
+    randStr(len) {
+        return crypto.randomBytes(len).toString('base64url').slice(0, len);
+    }
+
     async updateImap(email, mailbox) {
         const emails = await this.database.getUsersEmails(email);
         const emails_filtered = emails.filter(email => email.mail_box == mailbox);
