@@ -89,6 +89,8 @@ export class AppendCommand extends Command {
         if (!content_started)
             saveHeader();
 
+        console.log(headers)
+
         const lowercaseHeaders = Object.fromEntries(Object.entries(headers).map(([key, value]) => [key.toLowerCase(), value]));
         const contentTypeHeader = lowercaseHeaders['content-type'] ?? "text/plain";
 
@@ -123,7 +125,7 @@ export class AppendCommand extends Command {
             content_type: content_type,
             boundary: boundary,
             headers: headers,
-            
+            date: lowercaseHeaders.date ?? null
         });
 
         this.connection.send(`${this.tag} OK APPEND completed`);
