@@ -123,9 +123,8 @@ export class EmailResend extends Email {
                     references = [references];
             }
 
-        for (let to of data.to) {  
+        for (let to of data.to) {
             const user = await this.database.getUser(to);
-            const mailbox = await this.database.getMailBox(to, 'Inbox');
 
             if (!user) {
                 console.log(`Email Address ${to} does not exist`);
@@ -141,40 +140,43 @@ export class EmailResend extends Email {
                 continue;
             }
 
-            if (mailbox) {
-                const boundary = this.randStr(28);
+            const mailbox = await this.database.getMailBox(to, 'Inbox');
 
-                await this.database.addEmail({
-                    belongs_to: to,
-                    to: data.to,
-                    from: data.headers.from,
-                    reply_to: data.reply_to.length ? data.reply_to : [data.from],
-                    bcc: data.bcc,
-                    cc: data.cc,
-                    mail_id: data.id,
-                    message_id: data.message_id,
-                    html_format: data.html_format,
-                    subject: data.subject,
-                    content: await this.createMessageBody({
-                        text: data.text,
-                        html: data.html,
-                        content_type: data.headers['content-type'],
-                        boundary: boundary,
-                        attachments: data.attachments,
-                        mail_id: data.id
-                    }),
-                    references: references,
-                    mail_box: mailbox.uid,
-                    in_reply_to: data.headers['in-reply-to'],
-                    mime_version: data.headers['mime-version'],
+            if (!mailbox)
+                continue;
+
+            const boundary = this.randStr(28);
+
+            await this.database.addEmail({
+                belongs_to: to,
+                to: data.to,
+                from: data.headers.from,
+                reply_to: data.reply_to.length ? data.reply_to : [data.from],
+                bcc: data.bcc,
+                cc: data.cc,
+                mail_id: data.id,
+                message_id: data.message_id,
+                html_format: data.html_format,
+                subject: data.subject,
+                content: await this.createMessageBody({
+                    text: data.text,
+                    html: data.html,
                     content_type: data.headers['content-type'],
-                    received: data.headers['received'],
-                    headers: data.headers,
-                    boundary: boundary
-                });
+                    boundary: boundary,
+                    attachments: data.attachments,
+                    mail_id: data.id
+                }),
+                references: references,
+                mail_box: mailbox.uid,
+                in_reply_to: data.headers['in-reply-to'],
+                mime_version: data.headers['mime-version'],
+                content_type: data.headers['content-type'],
+                received: data.headers['received'],
+                headers: data.headers,
+                boundary: boundary
+            });
 
-                await super.updateImap(user.email, mailbox.uid);
-            }
+            await super.updateImap(user.email, mailbox.uid);
         }
 
         console.log(`Email ${data.id} has been recieved from ${data.headers.from}`);
