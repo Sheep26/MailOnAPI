@@ -117,7 +117,7 @@ export class FetchCommand extends Command {
             }
 
             if (/\bINTERNALDATE\b/i.test(dataItem)) {
-                const dateObj = new Date(Number(email.time));
+                const dateObj = new Date(email.time);
                 const day = String(dateObj.getUTCDate()).padStart(2, '0');
                 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
                 const month = months[dateObj.getUTCMonth()];
@@ -130,7 +130,7 @@ export class FetchCommand extends Command {
             }
 
             if (/\bENVELOPE\b/i.test(dataItem)) {
-                const dateStr = new Date(Number(email.time)).toUTCString();
+                const dateStr = new Date(email.time).toUTCString();
                 const subject = email.subject ? `"${email.subject}"` : "NIL";
                 const msgId = email.message_id ? `"${email.message_id}"` : "NIL";
 
@@ -214,7 +214,7 @@ export class FetchCommand extends Command {
                 headers += `Subject: ${email.subject}\r\n`;
 
             else if (header === "date" && email.time)
-                headers += `Date: ${new Date(Number(email.time)).toUTCString()}\r\n`;
+                headers += `Date: ${new Date(email.time).toUTCString()}\r\n`;
 
             else if (header === "message-id" && email.message_id)
                     headers += `Message-ID: ${email.message_id}\r\n`;

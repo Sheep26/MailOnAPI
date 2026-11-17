@@ -107,6 +107,8 @@ export class AppendCommand extends Command {
             if (headers[header] !== undefined)
                 data[header] = headers[header];
 
+        console.log(headers);
+
         const contentTypeHeader = data['content-type'] ?? "text/plain";
 
         const [content_type, ...params] = contentTypeHeader.split(";").map(value => value.trim());
