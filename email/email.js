@@ -46,6 +46,23 @@ export class Email {
         return crypto.randomBytes(len).toString('base64url').slice(0, len);
     }
 
+    async downloadAttachment(email_id, attachment_id) {
+        const { download_url, error } = await this.getAttatchment(email_id, attachment_id);
+
+        if (error)
+            throw new Error(`Failed to get attachment: ${error}`);
+
+        if (!download_url)
+            throw new Error("No download URL returned");
+
+        const response = await fetch(download_url);
+
+        if (!response.ok)
+            throw new Error(`Download failed: ${response.status} ${response.statusText}`);
+
+        return await response.arrayBuffer();
+    }
+
     async updateImap(email, mailbox) {
         const emails = await this.database.getUsersEmails(email);
         const emails_filtered = emails.filter(email => email.mail_box == mailbox);

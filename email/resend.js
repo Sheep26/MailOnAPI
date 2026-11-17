@@ -217,7 +217,7 @@ export class EmailResend extends Email {
         */
 
         for (let attachment of attachments ?? []) {
-            const buffer = Buffer.from(await this.attachments.downloadAttachment(String(mail_id), String(attachment.id)));
+            const buffer = Buffer.from(await this.downloadAttachment(String(mail_id), String(attachment.id)));
 
             body += `--${boundary}\r\n`;
             body += `Content-Type: ${attachment.content_type || "application/octet-stream"}\r\n`;
