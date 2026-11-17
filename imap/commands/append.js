@@ -107,22 +107,23 @@ export class AppendCommand extends Command {
             // this.mailbox.uid, this.flags, data['in-reply-to'], data['mime-version'], charset, content_type, null, boundary
             belongs_to: this.connection.user.email,
             to: to,
-            from: lowercaseHeaders.from,
+            from: lowercaseHeaders.from ?? null,
             reply_to: reply_to,
             bcc: bcc,
             cc: cc,
             mail_id: crypto.randomBytes(16).readUInt32BE(),
-            message_id: lowercaseHeaders['message-id'],
-            subject: lowercaseHeaders.subject,
-            content: lowercaseHeaders.content,
+            message_id: lowercaseHeaders['message-id'] ?? null,
+            subject: lowercaseHeaders.subject ?? null,
+            content: lowercaseHeaders.content ?? null,
             mail_box: this.mailbox.uid,
             flags: this.flags,
-            in_reply_to: lowercaseHeaders['in-reply-to'],
-            mime_version: lowercaseHeaders['mime-version'],
+            in_reply_to: lowercaseHeaders['in-reply-to'] ?? null,
+            mime_version: lowercaseHeaders['mime-version'] ?? null,
             charset: charset,
             content_type: content_type,
             boundary: boundary,
-            headers: headers
+            headers: headers,
+            date: lowercaseHeaders.date ?? null
         });
 
         this.connection.send(`${this.tag} OK APPEND completed`);
