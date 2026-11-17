@@ -46,7 +46,7 @@ export class DatabaseManager {
         const received = context.received ?? null;
         const boundary = context.boundary ?? this.randStr(28);
         const headers = context.headers ?? {};
-        const date = new Date(context.date).getUTCMilliseconds() ?? Date.now();
+        const date = new Date(context.date).getTime() ?? Date.now();
 
         const mailbox = await this.getMailBoxUID(belongs_to, mail_box);
 
