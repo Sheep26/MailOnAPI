@@ -114,7 +114,7 @@ export class AppendCommand extends Command {
             mail_id: crypto.randomBytes(16).readUInt32BE(),
             message_id: lowercaseHeaders['message-id'] ?? null,
             subject: lowercaseHeaders.subject ?? null,
-            content: lowercaseHeaders.content ?? null,
+            content: content,
             mail_box: this.mailbox.uid,
             flags: this.flags,
             in_reply_to: lowercaseHeaders['in-reply-to'] ?? null,
