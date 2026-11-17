@@ -173,7 +173,8 @@ export class EmailResend extends Email {
                 content_type: data.headers['content-type'],
                 received: data.headers['received'],
                 headers: data.headers,
-                boundary: boundary
+                boundary: boundary,
+                date: data.headers.date
             });
 
             await super.updateImap(user.email, mailbox.uid);
