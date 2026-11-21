@@ -126,6 +126,7 @@ export class AppendCommand extends Command {
             date: lowercaseHeaders.date ?? null
         });
 
+        console.info(`${this.connection.remoteAddress} ${this.connection.user.email} APPEND ${this.mailbox.name} ${this.flags}`);
         this.connection.send(`${this.tag} OK APPEND completed`);
     }
 

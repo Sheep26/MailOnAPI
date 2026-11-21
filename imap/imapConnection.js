@@ -51,6 +51,8 @@ export class ImapConnection {
     }
 
     async kick(tag, msg, block=false) {
+        console.warn(`Kicking ${this.remoteAddress} ${msg}`);
+
         await this.send(`${tag} ${msg}`);
         this.socket.destroy();
 
@@ -206,7 +208,7 @@ export class ImapConnection {
     }
 
     async baseListener(line, next) {
-        console.log("C:", line);
+        // console.log("C:", line);
 
         await next();
     }
@@ -246,12 +248,12 @@ export class ImapConnection {
     }
 
     send(message, callback=null) {
-        console.log("S:", message);
+        // console.log("S:", message);
         this.socket.write(message + "\r\n", callback);
     }
 
     sendRaw(message, callback=null) {
-        console.log("S:", message);
+        // console.log("S:", message);
         this.socket.write(message, callback);
     }
 }

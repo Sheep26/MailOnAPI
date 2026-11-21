@@ -56,6 +56,7 @@ export class AuthenticateCommand extends Command {
                 this.connection.user = await this.database.getUser(email);
                 this.connection.state = STATES.AUTHENTICATED;
 
+                console.log(`${this.connection.remoteAddress} ${this.connection.user.email} AUTHENTICATION SUCCESSFUL`);
                 this.connection.send(`${this.tag} OK AUTHENTICATE success`);
                 this.tag = null; // Free the couple bytes of memory.
             } catch (e) {
