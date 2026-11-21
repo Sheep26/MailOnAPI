@@ -32,7 +32,7 @@ export class AuthenticateCommand extends Command {
     async authenticationListner(line, next) {
         if (this.connection.state == STATES.AUTHENTICATING_PLAIN) {
             try {
-                const authenication_parts = new TextDecoder().decode(Uint8Array.fromBase64(line.replace(/\r?\n$/, ''))).split('\0');
+                const authenication_parts = Buffer.from(line.replace(/\r?\n$/, ''), 'base64').toString('utf8').split('\0');
 
                 const email = authenication_parts[1];
                 const password = authenication_parts[2];
@@ -41,8 +41,15 @@ export class AuthenticateCommand extends Command {
 
                 if (!session) {
                     this.connection.state = STATES.NOT_AUTHENTICATED;
-
                     this.connection.removeListener(this.authenticationListnerBound);
+                    this.connection.failedLogins++;
+
+                    if (this.connection.failedLogins >= this.connection.kickThreashhold) {
+                        await this.connection.kick(this.tag, 'NO Authentication failed too many times killing connection');
+
+                        return;
+                    }
+
                     return this.connection.send(`${this.tag} NO Authentication failed`);
                 }
 
@@ -54,6 +61,8 @@ export class AuthenticateCommand extends Command {
             } catch (e) {
                 console.error("Authentication error:", e);
 	            console.error("line:", JSON.stringify(line));
+
+                this.connection.state = STATES.NOT_AUTHENTICATED;
                 this.connection.send(`${this.tag} BAD Invalid Request`);
             }
         } else {

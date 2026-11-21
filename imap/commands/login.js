@@ -17,8 +17,17 @@ export class LoginCommand extends Command {
 
         const session = await this.database.login(email, password);
 
-        if (!session)
+        if (!session) {
+            this.connection.failedLogins++;
+
+            if (this.connection.failedLogins >= this.connection.kickThreashhold) {
+                await this.connection.kick(tag, 'NO Authentication failed too many times killing connection');
+
+                return;
+            }
+
             return this.connection.send(`${tag} NO Authentication failed`);
+        }
 
         this.connection.user = await this.database.getUser(email);
         this.connection.state = STATES.AUTHENTICATED;

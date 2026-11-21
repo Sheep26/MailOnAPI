@@ -24,6 +24,7 @@ export class ImapConnection {
 
         this.remoteAddress = this.getClientIP(socket);
         this.failedLogins = 0;
+        this.kickThreashhold = 5;
 
         if (!secure) {
             this.addCapabiltity('LOGINDISABLED');
@@ -33,7 +34,6 @@ export class ImapConnection {
         }
 
         this.listeners = [this.baseListener.bind(this), this.handleCommand.bind(this)];
-
         console.log(`New connection from ${this.remoteAddress}`);
     }
 
@@ -47,6 +47,11 @@ export class ImapConnection {
 
     removeCapability(capability) {
         this.capabilities = this.capabilities.filter(c => c != capability);
+    }
+
+    async kick(tag, msg) {
+        await this.send(`${tag} ${msg}`);
+        this.socket.destroy();
     }
 
     start(greeting=true) {
