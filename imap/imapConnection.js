@@ -33,6 +33,8 @@ export class ImapConnection {
         }
 
         this.listeners = [this.baseListener.bind(this), this.handleCommand.bind(this)];
+
+        console.log(`New connection from ${this.remoteAddress}`);
     }
 
     getClientIP(socket) {
