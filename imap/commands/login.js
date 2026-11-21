@@ -21,7 +21,7 @@ export class LoginCommand extends Command {
             this.connection.failedLogins++;
 
             if (this.connection.failedLogins >= this.connection.kickThreashhold) {
-                await this.connection.kick(tag, 'NO Authentication failed too many times killing connection');
+                await this.connection.kick(tag, 'NO Authentication failed too many times killing connection', true);
 
                 return;
             }

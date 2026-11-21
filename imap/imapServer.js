@@ -5,10 +5,18 @@ import fs from "fs";
 import { ImapConnection } from "./imapConnection.js";
 
 let connections = [];
+let blockedIps = [];
+
 const capabilities = ["IMAP4rev1", "UNSELECT", "AUTH=PLAIN", "IDLE"];
 
 export function removeConnection(connection) {
     connections = connections.filter(connectio => connectio != connection);
+}
+
+export function blockIP(ip) {
+    blockedIps.push({ip: ip, timestamp: Date.now()});
+
+    console.warn(`Ip ${ip} blocked at ${new Date().toISOString()}`);
 }
 
 export function imapHandleRecieved(belongs_to, exists, updated_mailbox) {
@@ -21,6 +29,7 @@ export function imapHandleRecieved(belongs_to, exists, updated_mailbox) {
 function create_connection(socket, database, secure) {
     const connection = new ImapConnection(socket, database, capabilities, secure);
     const connectionsFromIP = connections.filter(conn => conn.remoteAddress === connection.remoteAddress);
+    const blockedIPAdresses = blockedIps.map(ip => ip.ip);
 
     if (connectionsFromIP.length >= 10) { // Too many concurrent connections.
         console.warn(`Too many concurrent connections from ${connection.remoteAddress}`);
@@ -29,8 +38,14 @@ function create_connection(socket, database, secure) {
         return;
     }
 
-    connections.push(connection);
+    if (blockedIPAdresses.includes(connection.remoteAddress)) {
+        console.warn(`Blocked IP attempted to connect to server ${connection.remoteAddress}`);
+        socket.destroy();
 
+        return;
+    }
+
+    connections.push(connection);
     connection.start();
 
     socket.on("close", () => {

@@ -2,6 +2,7 @@ import getCommands from "./commands/commands.js";
 import config from "../config.json" with { type: "json" };
 import crypto from 'node:crypto';
 import STATES from './imapStates.js';
+import { blockIP } from "./imapServer.js";
 
 export class ImapConnection {
     constructor(socket, database, capabilities, secure) {
@@ -49,9 +50,12 @@ export class ImapConnection {
         this.capabilities = this.capabilities.filter(c => c != capability);
     }
 
-    async kick(tag, msg) {
+    async kick(tag, msg, block=false) {
         await this.send(`${tag} ${msg}`);
         this.socket.destroy();
+
+        if (block)
+            blockIP(this.remoteAddress);
     }
 
     start(greeting=true) {
