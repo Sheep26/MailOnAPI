@@ -111,7 +111,13 @@ export class EmailResend extends Email {
     }
 
     async handle(body) {
-        const { data } = await this.resend.emails.receiving.get(body.data.email_id);
+        const { data, error } = await this.resend.emails.receiving.get(body.data.email_id);
+
+        if (error) {
+            console.error(`Error recieving email status code ${error.statusCode} ${error.message}`);
+
+            return;
+        }
 
         let references = data.headers.references ?? null;
 
