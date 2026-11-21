@@ -200,26 +200,6 @@ app.get('/api/logout', async (req, res) => {
     res.redirect('/');
 });
 
-app.get('/attachment/:email_id/:attachment_id', async (req, res) => {
-    const session = await sessionManager.getSession(req.cookies.session);
-    const { email_id, attachment_id } = req.params;
-
-    if (!session)
-        return res.sendStatus(401);
-
-    const mail = await database.getEmail(email_id, session.user_id);
-
-    if (!mail)
-        return res.sendStatus(403);
-
-    const { data, error, path } = await attachmentManager.getAttatchment(email_id, attachment_id);
-
-    if (error)
-        return res.status(500).send(error);
-
-    return res.sendFile(path);
-});
-
 app.post('/api/create_account', async (req, res) => {
     // Disabled
     return res.sendStatus(418);
