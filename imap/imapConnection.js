@@ -22,6 +22,9 @@ export class ImapConnection {
         this.readonly = false;
         this.secure = secure;
 
+        this.remoteAddress = this.getClientIP(socket);
+        this.failedLogins = 0;
+
         if (!secure) {
             this.addCapabiltity('LOGINDISABLED');
             this.addCapabiltity('STARTTLS');
@@ -30,6 +33,10 @@ export class ImapConnection {
         }
 
         this.listeners = [this.baseListener.bind(this), this.handleCommand.bind(this)];
+    }
+
+    getClientIP(socket) {
+        return socket.remoteAddress?.replace(/^::ffff:/, "");
     }
 
     addCapabiltity(capability) {

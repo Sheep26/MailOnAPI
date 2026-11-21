@@ -20,6 +20,15 @@ export function imapHandleRecieved(belongs_to, exists, updated_mailbox) {
 
 function create_connection(socket, database, secure) {
     const connection = new ImapConnection(socket, database, capabilities, secure);
+    const connectionsFromIP = connections.filter(conn => conn.remoteAddress === connection.remoteAddress);
+
+    if (connectionsFromIP.length >= 10) { // Too many concurrent connections.
+        console.warn(`Too many concurrent connections from ${connection.remoteAddress}`);
+        socket.destroy();
+
+        return;
+    }
+
     connections.push(connection);
 
     connection.start();
