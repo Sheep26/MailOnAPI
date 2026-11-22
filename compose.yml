@@ -22,6 +22,7 @@ services:
     image: mysql:9.6.0
     container_name: mailonapi-db
     restart: unless-stopped
+    command: --skip-log-bin
     environment:
       MYSQL_ROOT_PASSWORD: YOUR_PASSWORD
     volumes:
