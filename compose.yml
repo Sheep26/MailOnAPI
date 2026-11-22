@@ -30,6 +30,4 @@ services:
       retries: 10
       start_period: 10s
     volumes:
-      - type: volume
-        source: /var/lib/mysql
-        target: /var/lib/mysql
+      - /var/lib/mysql:/var/lib/mysql
