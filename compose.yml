@@ -7,7 +7,8 @@ services:
     container_name: mailonapi
     restart: always
     depends_on:
-      - mailonapi-db
+      mailonapi-db:
+        condition: service_healthy
     ports:
       - "8080:8080"
       - "143:143"
@@ -25,6 +26,12 @@ services:
     command: --skip-log-bin
     environment:
       MYSQL_ROOT_PASSWORD: YOUR_PASSWORD
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     volumes:
       - type: volume
         source: db
