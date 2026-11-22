@@ -1,6 +1,7 @@
 import tls from "tls";
 import net from "net";
 import fs from "fs";
+import geoip from 'geoip-lite';
 import { ImapConnection } from "./imapConnection.js";
 import { getConfig } from "../config.js";
 
@@ -32,6 +33,18 @@ function create_connection(socket, database, secure) {
     const connectionsFromIP = connections.filter(conn => conn.remoteAddress === connection.remoteAddress);
     const blockedIPAdresses = blockedIps.map(ip => ip.ip);
 
+    // Check Geo Block First
+    if (config.geoblock.enabled && !connection.remoteAddress.startsWith('192.168')) {
+        const geo = geoip.lookup(connection.remoteAddress);
+
+        if (!config.geoblock.allowed_countries.includes(geo.country)) {
+            console.warn(`Geo Block blocked ${connection.remoteAddress}`);
+            socket.destroy();
+
+            return;
+        }
+    }
+
     if (connectionsFromIP.length >= 10) { // Too many concurrent connections.
         console.warn(`Too many concurrent connections from ${connection.remoteAddress}`);
         socket.destroy();
@@ -39,7 +52,7 @@ function create_connection(socket, database, secure) {
         return;
     }
 
-    if (blockedIPAdresses.includes(connection.remoteAddress)) {
+    if (blockedIPAdresses.includes(connection.remoteAddress)) { // Check if the ip is blocked.
         console.warn(`Blocked IP attempted to connect to server ${connection.remoteAddress}`);
         socket.destroy();
 
