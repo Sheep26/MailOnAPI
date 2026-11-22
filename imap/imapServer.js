@@ -72,7 +72,6 @@ function create_connection(socket, database, secure) {
 
     if (!localIp) {
         geo = geoip.lookup(remoteAddress);
-        console.info(geo);
 
         if (config.geoblock.enabled && (!geo || !config.geoblock.allowed_countries.includes(geo.country))) {
             console.warn(`Geo Block blocked ${remoteAddress} from country ${geo?.country}`);
@@ -96,7 +95,7 @@ function create_connection(socket, database, secure) {
         return;
     }
 
-    console.info(`New connection from ${remoteAddress} from country ${geo?.country} local ip ${localIp}`);
+    console.info(`New connection from ${remoteAddress} from country ${geo ? geo.country : 'unknown'} ${localIp ? 'this is a local IP address' : ''}`);
     const connection = new ImapConnection(socket, database, capabilities, secure);
 
     connections.push(connection);
