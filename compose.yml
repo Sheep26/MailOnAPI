@@ -16,7 +16,7 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - ./config:/config
     environment:
-      CONFIG_PATH=/config/config.json
+      CONFIG_PATH: /config/config.json
 
   mailonapi-db:
     image: mysql:latest
