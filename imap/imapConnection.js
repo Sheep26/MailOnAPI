@@ -29,7 +29,7 @@ export class ImapConnection {
         this.failedLogins = 0;
         this.kickThreashhold = 5;
 
-        if (!secure) {
+        if (secure) {
             this.addCapabiltity('LOGINDISABLED');
             this.addCapabiltity('STARTTLS');
 
