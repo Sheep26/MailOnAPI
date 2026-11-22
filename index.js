@@ -9,6 +9,7 @@ import { existsSync } from 'fs';
 import renderUtils from './renderUtils.js';
 import { startImap } from './imap/imapServer.js';
 import { Command } from './imap/commands/command.js';
+import { InvalidBodyError, ResendError } from './email/email.js';
 
 const app = express();
 const PORT = config.port | 8080;
@@ -32,6 +33,12 @@ app.post('/recieve', (req, res) => {
         res.sendStatus(200);
     } catch (e) {
         console.log(e);
+
+        if (e instanceof InvalidBodyError)
+            return res.sendStatus(418);
+
+        if (e instanceof ResendError)
+            return res.sendStatus(e.statusCode);
 
         res.sendStatus(500);
     }

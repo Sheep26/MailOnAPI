@@ -1,5 +1,5 @@
 import { Resend } from 'resend';
-import { Email, parseEmailAddress } from './email.js';
+import { Email, InvalidBodyError, ResendError } from './email.js';
 
 export class EmailResend extends Email {
     constructor (database, auth) {
@@ -112,15 +112,12 @@ export class EmailResend extends Email {
 
     async handle(body) {
         if (!body || !body.data || !body.data.email_id)
-            return;
+            throw new InvalidBodyError(`Body invalid`);
 
         const { data, error } = await this.resend.emails.receiving.get(body.data.email_id);
 
-        if (error) {
-            console.error(`Error recieving email status code ${error.statusCode} ${error.message}`);
-
-            return;
-        }
+        if (error)
+            throw new ResendError(`Error recieving email status code ${error.statusCode} ${error.message}`, error.statusCode);
 
         let references = data.headers.references ?? null;
 

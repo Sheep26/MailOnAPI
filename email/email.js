@@ -13,6 +13,20 @@ export function parseEmailAddress(value) {
     return values;
 };
 
+export class InvalidBodyError extends Error {
+    constructor(message, options) {
+        super(message, options);
+    }
+}
+
+export class ResendError extends Error {
+    constructor(message, statusCode, options) {
+        super(message, options);
+
+        this.statusCode = statusCode;
+    }
+}
+
 export class Email {
     constructor (database, auth) {
         this.database = database;
