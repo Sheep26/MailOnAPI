@@ -70,9 +70,6 @@ function create_connection(socket, database, secure) {
 
     let geo;
 
-    if (localIp)
-        console.info(`Local IP connected`);
-
     if (!localIp) {
         geo = geoip.lookup(remoteAddress);
         console.info(geo);
@@ -99,8 +96,7 @@ function create_connection(socket, database, secure) {
         return;
     }
 
-    console.info(`New connection from ${remoteAddress} from country ${geo?.country}`);
-
+    console.info(`New connection from ${remoteAddress} from country ${geo?.country} local ip ${localIp}`);
     const connection = new ImapConnection(socket, database, capabilities, secure);
 
     connections.push(connection);
