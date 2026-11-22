@@ -239,7 +239,7 @@ export class ImapConnection {
             if (!handler)
                 return this.send(`${tag} BAD Unknown command`);
 
-            console.info(`${this.remoteAddress} ${this.user?.email} ${command} ${command == "LOGIN" ? '*********' : args.join(' ')} ${JSON.stringify(options)}`);
+            console.info(`${this.remoteAddress} ${this.user?.email} ${command} ${command == "LOGIN" ? '*********' : args.join(' ') || '\"-\"'} ${JSON.stringify(options)}`);
             await handler(tag, args, options);
         } catch (error) {
             console.error("IMAP command error:", error);
