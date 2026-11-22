@@ -19,7 +19,7 @@ services:
       CONFIG_PATH: /config/config.json
 
   mailonapi-db:
-    image: mysql:latest
+    image: mysql:9.6.0
     container_name: mailonapi-db
     restart: unless-stopped
     environment:
