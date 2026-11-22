@@ -65,12 +65,13 @@ function normalizeRemoteAddress(socket) {
 
 function create_connection(socket, database, secure) {
     const remoteAddress = normalizeRemoteAddress(socket);
-    console.log(`New connection from ${remoteAddress}`);
     const connectionsFromIP = connections.filter(conn => conn.remoteAddress === remoteAddress);
     const localIp = isLocalIP(remoteAddress);
 
     if (localIp)
         console.info(`Local IP connected`);
+
+    console.log(`New connection from ${remoteAddress}`);
 
     if (!localIp) {
         const geo = geoip.lookup(remoteAddress);
