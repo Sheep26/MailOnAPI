@@ -26,9 +26,9 @@ app.use('/static', express.static('static'));
 app.use(cookieParser());
 app.use(morgan('combined'));
 
-app.post('/recieve', (req, res) => {
+app.post('/recieve', async (req, res) => {
     try {
-        email.handle(req.body);
+        await email.handle(req.body);
 
         res.sendStatus(200);
     } catch (e) {

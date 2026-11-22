@@ -112,7 +112,7 @@ export class EmailResend extends Email {
 
     async handle(body) {
         if (!body || !body.data || !body.data.email_id)
-            throw new InvalidBodyError(`Body invalid`);
+            throw new InvalidBodyError(`Body invalid: ${JSON.stringify(body)}`);
 
         const { data, error } = await this.resend.emails.receiving.get(body.data.email_id);
 
