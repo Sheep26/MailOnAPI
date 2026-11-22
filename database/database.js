@@ -1,10 +1,11 @@
 import { db, initDB } from './connection.js';
 import { BcryptManager } from './encryption.js';
 import { Session } from '../sessions/sessionManager.js';
-import config from "../config.json" with { type: "json" };
+import { getConfig } from '../config.js';
 import crypto from 'crypto';
 
 const hasher = new BcryptManager();
+const config = getConfig();
 
 export class DatabaseManager {
     constructor() {

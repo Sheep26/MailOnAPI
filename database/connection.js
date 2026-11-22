@@ -1,6 +1,7 @@
 import mysql from "mysql2/promise";
-import config from "../config.json" with { type: "json" };
+import { getConfig } from "../config";
 
+const config = getConfig();
 export let db;
 
 export async function setDB(name) {

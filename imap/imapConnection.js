@@ -1,8 +1,10 @@
 import getCommands from "./commands/commands.js";
-import config from "../config.json" with { type: "json" };
 import crypto from 'node:crypto';
 import STATES from './imapStates.js';
 import { blockIP } from "./imapServer.js";
+import { getConfig } from "../config.js";
+
+const config = getConfig();
 
 export class ImapConnection {
     constructor(socket, database, capabilities, secure) {

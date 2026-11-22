@@ -1,5 +1,7 @@
 import crypto from 'node:crypto';
-import config from "../../config.json" with { type: "json" };
+import { getConfig } from '../../config.js';
+
+const config = getConfig();
 
 export class Command {
     constructor (database, connection) {

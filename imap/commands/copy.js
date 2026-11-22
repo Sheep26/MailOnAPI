@@ -1,9 +1,6 @@
 import { Command } from "./command.js";
 import STATES from '../imapStates.js';
 import crypto from 'node:crypto';
-import fs from 'fs';
-import path from 'path';
-import config from "../../config.json" with { type: "json" };
 
 export class CopyCommand extends Command {
     command = async (tag, args, options) => {
@@ -22,10 +19,6 @@ export class CopyCommand extends Command {
 
         for (let email of selectedMails) {
             const mail_id = crypto.randomBytes(8).readUInt32BE();
-            const attachment_path = path.join(config.attachment_path, String(email.mail_id));
-
-            if (fs.existsSync(attachment_path))
-                fs.cpSync(attachment_path, path.join(config.attachment_path, String(mail_id)), { recursive: true });
 
             await this.database.addEmail({
                 // email.belongs_to, email.mail_to, email.mail_from, email.reply_to, email.bcc, email.cc, mail_id, email.message_id, email.html_format,

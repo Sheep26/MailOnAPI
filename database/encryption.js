@@ -1,5 +1,7 @@
 import bcrypt from "bcrypt";
-import config from "../config.json" with { type: "json" };
+import { getConfig } from '../config.js';
+
+const config = getConfig();
 
 export class BcryptCache {
     constructor(string, hash) {

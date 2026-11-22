@@ -2,7 +2,9 @@ import { Command } from "./command.js";
 import tls from "tls";
 import fs from "fs";
 import { removeConnection } from "../imapServer.js";
-import config from "../../config.json" with { type: "json" };
+import { getConfig } from '../../config.js';
+
+const config = getConfig();
 
 export class StartTLSCommand extends Command {
     command = (tag, args) => {

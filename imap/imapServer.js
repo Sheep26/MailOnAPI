@@ -1,13 +1,14 @@
 import tls from "tls";
 import net from "net";
-import config from "../config.json" with { type: "json" };
 import fs from "fs";
 import { ImapConnection } from "./imapConnection.js";
+import { getConfig } from "../config.js";
+
+const config = getConfig();
+const capabilities = ["IMAP4rev1", "UNSELECT", "AUTH=PLAIN", "IDLE"];
 
 let connections = [];
 let blockedIps = [];
-
-const capabilities = ["IMAP4rev1", "UNSELECT", "AUTH=PLAIN", "IDLE"];
 
 export function removeConnection(connection) {
     connections = connections.filter(connectio => connectio != connection);

@@ -1,7 +1,6 @@
 import express from 'express';
 import cookieParser from "cookie-parser";
 import morgan from 'morgan';
-import config from "./config.json" with { type: "json" };
 import { email_types } from './email/types.js';
 import { DatabaseManager } from './database/database.js';
 import { SessionManager } from './sessions/sessionManager.js';
@@ -10,7 +9,9 @@ import renderUtils from './renderUtils.js';
 import { startImap } from './imap/imapServer.js';
 import { Command } from './imap/commands/command.js';
 import { InvalidBodyError, ResendError } from './email/email.js';
+import { getConfig } from './config.js';
 
+const config = getConfig();
 const app = express();
 const PORT = config.port | 8080;
 

@@ -14,7 +14,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node .",
-    "test": "node ."
+    "dev": "node . dev"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
