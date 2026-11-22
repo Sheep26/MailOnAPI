@@ -68,13 +68,13 @@ function create_connection(socket, database, secure) {
     const connectionsFromIP = connections.filter(conn => conn.remoteAddress === remoteAddress);
     const localIp = isLocalIP(remoteAddress);
 
+    let geo;
+
     if (localIp)
         console.info(`Local IP connected`);
 
-    console.log(`New connection from ${remoteAddress}`);
-
     if (!localIp) {
-        const geo = geoip.lookup(remoteAddress);
+        geo = geoip.lookup(remoteAddress);
         console.info(geo);
 
         if (config.geoblock.enabled && (!geo || !config.geoblock.allowed_countries.includes(geo.country))) {
@@ -98,6 +98,8 @@ function create_connection(socket, database, secure) {
 
         return;
     }
+
+    console.info(`New connection from ${remoteAddress} from country ${geo?.country}`);
 
     const connection = new ImapConnection(socket, database, capabilities, secure);
 
