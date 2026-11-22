@@ -214,7 +214,6 @@ export class ImapConnection {
     }
 
     async handleCommand(line, next) {
-        console.log(line)
         const parts = this.parseCommand(line);
 
         if (!parts)
