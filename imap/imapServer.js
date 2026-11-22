@@ -59,20 +59,24 @@ export function imapHandleRecieved(belongs_to, exists, updated_mailbox) {
         connection.send(`* ${exists} EXISTS`);
 }
 
+function normalizeRemoteAddress(socket) {
+    return socket.remoteAddress?.replace(/^::ffff:/, "");
+}
+
 function create_connection(socket, database, secure) {
-    const connection = new ImapConnection(socket, database, capabilities, secure);
-    const connectionsFromIP = connections.filter(conn => conn.remoteAddress === connection.remoteAddress);
-    const localIp = isLocalIP(connection.remoteAddress);
+    const remoteAddress = normalizeRemoteAddress(socket.remoteAddress);
+    const connectionsFromIP = connections.filter(conn => conn.remoteAddress === remoteAddress);
+    const localIp = isLocalIP(remoteAddress);
 
     if (localIp)
         console.info(`Local IP connected`);
 
     if (!localIp) {
-        const geo = geoip.lookup(connection.remoteAddress);
+        const geo = geoip.lookup(remoteAddress);
         console.info(geo);
 
         if (config.geoblock.enabled && (!geo || !config.geoblock.allowed_countries.includes(geo.country))) {
-            console.warn(`Geo Block blocked ${connection.remoteAddress} from country ${geo.country}`);
+            console.warn(`Geo Block blocked ${remoteAddress} from country ${geo?.country}`);
             socket.destroy();
 
             return;
@@ -80,18 +84,20 @@ function create_connection(socket, database, secure) {
     }
 
     if (connectionsFromIP.length >= 10) { // Too many concurrent connections.
-        console.warn(`Too many concurrent connections from ${connection.remoteAddress}`);
+        console.warn(`Too many concurrent connections from ${remoteAddress}`);
         socket.destroy();
 
         return;
     }
 
-    if (isBlocked(connection.remoteAddress)) { // Check if the ip is blocked.
-        console.warn(`Blocked IP attempted to connect to server ${connection.remoteAddress}`);
+    if (isBlocked(remoteAddress)) { // Check if the ip is blocked.
+        console.warn(`Blocked IP attempted to connect to server ${remoteAddress}`);
         socket.destroy();
 
         return;
     }
+
+    const connection = new ImapConnection(socket, database, capabilities, secure);
 
     connections.push(connection);
     connection.start();

@@ -25,7 +25,7 @@ export class ImapConnection {
         this.readonly = false;
         this.secure = secure;
 
-        this.remoteAddress = this.getClientIP(socket);
+        this.remoteAddress = this.normalizeRemoteAddress(socket);
         this.failedLogins = 0;
         this.kickThreashhold = 5;
 
@@ -40,7 +40,7 @@ export class ImapConnection {
         console.log(`New connection from ${this.remoteAddress}`);
     }
 
-    getClientIP(socket) {
+    normalizeRemoteAddress(socket) {
         return socket.remoteAddress?.replace(/^::ffff:/, "");
     }
 
