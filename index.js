@@ -32,7 +32,7 @@ app.post('/recieve', async (req, res) => {
 
         res.sendStatus(200);
     } catch (e) {
-        console.log(e);
+        console.error(e);
 
         if (e instanceof InvalidBodyError)
             return res.sendStatus(418);
