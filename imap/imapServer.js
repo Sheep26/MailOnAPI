@@ -37,7 +37,7 @@ function create_connection(socket, database, secure) {
         const geo = geoip.lookup(connection.remoteAddress);
         console.info(geo);
 
-        if (config.geoblock.enabled && config.geoblock.allowed_countries.includes(geo.country)) {
+        if (config.geoblock.enabled && !config.geoblock.allowed_countries.includes(geo.country)) {
             console.warn(`Geo Block blocked ${connection.remoteAddress} from country ${geo.country}`);
             socket.destroy();
 
