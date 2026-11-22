@@ -57,7 +57,6 @@ export class CopyCommand extends Command {
             });
         }
 
-        console.info(`${this.connection.remoteAddress} ${this.connection.user.email} COPY ${sequence} ${target_mailbox_name}`);
         return this.connection.send(`${tag} OK COPY completed`);
     };
 }

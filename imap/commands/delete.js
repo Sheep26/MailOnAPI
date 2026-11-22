@@ -11,7 +11,6 @@ export class DeleteCommand extends Command {
 
         await this.database.deleteMailBox(this.connection.user.email, args[0]);
 
-        console.info(`${this.connection.remoteAddress} ${this.connection.user.email} DELETE ${args[0]}`);
         this.connection.send(`${tag} OK DELETE completed`);
     };
 }

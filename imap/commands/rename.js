@@ -10,8 +10,6 @@ export class RenameCommand extends Command {
             return this.connection.send(`${tag} BAD RENAME Expects 2 args`);
 
         await this.database.renameMailBox(this.connection.user.email, args[0], args[1]);
-
-        console.info(`${this.connection.remoteAddress} ${this.connection.user.email} RENAME ${args[0]} ${args[1]}`);
         this.connection.send(`${tag} OK RENAME completed`);
     };
 }

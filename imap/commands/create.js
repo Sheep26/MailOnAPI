@@ -10,8 +10,6 @@ export class CreateCommand extends Command {
             return this.connection.send(`${tag} BAD CREATE Expects at least 1 arg`);
 
         await this.database.addMailBox(this.connection.user.email, args[0], "\\Answered \\Flagged \\Deleted \\Seen \\Draft", this.makeSpecialUseFlags(args).join(" "));
-
-        console.info(`${this.connection.remoteAddress} ${this.connection.user.email} CREATE ${args[0]}`);
         this.connection.send(`${tag} OK CREATE completed`);
     };
 

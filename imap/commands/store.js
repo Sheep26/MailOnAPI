@@ -37,7 +37,6 @@ export class StoreCommand extends Command {
             }
         }
 
-        console.info(`${this.connection.remoteAddress} ${this.connection.user.email} STORE ${action} ${flags} ${sequence}`);
         this.connection.send(`${tag} OK STORE completed`);
     };
 }

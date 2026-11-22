@@ -15,8 +15,6 @@ export class ExpungeCommand extends Command {
         }
 
         await this.database.deleteMarkedDeleted(this.connection.user.email);
-
-        console.info(`${this.connection.remoteAddress} ${this.connection.user.email} EXPUNGE`);
         return this.connection.send(`${tag} OK EXPUNGE completed`);
     };
 }
