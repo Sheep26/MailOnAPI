@@ -65,6 +65,7 @@ function normalizeRemoteAddress(socket) {
 
 function create_connection(socket, database, secure) {
     const remoteAddress = normalizeRemoteAddress(socket.remoteAddress);
+    console.log(remoteAddress)
     const connectionsFromIP = connections.filter(conn => conn.remoteAddress === remoteAddress);
     const localIp = isLocalIP(remoteAddress);
 
