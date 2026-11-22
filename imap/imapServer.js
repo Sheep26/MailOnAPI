@@ -9,16 +9,47 @@ const config = getConfig();
 const capabilities = ["IMAP4rev1", "UNSELECT", "AUTH=PLAIN", "IDLE"];
 
 let connections = [];
-let blockedIps = [];
+let blockedIps = new Map();
+
+const localRanges = new net.BlockList();
+
+localRanges.addSubnet('127.0.0.0', 8, 'ipv4');
+localRanges.addSubnet('10.0.0.0', 8, 'ipv4');
+localRanges.addSubnet('172.16.0.0', 12, 'ipv4');
+localRanges.addSubnet('192.168.0.0', 16, 'ipv4');
+localRanges.addSubnet('169.254.0.0', 16, 'ipv4');
+
+localRanges.addAddress('::1', 'ipv6');
+localRanges.addSubnet('fc00::', 7, 'ipv6');
+localRanges.addSubnet('fe80::', 10, 'ipv6');
+
+function isBlocked(ip) {
+    const entry = blockedIps.get(ip);
+
+    if (!entry) return false;
+
+    if (Date.now() >= entry.expires) {
+        blockedIps.delete(ip);
+
+        return false;
+    }
+
+    return true;
+}
+
+function isLocalIP(ip) {
+    const family = net.isIPv4(ip) ? 'ipv4' : net.isIPv6(ip) ? 'ipv6' : null;
+    if (!family) return false; // Invalid IP
+
+    return localRanges.check(ip, family);
+}
 
 export function removeConnection(connection) {
     connections = connections.filter(connectio => connectio != connection);
 }
 
-export function blockIP(ip) {
-    blockedIps.push({ip: ip, timestamp: Date.now()});
-
-    console.warn(`Ip ${ip} blocked at ${new Date().toISOString()}`);
+export function blockIP(ip, duration = 3600000) {
+    blockedIps.set(ip, { expires: Date.now() + duration });
 }
 
 export function imapHandleRecieved(belongs_to, exists, updated_mailbox) {
@@ -31,13 +62,12 @@ export function imapHandleRecieved(belongs_to, exists, updated_mailbox) {
 function create_connection(socket, database, secure) {
     const connection = new ImapConnection(socket, database, capabilities, secure);
     const connectionsFromIP = connections.filter(conn => conn.remoteAddress === connection.remoteAddress);
-    const blockedIPAdresses = blockedIps.map(ip => ip.ip);
 
-    if (!connection.remoteAddress.startsWith('192.168')) {
+    if (!isLocalIP(connection.remoteAddress)) {
         const geo = geoip.lookup(connection.remoteAddress);
         console.info(geo);
 
-        if (config.geoblock.enabled && !config.geoblock.allowed_countries.includes(geo.country)) {
+        if (config.geoblock.enabled && (!geo || !config.geoblock.allowed_countries.includes(geo.country))) {
             console.warn(`Geo Block blocked ${connection.remoteAddress} from country ${geo.country}`);
             socket.destroy();
 
@@ -52,7 +82,7 @@ function create_connection(socket, database, secure) {
         return;
     }
 
-    if (blockedIPAdresses.includes(connection.remoteAddress)) { // Check if the ip is blocked.
+    if (isBlocked(connection.remoteAddress)) { // Check if the ip is blocked.
         console.warn(`Blocked IP attempted to connect to server ${connection.remoteAddress}`);
         socket.destroy();
 
