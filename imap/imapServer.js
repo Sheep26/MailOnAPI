@@ -36,8 +36,9 @@ function create_connection(socket, database, secure) {
     // Check Geo Block First
     if (config.geoblock.enabled && !connection.remoteAddress.startsWith('192.168')) {
         const geo = geoip.lookup(connection.remoteAddress);
+        console.log(geo);
 
-        if (config.geoblock.allowed_countries.includes(geo.country)) {
+        if (!config.geoblock.allowed_countries.includes(geo.country)) {
             console.warn(`Geo Block blocked ${connection.remoteAddress} from country ${geo.country}`);
             socket.destroy();
 
