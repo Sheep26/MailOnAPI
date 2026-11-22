@@ -62,8 +62,12 @@ export function imapHandleRecieved(belongs_to, exists, updated_mailbox) {
 function create_connection(socket, database, secure) {
     const connection = new ImapConnection(socket, database, capabilities, secure);
     const connectionsFromIP = connections.filter(conn => conn.remoteAddress === connection.remoteAddress);
+    const localIp = isLocalIP(connection.remoteAddress);
 
-    if (!isLocalIP(connection.remoteAddress)) {
+    if (localIp)
+        console.info(`Local IP connected`);
+
+    if (!localIp) {
         const geo = geoip.lookup(connection.remoteAddress);
         console.info(geo);
 
