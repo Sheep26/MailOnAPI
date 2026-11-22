@@ -9,14 +9,7 @@ const config = getConfig();
 
 export class DatabaseManager {
     constructor() {
-        while (1) {
-            try {
-                initDB();
-                break;
-            } catch (e) {
-                
-            }
-        }
+        initDB();
     }
 
     randStr(len) {
