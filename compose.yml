@@ -14,7 +14,7 @@ services:
       - "993:993"
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro
-      - ./config:/config
+      - /config:/config
     environment:
       CONFIG_PATH: /config/config.json
 
