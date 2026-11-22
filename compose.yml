@@ -9,7 +9,7 @@ services:
     depends_on:
       - mailonapi-db
     ports:
-      - "6780:8080"
+      - "8080:8080"
       - "143:143"
       - "993:993"
     volumes:
@@ -24,8 +24,6 @@ services:
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: YOUR_PASSWORD
-    ports:
-      - "3308:3306"
     volumes:
       - type: volume
         source: db
