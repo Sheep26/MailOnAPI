@@ -230,6 +230,10 @@ app.use(async (req, res, next) => {
 
     let page = req.path.replace('/', '') || 'home';
 
+    // Check if requested content exists.
+    if (!existsSync(`templates/${page}.ejs`))
+        return res.status(404).render('404');
+
     if (page == "create_account")
         return res.render('create_account', { title: 'Create Account', renderUtils: renderUtils });
 
@@ -238,10 +242,6 @@ app.use(async (req, res, next) => {
 
     if (page == 'login' && sessionManager.getSession(req.cookies.session))
         page = 'home';
-
-    // Check if requested content exists.
-    if (!existsSync(`templates/${page}.ejs`))
-        return res.status(404).render('base', { title: '404', content: '404', renderUtils: renderUtils });
 
     res.render('base', { title: page, content: page, renderUtils: renderUtils });
 });
